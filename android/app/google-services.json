@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "966950493780",
+    "project_id": "seven-taxi-1b692",
+    "storage_bucket": "seven-taxi-1b692.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:966950493780:android:012aab1bfc07e8799bd7c1",
+        "android_client_info": {
+          "package_name": "com.seventaxi.customer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWRrsWcPpbKF6FA8gFpeyJ2RGSZwQxh5E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:966950493780:android:cd7dbdb6833348199bd7c1",
+        "android_client_info": {
+          "package_name": "com.seventaxi.driver"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWRrsWcPpbKF6FA8gFpeyJ2RGSZwQxh5E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

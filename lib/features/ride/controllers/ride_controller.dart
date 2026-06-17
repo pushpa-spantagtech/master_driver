@@ -254,8 +254,10 @@ class RideController extends GetxController implements GetxService {
 
   Future<Response> tripAcceptOrRejected(String tripId, String type,
       {bool fromList = true, int index = 0}) async {
-    if (fromList) {
-      pendingRideRequestModel?.data?[index].isLoading = true;
+    if (fromList &&
+        pendingRideRequestModel?.data != null &&
+        pendingRideRequestModel!.data!.length > index) {
+      pendingRideRequestModel!.data![index].isLoading = true;
       update();
     }
     accepting = true;
@@ -263,8 +265,10 @@ class RideController extends GetxController implements GetxService {
     Response response =
         await rideServiceInterface.tripAcceptOrReject(tripId, type);
     if (response.statusCode == 200) {
-      if (fromList) {
-        pendingRideRequestModel?.data?[index].isLoading = false;
+      if (fromList &&
+          pendingRideRequestModel?.data != null &&
+          pendingRideRequestModel!.data!.length > index) {
+        pendingRideRequestModel!.data![index].isLoading = false;
       }
       accepting = false;
       Get.find<RiderMapController>().getPickupToDestinationPolyline();
@@ -278,14 +282,18 @@ class RideController extends GetxController implements GetxService {
         getPendingRideRequestList(1);
       }
     } else {
-      if (fromList) {
-        pendingRideRequestModel?.data?[index].isLoading = false;
+      if (fromList &&
+          pendingRideRequestModel?.data != null &&
+          pendingRideRequestModel!.data!.length > index) {
+        pendingRideRequestModel!.data![index].isLoading = false;
       }
       accepting = false;
       ApiChecker.checkApi(response);
     }
-    if (fromList) {
-      pendingRideRequestModel?.data?[index].isLoading = false;
+    if (fromList &&
+        pendingRideRequestModel?.data != null &&
+        pendingRideRequestModel!.data!.length > index) {
+      pendingRideRequestModel!.data![index].isLoading = false;
     }
     accepting = false;
     update();

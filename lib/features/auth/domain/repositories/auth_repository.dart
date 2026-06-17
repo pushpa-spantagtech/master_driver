@@ -42,8 +42,9 @@ class AuthRepository implements AuthRepositoryInterface {
 
   @override
   Future<Response?> sendOtp({required String phone}) async {
-    return await apiClient.postData(AppConstants.sendOtp,
-        {"phone_or_email": phone, });
+    return await apiClient.postData(AppConstants.sendOtp, {
+      "phone_or_email": phone,
+    });
   }
 
   @override
@@ -104,6 +105,8 @@ class AuthRepository implements AuthRepositoryInterface {
     if (!GetPlatform.isWeb) {
       FirebaseMessaging.instance.subscribeToTopic(AppConstants.topic);
     }
+
+    print("FCM BEFORE API => $deviceToken");
     return await apiClient.postData(AppConstants.fcmTokenUpdate,
         {"_method": "put", "fcm_token": deviceToken});
   }
@@ -112,6 +115,7 @@ class AuthRepository implements AuthRepositoryInterface {
     String? deviceToken = '@';
     try {
       deviceToken = await FirebaseMessaging.instance.getToken();
+      print("DRIVER FCM TOKEN => $deviceToken");
     } catch (e) {
       debugPrint('');
     }
@@ -125,8 +129,9 @@ class AuthRepository implements AuthRepositoryInterface {
 
   @override
   Future<Response?> forgetPassword(String? phone) async {
-    return await apiClient.postData(AppConstants.configUri,
-        {"phone_or_email": phone,});
+    return await apiClient.postData(AppConstants.configUri, {
+      "phone_or_email": phone,
+    });
   }
 
   @override

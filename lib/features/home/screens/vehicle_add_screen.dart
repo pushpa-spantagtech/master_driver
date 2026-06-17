@@ -96,8 +96,8 @@ class _VehicleAddScreenState extends State<VehicleAddScreen> {
                     bottom: Dimensions.paddingSizeDefault,
                   ),
                   child: Text('vehicle_information'.tr,
-                      style: textMedium.copyWith(
-                        color: Theme.of(context).primaryColor,
+                      style: textBold.copyWith(
+                        color: Theme.of(context).colorScheme.onPrimary,
                         fontSize: Dimensions.fontSizeLarge,
                       )),
                 ),
@@ -492,7 +492,8 @@ class _VehicleAddScreenState extends State<VehicleAddScreen> {
                       } else if (profileController.selectedModel.id == null ||
                           profileController.selectedModel.id == 'abc') {
                         showCustomSnackBar('select_vehicle_model'.tr);
-                      } else if (profileController.selectedCategory.id == null ||
+                      } else if (profileController.selectedCategory.id ==
+                              null ||
                           profileController.selectedCategory.id == 'abc') {
                         showCustomSnackBar('select_vehicle_category'.tr);
                       } else if (licencePlateNumber.isEmpty) {

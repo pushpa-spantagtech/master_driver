@@ -380,8 +380,7 @@ class CustomerRideRequestCardWidget extends StatelessWidget {
                                               .tripAcceptOrRejected(
                                             rideRequest.id!,
                                             'accepted',
-                                            fromList: true,
-                                            index: index ?? 0,
+                                            fromList: false,
                                           )
                                               .then((value) async {
                                             if (value.statusCode == 200) {

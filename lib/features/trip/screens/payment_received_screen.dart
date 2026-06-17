@@ -198,7 +198,9 @@ class PaymentReceivedScreen extends StatelessWidget {
                               child: Text(
                                 PriceConverter.convertPrice(
                                     context,
-                                    finalFareController.finalFare?.paidFare ??
+                                    finalFareController.finalFare?.actualFare ??
+                                        finalFareController
+                                            .finalFare?.distanceWiseFare ??
                                         0),
                                 style: textBold.copyWith(
                                   color:
@@ -286,9 +288,11 @@ class PaymentReceivedScreen extends StatelessWidget {
                             PaymentItemInfoWidget(
                               icon: Images.farePrice,
                               title: 'fare_price'.tr,
-                              amount: finalFareController
-                                      .finalFare?.distanceWiseFare ??
-                                  0,
+                              amount:
+                                  finalFareController.finalFare?.actualFare ??
+                                      finalFareController
+                                          .finalFare?.distanceWiseFare ??
+                                      0,
                             ),
                             if (!fromParcel &&
                                 finalFareController.finalFare!.cancellationFee!
@@ -364,7 +368,10 @@ class PaymentReceivedScreen extends StatelessWidget {
                             PaymentItemInfoWidget(
                               title: 'sub_total'.tr,
                               amount:
-                                  finalFareController.finalFare?.paidFare ?? 0,
+                                  finalFareController.finalFare?.actualFare ??
+                                      finalFareController
+                                          .finalFare?.distanceWiseFare ??
+                                      0,
                               isSubTotal: true,
                             ),
                           ]),

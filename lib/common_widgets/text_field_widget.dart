@@ -172,7 +172,8 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
                     padding: const EdgeInsets.only(left: 8, right: 0),
                     margin: EdgeInsets.zero,
                     decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                      color:
+                          Theme.of(context).primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.only(
                         topRight: Get.find<LocalizationController>().isLtr
                             ? const Radius.circular(0)
@@ -204,8 +205,9 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
                           width: 70,
                           height: 50,
                           decoration: BoxDecoration(
-                            color:
-                                Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                            color: Theme.of(context)
+                                .primaryColor
+                                .withValues(alpha: 0.1),
                             borderRadius: BorderRadius.only(
                               topRight: Get.find<LocalizationController>().isLtr
                                   ? const Radius.circular(0)

@@ -1,9 +1,7 @@
-
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 class DateConverter {
-
   static String formatDate(DateTime dateTime) {
     return DateFormat('yyyy-MM-dd hh:mm:ss a').format(dateTime);
   }
@@ -21,15 +19,18 @@ class DateConverter {
   }
 
   static String dateTimeStringToDateTime(String dateTime) {
-    return DateFormat('dd MMM yyyy  ${_timeFormatter()}').format(DateFormat('yyyy-MM-dd HH:mm:ss').parse(dateTime));
+    return DateFormat('dd MMM yyyy  ${_timeFormatter()}')
+        .format(DateFormat('yyyy-MM-dd HH:mm:ss').parse(dateTime));
   }
 
   static String dateTimeStringToDateOnly(String dateTime) {
-    return DateFormat('dd').format(DateFormat('yyyy-MM-ddTHH:mm:ss').parse(dateTime));
+    return DateFormat('dd')
+        .format(DateFormat('yyyy-MM-ddTHH:mm:ss').parse(dateTime));
   }
 
   static String dateTimeStringToMonthAndYear(String dateTime) {
-    return DateFormat('MMM, yyyy').format(DateFormat('yyyy-MM-ddTHH:mm:ss').parse(dateTime));
+    return DateFormat('MMM, yyyy')
+        .format(DateFormat('yyyy-MM-ddTHH:mm:ss').parse(dateTime));
   }
 
   static DateTime dateTimeStringToDate(String dateTime) {
@@ -37,15 +38,19 @@ class DateConverter {
   }
 
   static DateTime isoStringToLocalDate(String dateTime) {
-    return DateFormat('yyyy-MM-ddTHH:mm:ss.SSS').parse(dateTime,true).toLocal();
+    return DateFormat('yyyy-MM-ddTHH:mm:ss.SSS')
+        .parse(dateTime, true)
+        .toLocal();
   }
 
   static String isoStringToLocalString(String dateTime) {
-    return DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.parse(dateTime).toLocal());
+    return DateFormat('yyyy-MM-dd HH:mm:ss')
+        .format(DateTime.parse(dateTime).toLocal());
   }
 
   static String isoStringToDateTimeString(String dateTime) {
-    return DateFormat('dd MMM yyyy  ${_timeFormatter()}').format(isoStringToLocalDate(dateTime));
+    return DateFormat('dd MMM yyyy  ${_timeFormatter()}')
+        .format(isoStringToLocalDate(dateTime));
   }
 
   static String isoStringToLocalDateOnly(String dateTime) {
@@ -53,7 +58,8 @@ class DateConverter {
   }
 
   static String stringToLocalDateOnly(String dateTime) {
-    return DateFormat('dd MMM yyyy').format(DateFormat('yyyy-MM-dd').parse(dateTime));
+    return DateFormat('dd MMM yyyy')
+        .format(DateFormat('yyyy-MM-dd').parse(dateTime));
   }
 
   static String localDateToIsoString(DateTime dateTime) {
@@ -68,24 +74,23 @@ class DateConverter {
     return DateFormat('HH:mm').parse(time);
   }
 
-  static String isoDateTimeStringToLocalTime(String dateTime){
+  static String isoDateTimeStringToLocalTime(String dateTime) {
     return DateFormat(_timeFormatter()).format(isoStringToLocalDate(dateTime));
   }
 
-  static String isoDateTimeStringToDifferentWithCurrentTime(String dateTime){
+  static String isoDateTimeStringToDifferentWithCurrentTime(String dateTime) {
     DateTime messageTime = isoStringToLocalDate(dateTime);
     int minutes = DateTime.now().difference(messageTime).inMinutes;
-    if(minutes <= 20){
+    if (minutes <= 20) {
       return '$minutes ${'min_ago'.tr}';
-    }else if( minutes > 20 && minutes <= 1440){
+    } else if (minutes > 20 && minutes <= 1440) {
       return DateFormat(_timeFormatter()).format(messageTime);
-    }else if( minutes > 1440 && minutes <= 2880){
+    } else if (minutes > 1440 && minutes <= 2880) {
       return '${'yesterday'.tr}, ${DateFormat(_timeFormatter()).format(messageTime)}';
-    }else{
+    } else {
       return isoStringToDateTimeString(dateTime);
     }
   }
-
 
   static String _timeFormatter() {
     return 'HH:mm a';
@@ -96,23 +101,23 @@ class DateConverter {
     int firstValue = minMinute;
     int secondValue = maxMinute;
     String type = 'min';
-    if(minMinute >= 525600) {
+    if (minMinute >= 525600) {
       firstValue = (minMinute / 525600).floor();
       secondValue = (maxMinute / 525600).floor();
       type = 'year';
-    }else if(minMinute >= 43200) {
+    } else if (minMinute >= 43200) {
       firstValue = (minMinute / 43200).floor();
       secondValue = (maxMinute / 43200).floor();
       type = 'month';
-    }else if(minMinute >= 10080) {
+    } else if (minMinute >= 10080) {
       firstValue = (minMinute / 10080).floor();
       secondValue = (maxMinute / 10080).floor();
       type = 'week';
-    }else if(minMinute >= 1440) {
+    } else if (minMinute >= 1440) {
       firstValue = (minMinute / 1440).floor();
       secondValue = (maxMinute / 1440).floor();
       type = 'day';
-    }else if(minMinute >= 60) {
+    } else if (minMinute >= 60) {
       firstValue = (minMinute / 60).floor();
       secondValue = (maxMinute / 60).floor();
       type = 'hour';
@@ -121,11 +126,11 @@ class DateConverter {
   }
 
   static String localDateToIsoStringAMPM(DateTime dateTime) {
-    return DateFormat('${_timeFormatter()} | d-MMM-yyyy ').format(dateTime.toLocal());
+    return DateFormat('${_timeFormatter()} | d-MMM-yyyy ')
+        .format(dateTime.toLocal());
   }
+
   static String localToIsoString(DateTime dateTime) {
     return DateFormat('d MMMM, yyyy ').format(dateTime.toLocal());
   }
-
-
 }

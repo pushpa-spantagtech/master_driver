@@ -1,10 +1,10 @@
-
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:ride_sharing_user_app/features/location/domain/repositories/location_repository_interface.dart';
 import 'package:ride_sharing_user_app/features/location/domain/services/location_service_interface.dart';
 
-class LocationService implements LocationServiceInterface{
+class LocationService implements LocationServiceInterface {
   final LocationRepositoryInterface locationRepositoryInterface;
+
   LocationService({required this.locationRepositoryInterface});
 
   @override
@@ -14,7 +14,7 @@ class LocationService implements LocationServiceInterface{
 
   @override
   Future getPlaceDetails(String placeID) {
-   return locationRepositoryInterface.getPlaceDetails(placeID);
+    return locationRepositoryInterface.getPlaceDetails(placeID);
   }
 
   @override
@@ -36,6 +36,4 @@ class LocationService implements LocationServiceInterface{
   Future storeLastLocationApi(String lat, String lng, String zoneID) {
     return locationRepositoryInterface.storeLastLocationApi(lat, lng, zoneID);
   }
-
-
 }

@@ -55,7 +55,9 @@ class DriverHeaderInfoWidget extends StatelessWidget {
                         BorderRadius.circular(Dimensions.paddingSizeExtraLarge),
                     boxShadow: [
                       BoxShadow(
-                          color: Theme.of(context).hintColor.withValues(alpha: .25),
+                          color: Theme.of(context)
+                              .hintColor
+                              .withValues(alpha: .25),
                           blurRadius: 1,
                           spreadRadius: 1,
                           offset: const Offset(0, 1))

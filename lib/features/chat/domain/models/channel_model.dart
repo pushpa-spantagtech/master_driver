@@ -6,15 +6,14 @@ class ChannelModel {
   String? offset;
   List<Data>? data;
 
-
-  ChannelModel(
-      {this.responseCode,
-        this.message,
-        this.totalSize,
-        this.limit,
-        this.offset,
-        this.data,
-      });
+  ChannelModel({
+    this.responseCode,
+    this.message,
+    this.totalSize,
+    this.limit,
+    this.offset,
+    this.data,
+  });
 
   ChannelModel.fromJson(Map<String, dynamic> json) {
     responseCode = json['response_code'];
@@ -29,7 +28,6 @@ class ChannelModel {
       });
     }
   }
-
 }
 
 class Data {
@@ -40,7 +38,12 @@ class Data {
   List<ChannelUsers>? channelUsers;
   LastChannelConversations? lastChannelConversations;
 
-  Data({this.id, this.updatedAt, this.channelUsers, this.lastChannelConversations,});
+  Data({
+    this.id,
+    this.updatedAt,
+    this.channelUsers,
+    this.lastChannelConversations,
+  });
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -54,11 +57,9 @@ class Data {
       });
     }
     lastChannelConversations = json['last_channel_conversations'] != null
-        ? LastChannelConversations.fromJson(
-        json['last_channel_conversations'])
+        ? LastChannelConversations.fromJson(json['last_channel_conversations'])
         : null;
   }
-
 }
 
 class ChannelUsers {
@@ -71,11 +72,11 @@ class ChannelUsers {
 
   ChannelUsers(
       {this.id,
-        this.channelId,
-        this.userId,
-        this.isRead,
-        this.updatedAt,
-        this.user});
+      this.channelId,
+      this.userId,
+      this.isRead,
+      this.updatedAt,
+      this.user});
 
   ChannelUsers.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -85,7 +86,6 @@ class ChannelUsers {
     updatedAt = json['updated_at'];
     user = json['user'] != null ? User.fromJson(json['user']) : null;
   }
-
 }
 
 class User {
@@ -99,13 +99,12 @@ class User {
 
   User(
       {this.id,
-        this.firstName,
-        this.lastName,
-        this.email,
-        this.phone,
-        this.profileImage,
-        this.userType
-        });
+      this.firstName,
+      this.lastName,
+      this.email,
+      this.phone,
+      this.profileImage,
+      this.userType});
 
   User.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -115,20 +114,17 @@ class User {
     phone = json['phone'];
     profileImage = json['profile_image'];
     userType = json['user_type'];
-
   }
-
 }
+
 class LastChannelConversations {
+  String? message;
 
-
-   String? message;
   LastChannelConversations({
     this.message,
-
   });
 
-  LastChannelConversations.fromJson(Map<String, dynamic> json){
+  LastChannelConversations.fromJson(Map<String, dynamic> json) {
     message = json['message'];
   }
 }

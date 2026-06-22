@@ -4,11 +4,7 @@ class OngoingTripModel {
   String? responseCode;
   List<TripDetail>? data;
 
-
-  OngoingTripModel(
-      {this.responseCode,
-        this.data
-      });
+  OngoingTripModel({this.responseCode, this.data});
 
   OngoingTripModel.fromJson(Map<String, dynamic> json) {
     responseCode = json['response_code'];
@@ -19,6 +15,4 @@ class OngoingTripModel {
       });
     }
   }
-
 }
-

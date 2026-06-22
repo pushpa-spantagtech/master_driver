@@ -50,7 +50,6 @@ class LocationController extends GetxController implements GetxService {
       {bool isAnimate = true,
       GoogleMapController? mapController,
       bool callZone = true}) async {
-
     bool isSuccess = await checkPermission(() {});
     if (isSuccess) {
       try {

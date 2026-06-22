@@ -4,10 +4,12 @@ import 'package:ride_sharing_user_app/features/splash/domain/repositories/splash
 import 'package:ride_sharing_user_app/util/app_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class SplashRepository implements SplashRepositoryInterface{
+class SplashRepository implements SplashRepositoryInterface {
   final ApiClient apiClient;
   final SharedPreferences sharedPreferences;
-  const SplashRepository({required this.apiClient, required this.sharedPreferences});
+
+  const SplashRepository(
+      {required this.apiClient, required this.sharedPreferences});
 
   @override
   Future<Response> getConfigData() {
@@ -16,14 +18,16 @@ class SplashRepository implements SplashRepositoryInterface{
 
   @override
   Future<bool> initSharedData() {
-    if(!sharedPreferences.containsKey(AppConstants.theme)) {
+    if (!sharedPreferences.containsKey(AppConstants.theme)) {
       return sharedPreferences.setBool(AppConstants.theme, false);
     }
-    if(!sharedPreferences.containsKey(AppConstants.countryCode)) {
-      return sharedPreferences.setString(AppConstants.countryCode, AppConstants.languages[0].countryCode);
+    if (!sharedPreferences.containsKey(AppConstants.countryCode)) {
+      return sharedPreferences.setString(
+          AppConstants.countryCode, AppConstants.languages[0].countryCode);
     }
-    if(!sharedPreferences.containsKey(AppConstants.languageCode)) {
-      return sharedPreferences.setString(AppConstants.languageCode, AppConstants.languages[0].languageCode);
+    if (!sharedPreferences.containsKey(AppConstants.languageCode)) {
+      return sharedPreferences.setString(
+          AppConstants.languageCode, AppConstants.languages[0].languageCode);
     }
 
     return Future.value(true);
@@ -65,13 +69,12 @@ class SplashRepository implements SplashRepositoryInterface{
   }
 
   @override
-  bool haveOngoingRides(){
+  bool haveOngoingRides() {
     return sharedPreferences.getBool(AppConstants.haveOngoingRides) ?? false;
   }
 
   @override
   void saveOngoingRides(bool value) {
-     sharedPreferences.setBool(AppConstants.haveOngoingRides, value);
+    sharedPreferences.setBool(AppConstants.haveOngoingRides, value);
   }
-
 }

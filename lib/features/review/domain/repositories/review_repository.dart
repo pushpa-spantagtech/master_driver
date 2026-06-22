@@ -3,31 +3,28 @@ import 'package:ride_sharing_user_app/data/api_client.dart';
 import 'package:ride_sharing_user_app/features/review/domain/repositories/review_repository_interface.dart';
 import 'package:ride_sharing_user_app/util/app_constants.dart';
 
-class ReviewRepository implements ReviewRepositoryInterface{
+class ReviewRepository implements ReviewRepositoryInterface {
   final ApiClient apiClient;
 
   ReviewRepository({required this.apiClient});
 
-
   @override
-  Future<Response> getSavedReviewList(int offset, int isSaved ) async {
-    return await apiClient.getData('${AppConstants.reviewList}$offset&is_saved=$isSaved');
+  Future<Response> getSavedReviewList(int offset, int isSaved) async {
+    return await apiClient
+        .getData('${AppConstants.reviewList}$offset&is_saved=$isSaved');
   }
 
   @override
-  Future<Response> savedReview(String id ) async {
-    return await apiClient.postData('${AppConstants.saveReview}$id',{
-      "_method" : 'put',
+  Future<Response> savedReview(String id) async {
+    return await apiClient.postData('${AppConstants.saveReview}$id', {
+      "_method": 'put',
     });
   }
 
   @override
-  Future<Response> submitReview(String id, int ratting, String comment ) async {
-    return await apiClient.postData(AppConstants.submitReview,{
-      "ride_request_id" : id,
-      "rating" : ratting,
-      "feedback" : comment
-    });
+  Future<Response> submitReview(String id, int ratting, String comment) async {
+    return await apiClient.postData(AppConstants.submitReview,
+        {"ride_request_id": id, "rating": ratting, "feedback": comment});
   }
 
   @override
@@ -49,7 +46,7 @@ class ReviewRepository implements ReviewRepositoryInterface{
   }
 
   @override
-  Future getList({int? offset = 1}) async{
+  Future getList({int? offset = 1}) async {
     return await apiClient.getData('${AppConstants.reviewList}$offset');
   }
 
@@ -58,6 +55,4 @@ class ReviewRepository implements ReviewRepositoryInterface{
     // TODO: implement update
     throw UnimplementedError();
   }
-
-
 }

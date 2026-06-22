@@ -16,6 +16,7 @@ import '../screens/payment_received_screen.dart';
 
 class TripCard extends StatelessWidget {
   final TripDetail tripModel;
+
   const TripCard({super.key, required this.tripModel});
 
   @override
@@ -133,7 +134,9 @@ class TripCard extends StatelessWidget {
                         DateConverter.isoStringToDateTimeString(
                             tripModel.createdAt!),
                         style: textRegular.copyWith(
-                          color: Theme.of(context).hintColor.withValues(alpha: .85),
+                          color: Theme.of(context)
+                              .hintColor
+                              .withValues(alpha: .85),
                           fontSize: Dimensions.fontSizeSmall,
                         ),
                       ),

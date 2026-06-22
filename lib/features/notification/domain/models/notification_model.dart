@@ -6,15 +6,14 @@ class NotificationsModel {
   String? offset;
   List<Notifications>? data;
 
-
-  NotificationsModel(
-      {this.responseCode,
-        this.message,
-        this.totalSize,
-        this.limit,
-        this.offset,
-        this.data,
-        });
+  NotificationsModel({
+    this.responseCode,
+    this.message,
+    this.totalSize,
+    this.limit,
+    this.offset,
+    this.data,
+  });
 
   NotificationsModel.fromJson(Map<String, dynamic> json) {
     responseCode = json['response_code'];
@@ -28,9 +27,7 @@ class NotificationsModel {
         data!.add(Notifications.fromJson(v));
       });
     }
-
   }
-
 }
 
 class Notifications {
@@ -45,13 +42,13 @@ class Notifications {
 
   Notifications(
       {this.id,
-        this.userId,
-        this.rideRequestId,
-        this.title,
-        this.description,
-        this.type,
-        this.action,
-        this.createdAt});
+      this.userId,
+      this.rideRequestId,
+      this.title,
+      this.description,
+      this.type,
+      this.action,
+      this.createdAt});
 
   Notifications.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -63,6 +60,4 @@ class Notifications {
     action = json['action'];
     createdAt = json['created_at'];
   }
-
-
 }

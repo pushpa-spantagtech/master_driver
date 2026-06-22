@@ -9,7 +9,9 @@ class RouteHelper {
   static const String home = '/home';
 
   static getInitialRoute() => initial;
+
   static getSplashRoute() => splash;
+
   static getHomeRoute() => home;
 
   static List<GetPage> routes = [

@@ -61,7 +61,6 @@ class NotificationHelper {
     );
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-
       AndroidInitializationSettings androidInitialize =
           const AndroidInitializationSettings('notification_icon');
       var iOSInitialize = const DarwinInitializationSettings();

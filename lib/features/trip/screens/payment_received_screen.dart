@@ -198,9 +198,7 @@ class PaymentReceivedScreen extends StatelessWidget {
                               child: Text(
                                 PriceConverter.convertPrice(
                                     context,
-                                    finalFareController.finalFare?.actualFare ??
-                                        finalFareController
-                                            .finalFare?.distanceWiseFare ??
+                                    finalFareController.finalFare?.paidFare ??
                                         0),
                                 style: textBold.copyWith(
                                   color:
@@ -368,10 +366,7 @@ class PaymentReceivedScreen extends StatelessWidget {
                             PaymentItemInfoWidget(
                               title: 'sub_total'.tr,
                               amount:
-                                  finalFareController.finalFare?.actualFare ??
-                                      finalFareController
-                                          .finalFare?.distanceWiseFare ??
-                                      0,
+                                  finalFareController.finalFare?.paidFare ?? 0,
                               isSubTotal: true,
                             ),
                           ]),

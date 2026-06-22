@@ -63,7 +63,9 @@ class _AddPaymentInfoScreenState extends State<AddPaymentInfoScreen> {
                             BorderRadius.circular(Dimensions.paddingSizeOver),
                         borderSide: BorderSide(
                           width: 0.5,
-                          color: Theme.of(context).hintColor.withValues(alpha: 0.25),
+                          color: Theme.of(context)
+                              .hintColor
+                              .withValues(alpha: 0.25),
                         ),
                       ),
                       focusedBorder: OutlineInputBorder(
@@ -71,7 +73,9 @@ class _AddPaymentInfoScreenState extends State<AddPaymentInfoScreen> {
                             BorderRadius.circular(Dimensions.paddingSizeOver),
                         borderSide: BorderSide(
                           width: 0.5,
-                          color: Theme.of(context).hintColor.withValues(alpha: 0.25),
+                          color: Theme.of(context)
+                              .hintColor
+                              .withValues(alpha: 0.25),
                         ),
                       ),
                       hintText: 'personal_account'.tr,

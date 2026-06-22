@@ -1,5 +1,4 @@
-
-class RewardModel{
+class RewardModel {
   final String title;
   final double? amount;
   final String image;

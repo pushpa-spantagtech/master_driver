@@ -220,7 +220,9 @@ class ProfileEditScreenState extends State<ProfileEditScreen>
                       borderRadius: BorderRadius.circular(50),
                       border: Border.all(
                           width: .5,
-                          color: Theme.of(context).hintColor.withValues(alpha: .7))),
+                          color: Theme.of(context)
+                              .hintColor
+                              .withValues(alpha: .7))),
                   child: DropdownButton<String>(
                     hint: authController.identityType == ''
                         ? Text('select_identity_type'.tr)
@@ -485,8 +487,9 @@ class ProfileEditScreenState extends State<ProfileEditScreen>
                         BoxShadow(
                             blurRadius: 5,
                             spreadRadius: 5,
-                            color:
-                                Theme.of(context).hintColor.withValues(alpha: .125),
+                            color: Theme.of(context)
+                                .hintColor
+                                .withValues(alpha: .125),
                             offset: const Offset(1, 0))
                       ]),
                   child: ButtonWidget(

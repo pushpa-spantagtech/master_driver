@@ -4,7 +4,7 @@ import 'package:ride_sharing_user_app/data/api_client.dart';
 import 'package:ride_sharing_user_app/features/wallet/domain/repositories/wallet_repository_interface.dart';
 import 'package:ride_sharing_user_app/util/app_constants.dart';
 
-class WalletRepository implements WalletRepositoryInterface{
+class WalletRepository implements WalletRepositoryInterface {
   final ApiClient apiClient;
 
   WalletRepository({required this.apiClient});
@@ -16,14 +16,14 @@ class WalletRepository implements WalletRepositoryInterface{
 
   @override
   Future<Response?> getLoyaltyPointList(int offset) async {
-    return await apiClient.getData('${AppConstants.loyaltyPointListUri}$offset');
+    return await apiClient
+        .getData('${AppConstants.loyaltyPointListUri}$offset');
   }
 
   @override
   Future<Response?> convertPoint(String point) async {
-    return await apiClient.postData(AppConstants.pointConvert,{
-      'points' : point
-    });
+    return await apiClient
+        .postData(AppConstants.pointConvert, {'points': point});
   }
 
   @override
@@ -32,18 +32,18 @@ class WalletRepository implements WalletRepositoryInterface{
   }
 
   @override
-  Future<Response?> getWithdrawMethodInfoList(int offset) async{
-    return await apiClient.getData('${AppConstants.getWithdrawMethodInfoList}$offset');
+  Future<Response?> getWithdrawMethodInfoList(int offset) async {
+    return await apiClient
+        .getData('${AppConstants.getWithdrawMethodInfoList}$offset');
   }
 
   @override
-  Future<Response?> createWithdrawMethodInfo(List <String> typeKey, List<String> typeValue,int id) async{
+  Future<Response?> createWithdrawMethodInfo(
+      List<String> typeKey, List<String> typeValue, int id) async {
     Map<String, String> fields = {};
 
-    for(var i = 0; i < typeKey.length; i++){
-      fields.addAll(<String, String>{
-        typeKey[i] : typeValue[i]
-      });
+    for (var i = 0; i < typeKey.length; i++) {
+      fields.addAll(<String, String>{typeKey[i]: typeValue[i]});
       if (kDebugMode) {
         print('--here is type key =${typeKey.toList()}/${typeValue.toList()}');
       }
@@ -52,20 +52,19 @@ class WalletRepository implements WalletRepositoryInterface{
       'withdraw_method': id.toString(),
     });
 
-    Response response = await apiClient.postData(
-        AppConstants.withdrawMethodCreate, fields);
+    Response response =
+        await apiClient.postData(AppConstants.withdrawMethodCreate, fields);
 
     return response;
   }
 
   @override
-  Future<Response?> updateWithdrawMethodInfo(List <String> typeKey, List<String> typeValue,int methodId, String methodInfoId) async{
+  Future<Response?> updateWithdrawMethodInfo(List<String> typeKey,
+      List<String> typeValue, int methodId, String methodInfoId) async {
     Map<String, String> fields = {};
 
-    for(var i = 0; i < typeKey.length; i++){
-      fields.addAll(<String, String>{
-        typeKey[i] : typeValue[i]
-      });
+    for (var i = 0; i < typeKey.length; i++) {
+      fields.addAll(<String, String>{typeKey[i]: typeValue[i]});
       if (kDebugMode) {
         print('--here is type key =${typeKey.toList()}/${typeValue.toList()}');
       }
@@ -81,57 +80,56 @@ class WalletRepository implements WalletRepositoryInterface{
   }
 
   @override
-  Future<Response?> deleteWithdrawMethodInfo(String methodId) async{
-    Response response = await apiClient.postData(
-        '${AppConstants.withdrawMethodDelete}$methodId',{});
+  Future<Response?> deleteWithdrawMethodInfo(String methodId) async {
+    Response response = await apiClient
+        .postData('${AppConstants.withdrawMethodDelete}$methodId', {});
 
     return response;
   }
 
   @override
-  Future<Response?> withdrawBalance(List <String> typeKey, List<String> typeValue,int id, String balance, String note) async {
+  Future<Response?> withdrawBalance(List<String> typeKey,
+      List<String> typeValue, int id, String balance, String note) async {
+    Map<String, String> fields = {};
 
-      Map<String, String> fields = {};
-
-      for(var i = 0; i < typeKey.length; i++){
-        fields.addAll(<String, String>{
-          typeKey[i] : typeValue[i]
-        });
-        if (kDebugMode) {
-          print('--here is type key =${typeKey.toList()}/${typeValue.toList()}');
-        }
+    for (var i = 0; i < typeKey.length; i++) {
+      fields.addAll(<String, String>{typeKey[i]: typeValue[i]});
+      if (kDebugMode) {
+        print('--here is type key =${typeKey.toList()}/${typeValue.toList()}');
       }
-      fields.addAll(<String, String>{
-        'amount': balance,
-        'withdraw_method': id.toString(),
-        'note': note
-      });
+    }
+    fields.addAll(<String, String>{
+      'amount': balance,
+      'withdraw_method': id.toString(),
+      'note': note
+    });
 
-      Response response = await apiClient.postData(
-          AppConstants.withdrawRequestUri, fields);
+    Response response =
+        await apiClient.postData(AppConstants.withdrawRequestUri, fields);
 
-      return response;
-
+    return response;
   }
 
   @override
-  Future<Response> getIncomeStatement(int offset) async{
+  Future<Response> getIncomeStatement(int offset) async {
     return await apiClient.getData('${AppConstants.incomeStatementUri}$offset');
   }
 
   @override
-  Future<Response> getPayableHistoryList(int offset) async{
+  Future<Response> getPayableHistoryList(int offset) async {
     return await apiClient.getData('${AppConstants.payableListUri}$offset');
   }
 
   @override
-  Future<Response> getWithdrawPendingList(int offset) async{
-    return await apiClient.getData('${AppConstants.withdrawPendingListUri}$offset');
+  Future<Response> getWithdrawPendingList(int offset) async {
+    return await apiClient
+        .getData('${AppConstants.withdrawPendingListUri}$offset');
   }
 
   @override
-  Future<Response> getWithdrawSettledList(int offset) async{
-    return await apiClient.getData('${AppConstants.withdrawSettledListUri}$offset');
+  Future<Response> getWithdrawSettledList(int offset) async {
+    return await apiClient
+        .getData('${AppConstants.withdrawSettledListUri}$offset');
   }
 
   @override
@@ -168,6 +166,4 @@ class WalletRepository implements WalletRepositoryInterface{
   Future<Response> getWalletHistoryList(int offset) async {
     return await apiClient.getData('${AppConstants.walletListUri}$offset');
   }
-
-
 }

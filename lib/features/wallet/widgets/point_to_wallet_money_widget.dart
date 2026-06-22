@@ -55,7 +55,8 @@ class _PointToWalletMoneyWidgetState extends State<PointToWalletMoneyWidget> {
                     onTap: () => Get.back(),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Theme.of(context).hintColor.withValues(alpha: 0.2),
+                        color:
+                            Theme.of(context).hintColor.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(50),
                       ),
                       padding: const EdgeInsets.all(
@@ -108,11 +109,14 @@ class _PointToWalletMoneyWidgetState extends State<PointToWalletMoneyWidget> {
                   enabledBorder: UnderlineInputBorder(
                       borderSide: BorderSide(
                           width: 0.5,
-                          color: Theme.of(context).hintColor.withValues(alpha: 0.0))),
+                          color: Theme.of(context)
+                              .hintColor
+                              .withValues(alpha: 0.0))),
                   focusedBorder: UnderlineInputBorder(
                     borderSide: BorderSide(
                         width: 0.5,
-                        color: Theme.of(context).hintColor.withValues(alpha: 0.0)),
+                        color:
+                            Theme.of(context).hintColor.withValues(alpha: 0.0)),
                   ),
                 ),
                 style: textBold.copyWith(
@@ -129,7 +133,8 @@ class _PointToWalletMoneyWidgetState extends State<PointToWalletMoneyWidget> {
                   setState(() {});
                 },
               )),
-              Divider(color: Theme.of(context).primaryColor.withValues(alpha: .25)),
+              Divider(
+                  color: Theme.of(context).primaryColor.withValues(alpha: .25)),
               Padding(
                 padding: const EdgeInsets.only(
                   top: Dimensions.paddingSizeSmall,

@@ -122,7 +122,9 @@ class PendingWithdrawnBottomsheetWidget extends StatelessWidget {
                               ? pendingSettleInfo.approvalNote ?? ''
                               : pendingSettleInfo.deniedNote ?? '',
                       style: textMedium.copyWith(
-                          color: Theme.of(context).hintColor.withValues(alpha: 0.75)),
+                          color: Theme.of(context)
+                              .hintColor
+                              .withValues(alpha: 0.75)),
                     ))
                   ]),
                 ]

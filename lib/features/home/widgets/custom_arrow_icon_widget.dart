@@ -6,6 +6,7 @@ class CustomArrowIconWidget extends StatelessWidget {
   final Color iconColor;
   final IconData icon;
   final Function()? onTap;
+
   const CustomArrowIconWidget(
       {super.key,
       required this.color,

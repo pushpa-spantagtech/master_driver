@@ -2,11 +2,10 @@ import 'package:ride_sharing_user_app/data/api_client.dart';
 import 'package:ride_sharing_user_app/features/notification/domain/repositories/notification_repository_interface.dart';
 import 'package:ride_sharing_user_app/util/app_constants.dart';
 
-class NotificationRepository implements NotificationRepositoryInterface{
+class NotificationRepository implements NotificationRepositoryInterface {
   final ApiClient apiClient;
 
   NotificationRepository({required this.apiClient});
-
 
   @override
   Future add(value) {
@@ -27,7 +26,7 @@ class NotificationRepository implements NotificationRepositoryInterface{
   }
 
   @override
-  Future getList({int? offset = 1}) async{
+  Future getList({int? offset = 1}) async {
     return await apiClient.getData('${AppConstants.notificationList}$offset');
   }
 
@@ -36,5 +35,4 @@ class NotificationRepository implements NotificationRepositoryInterface{
     // TODO: implement update
     throw UnimplementedError();
   }
-
 }

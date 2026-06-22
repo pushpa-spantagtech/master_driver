@@ -1,5 +1,4 @@
 abstract class RepositoryInterface<T> {
-
   Future<dynamic> add(T value);
 
   Future<dynamic> update(Map<String, dynamic> body, int id);

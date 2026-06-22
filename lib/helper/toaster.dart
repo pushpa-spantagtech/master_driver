@@ -3,13 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 void customPrint(String message) {
-  if(kDebugMode) {
+  if (kDebugMode) {
     print(message);
   }
 }
 
 void showCustomToaster(String message, {bool isError = true}) {
-
   Fluttertoast.showToast(
       msg: message,
       toastLength: Toast.LENGTH_SHORT,
@@ -17,7 +16,5 @@ void showCustomToaster(String message, {bool isError = true}) {
       timeInSecForIosWeb: 1,
       backgroundColor: Colors.red,
       textColor: Colors.white,
-      fontSize: 14.0
-    );
-
+      fontSize: 14.0);
 }

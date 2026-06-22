@@ -6,15 +6,13 @@ class ReviewModel {
   String? offset;
   List<Review>? data;
 
-
   ReviewModel(
       {this.responseCode,
-        this.message,
-        this.totalSize,
-        this.limit,
-        this.offset,
-        this.data
-      });
+      this.message,
+      this.totalSize,
+      this.limit,
+      this.offset,
+      this.data});
 
   ReviewModel.fromJson(Map<String, dynamic> json) {
     responseCode = json['response_code'];
@@ -29,7 +27,6 @@ class ReviewModel {
       });
     }
   }
-
 }
 
 class Review {
@@ -44,23 +41,19 @@ class Review {
   String? tripRefId;
   bool? isLoading;
 
-
   Review(
-      {
-        this.id,
-        this.tripRequestId,
-        this.givenUser,
-        this.tripType,
-        this.rating,
-        this.feedback,
-        this.isSaved,
-        this.createdAt,
-        this.tripRefId,
-        this.isLoading
-      });
+      {this.id,
+      this.tripRequestId,
+      this.givenUser,
+      this.tripType,
+      this.rating,
+      this.feedback,
+      this.isSaved,
+      this.createdAt,
+      this.tripRefId,
+      this.isLoading});
 
   Review.fromJson(Map<String, dynamic> json) {
-
     id = json['id'];
     tripRequestId = json['trip_request_id'];
     givenUser = json['given_user'] != null
@@ -74,8 +67,6 @@ class Review {
     tripRefId = json['trip_ref_id'];
     isLoading = false;
   }
-
-
 }
 
 class GivenUser {
@@ -85,14 +76,8 @@ class GivenUser {
   String? phone;
   String? profileImage;
 
-
   GivenUser(
-      {this.id,
-        this.firstName,
-        this.lastName,
-        this.phone,
-        this.profileImage
-      });
+      {this.id, this.firstName, this.lastName, this.phone, this.profileImage});
 
   GivenUser.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -101,5 +86,4 @@ class GivenUser {
     phone = json['phone'];
     profileImage = json['profile_image'];
   }
-
 }

@@ -30,7 +30,6 @@ class EndTripWidget extends StatelessWidget {
                     color: Theme.of(context).colorScheme.primary,
                   ))),
           Padding(
-
               padding: const EdgeInsets.symmetric(
                   vertical: Dimensions.paddingSizeDefault),
               child: Text.rich(TextSpan(children: [

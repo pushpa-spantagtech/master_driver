@@ -54,37 +54,36 @@ class DefaultFirebaseOptions {
     measurementId: 'G-D9TG1W0H39',
   );
 
-
   static const FirebaseOptions android = FirebaseOptions(
-          apiKey: "AIzaSyCXVXrIe7LiCF3LxwWr4MsJAOw6DR3JELU",
-          appId: "1:359401287585:android:54798be802dfe3c67125e0",
-          messagingSenderId: "359401287585",
-          projectId: "stephen-cab-driver",
+    apiKey: "AIzaSyCXVXrIe7LiCF3LxwWr4MsJAOw6DR3JELU",
+    appId: "1:359401287585:android:54798be802dfe3c67125e0",
+    messagingSenderId: "359401287585",
+    projectId: "stephen-cab-driver",
     databaseURL: 'https://stephen-cab-e0192-default-rtdb.firebaseio.com',
     storageBucket: 'stephen-cab-driver.firebasestorage.app',
   );
 
-  // static const FirebaseOptions ios = FirebaseOptions(
-  //   apiKey: 'AIzaSyDjxRDIuTc6ErANoftU-FtgLBSUxMlLCeA',
-  //   appId: '1:1000163153346:ios:012d27ec8b417b2706b25b',
-  //   messagingSenderId: '1000163153346',
-  //   projectId: 'ammart-8885e',
-  //   databaseURL: 'https://ammart-8885e-default-rtdb.firebaseio.com',
-  //   storageBucket: 'ammart-8885e.appspot.com',
-  //   androidClientId: '1000163153346-8h3825qftiorhelafakqhl559fubeteb.apps.googleusercontent.com',
-  //   iosClientId: '1000163153346-mu5bujn5d21bt3vkii5lel4ihml97qmj.apps.googleusercontent.com',
-  //   iosBundleId: 'com.sixamtech.ridesharinguser.rideSharingUserApp',
-  // );
+// static const FirebaseOptions ios = FirebaseOptions(
+//   apiKey: 'AIzaSyDjxRDIuTc6ErANoftU-FtgLBSUxMlLCeA',
+//   appId: '1:1000163153346:ios:012d27ec8b417b2706b25b',
+//   messagingSenderId: '1000163153346',
+//   projectId: 'ammart-8885e',
+//   databaseURL: 'https://ammart-8885e-default-rtdb.firebaseio.com',
+//   storageBucket: 'ammart-8885e.appspot.com',
+//   androidClientId: '1000163153346-8h3825qftiorhelafakqhl559fubeteb.apps.googleusercontent.com',
+//   iosClientId: '1000163153346-mu5bujn5d21bt3vkii5lel4ihml97qmj.apps.googleusercontent.com',
+//   iosBundleId: 'com.sixamtech.ridesharinguser.rideSharingUserApp',
+// );
 
-  // static const FirebaseOptions macos = FirebaseOptions(
-  //   apiKey: 'AIzaSyDjxRDIuTc6ErANoftU-FtgLBSUxMlLCeA',
-  //   appId: '1:1000163153346:ios:012d27ec8b417b2706b25b',
-  //   messagingSenderId: '1000163153346',
-  //   projectId: 'ammart-8885e',
-  //   databaseURL: 'https://ammart-8885e-default-rtdb.firebaseio.com',
-  //   storageBucket: 'ammart-8885e.appspot.com',
-  //   androidClientId: '1000163153346-8h3825qftiorhelafakqhl559fubeteb.apps.googleusercontent.com',
-  //   iosClientId: '1000163153346-mu5bujn5d21bt3vkii5lel4ihml97qmj.apps.googleusercontent.com',
-  //   iosBundleId: 'com.sixamtech.ridesharinguser.rideSharingUserApp',
-  // );
+// static const FirebaseOptions macos = FirebaseOptions(
+//   apiKey: 'AIzaSyDjxRDIuTc6ErANoftU-FtgLBSUxMlLCeA',
+//   appId: '1:1000163153346:ios:012d27ec8b417b2706b25b',
+//   messagingSenderId: '1000163153346',
+//   projectId: 'ammart-8885e',
+//   databaseURL: 'https://ammart-8885e-default-rtdb.firebaseio.com',
+//   storageBucket: 'ammart-8885e.appspot.com',
+//   androidClientId: '1000163153346-8h3825qftiorhelafakqhl559fubeteb.apps.googleusercontent.com',
+//   iosClientId: '1000163153346-mu5bujn5d21bt3vkii5lel4ihml97qmj.apps.googleusercontent.com',
+//   iosBundleId: 'com.sixamtech.ridesharinguser.rideSharingUserApp',
+// );
 }

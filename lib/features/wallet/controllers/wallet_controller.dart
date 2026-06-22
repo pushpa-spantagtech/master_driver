@@ -15,17 +15,34 @@ import 'package:ride_sharing_user_app/features/wallet/domain/models/loyalty_poin
 import 'package:ride_sharing_user_app/features/wallet/domain/models/transaction_model.dart';
 import 'package:ride_sharing_user_app/features/wallet/domain/models/withdraw_model.dart';
 
-
 class WalletController extends GetxController implements GetxService {
   final WalletServiceInterface walletServiceInterface;
 
   WalletController({required this.walletServiceInterface});
 
-
-  List<String> walletTypeList = ['wallet_money', 'my_point', 'income_statements'];
-  List<String> walletFilterType = ['select', 'today', 'this_month', 'this_year'];
-  List<String> walletTransactionType = ['select', 'pending', 'withdrawn', 'cancelled'];
-  List<String> selectedFilterType = ['select', 'today', 'this_month', 'this_year'];
+  List<String> walletTypeList = [
+    'wallet_money',
+    'my_point',
+    'income_statements'
+  ];
+  List<String> walletFilterType = [
+    'select',
+    'today',
+    'this_month',
+    'this_year'
+  ];
+  List<String> walletTransactionType = [
+    'select',
+    'pending',
+    'withdrawn',
+    'cancelled'
+  ];
+  List<String> selectedFilterType = [
+    'select',
+    'today',
+    'this_month',
+    'this_year'
+  ];
   int _walletTypeIndex = 0;
 
   int get walletTypeIndex => _walletTypeIndex;
@@ -41,7 +58,7 @@ class WalletController extends GetxController implements GetxService {
   bool validityCheck = false;
   TextEditingController amountController = TextEditingController();
   TextEditingController noteController = TextEditingController();
-  List <String> keyList = [];
+  List<String> keyList = [];
   WithdrawMethodInfoData? withdrawMethodInfoData;
   SingleMethodInfo? selectedMethodInfo;
   bool isHindShow = true;
@@ -53,20 +70,20 @@ class WalletController extends GetxController implements GetxService {
   int selectedHistoryIndex = 1;
 
   void setSelectedHistoryIndex(int index, bool notify) {
-      selectedHistoryIndex = index;
-      pendingSettledWithdrawModel = null;
-      if (notify) {
-        update();
-      }
-      if (index == 1) {
-        getWithdrawPendingList(1);
-      } else if(index == 2){
-        getWithdrawSettledList(1);
-      }else if(index == 3){
-        getPayableHistoryList(1);
-      }else{
-        getWalletHistoryList(1);
-      }
+    selectedHistoryIndex = index;
+    pendingSettledWithdrawModel = null;
+    if (notify) {
+      update();
+    }
+    if (index == 1) {
+      getWithdrawPendingList(1);
+    } else if (index == 2) {
+      getWithdrawSettledList(1);
+    } else if (index == 3) {
+      getPayableHistoryList(1);
+    } else {
+      getWalletHistoryList(1);
+    }
   }
 
   void toggleMethodSelected(bool action) {
@@ -85,7 +102,6 @@ class WalletController extends GetxController implements GetxService {
       update();
     }
   }
-
 
   void setMethodInfoTypeIndex(SingleMethodInfo methodInfo) {
     selectedMethodInfo = methodInfo;
@@ -119,20 +135,18 @@ class WalletController extends GetxController implements GetxService {
   Future<Response> getLoyaltyPointList(int offset) async {
     isLoading = true;
     // update();
-    Response? response = await walletServiceInterface.getLoyaltyPointList(offset);
+    Response? response =
+        await walletServiceInterface.getLoyaltyPointList(offset);
     if (response!.statusCode == 200) {
       if (offset == 1) {
         loyaltyPointModel = LoyaltyPointModel.fromJson(response.body);
       } else {
-        loyaltyPointModel!.data!.addAll(LoyaltyPointModel
-            .fromJson(response.body)
-            .data!);
-        loyaltyPointModel!.offset = LoyaltyPointModel
-            .fromJson(response.body)
-            .offset;
-        loyaltyPointModel!.totalSize = LoyaltyPointModel
-            .fromJson(response.body)
-            .totalSize;
+        loyaltyPointModel!.data!
+            .addAll(LoyaltyPointModel.fromJson(response.body).data!);
+        loyaltyPointModel!.offset =
+            LoyaltyPointModel.fromJson(response.body).offset;
+        loyaltyPointModel!.totalSize =
+            LoyaltyPointModel.fromJson(response.body).totalSize;
       }
       isLoading = false;
     } else {
@@ -142,8 +156,6 @@ class WalletController extends GetxController implements GetxService {
     update();
     return response;
   }
-
-
 
   Future<Response> convertPoint(String point) async {
     isLoading = true;
@@ -161,7 +173,6 @@ class WalletController extends GetxController implements GetxService {
     return response;
   }
 
-
   void getInputFieldList() {
     inputFieldControllerList = [];
     if (methodList.isNotEmpty && selectedMethod != null) {
@@ -176,7 +187,6 @@ class WalletController extends GetxController implements GetxService {
     selectedIndex = index;
     update();
   }
-
 
   void setMethodTypeIndex(Withdraw withdraw, {bool notify = true}) {
     selectedMethod = withdraw;
@@ -194,11 +204,10 @@ class WalletController extends GetxController implements GetxService {
 
   Future<void> getWithdrawMethods() async {
     methodList = [];
-    Response? response = await walletServiceInterface.getDynamicWithdrawMethodList();
+    Response? response =
+        await walletServiceInterface.getDynamicWithdrawMethodList();
     if (response!.statusCode == 200) {
-      methodList.addAll(WithdrawModel
-          .fromJson(response.body)
-          .data!);
+      methodList.addAll(WithdrawModel.fromJson(response.body).data!);
       getInputFieldList();
       for (int index = 0; index < methodList.length; index++) {
         if (methodList[index].isDefault!) {
@@ -221,7 +230,6 @@ class WalletController extends GetxController implements GetxService {
       inputValueList.add(selectedMethodInfo!.methodInfo![i].value!);
     }
 
-
     Response? response = await walletServiceInterface.withdrawBalance(
       keyList,
       inputValueList,
@@ -236,12 +244,13 @@ class WalletController extends GetxController implements GetxService {
       inputFieldControllerList.clear();
       getWithdrawPendingList(1);
       isLoading = false;
-      showDialog(barrierDismissible: false,
-        context: Get.context!, builder: (_) => const WithdrawSuccessfulDialogWidget(),
+      showDialog(
+        barrierDismissible: false,
+        context: Get.context!,
+        builder: (_) => const WithdrawSuccessfulDialogWidget(),
       );
       Get.find<ProfileController>().getProfileInfo();
-    }
-    else {
+    } else {
       isLoading = false;
       ApiChecker.checkApi(response);
     }
@@ -251,22 +260,20 @@ class WalletController extends GetxController implements GetxService {
   }
 
   Future<void> getWithdrawMethodInfoList(int offset) async {
-    Response response = await walletServiceInterface.getWithdrawMethodInfoList(offset);
+    Response response =
+        await walletServiceInterface.getWithdrawMethodInfoList(offset);
     if (response.statusCode == 200) {
       if (offset == 1) {
         withdrawMethodInfoData = WithdrawMethodInfoData.fromJson(response.body);
       } else {
-        withdrawMethodInfoData?.totalSize = WithdrawMethodInfoData
-            .fromJson(response.body)
-            .totalSize;
-        withdrawMethodInfoData?.offset = WithdrawMethodInfoData
-            .fromJson(response.body)
-            .offset;
-        withdrawMethodInfoData?.data?.addAll(WithdrawMethodInfoData
-            .fromJson(response.body)
-            .data!);
+        withdrawMethodInfoData?.totalSize =
+            WithdrawMethodInfoData.fromJson(response.body).totalSize;
+        withdrawMethodInfoData?.offset =
+            WithdrawMethodInfoData.fromJson(response.body).offset;
+        withdrawMethodInfoData?.data
+            ?.addAll(WithdrawMethodInfoData.fromJson(response.body).data!);
       }
-    }else{
+    } else {
       ApiChecker.checkApi(response);
     }
     isLoading = false;
@@ -276,20 +283,20 @@ class WalletController extends GetxController implements GetxService {
   Future<void> createWithdrawMethodInfo(String methodName) async {
     isLoading = true;
     update();
-    for (TextEditingController textEditingController in inputFieldControllerList) {
+    for (TextEditingController textEditingController
+        in inputFieldControllerList) {
       inputValueList.add(textEditingController.text.trim());
     }
     keyList.add('method_name');
     inputValueList.add(methodName);
 
-    Response response =
-    await walletServiceInterface.createWithdrawMethodInfo(
+    Response response = await walletServiceInterface.createWithdrawMethodInfo(
         keyList, inputValueList, selectedMethod!.id!);
     Get.back();
     if (response.statusCode == 200) {
       showCustomSnackBar('submitted_successfully'.tr, isError: false);
       getWithdrawMethodInfoList(1);
-    }else{
+    } else {
       ApiChecker.checkApi(response);
     }
     inputValueList.clear();
@@ -297,24 +304,24 @@ class WalletController extends GetxController implements GetxService {
     update();
   }
 
-  Future<void> updateWithdrawMethodInfo(String methodName, String methodInfoId,
-      int methodId) async {
+  Future<void> updateWithdrawMethodInfo(
+      String methodName, String methodInfoId, int methodId) async {
     isLoading = true;
     update();
-    for (TextEditingController textEditingController in inputFieldControllerList) {
+    for (TextEditingController textEditingController
+        in inputFieldControllerList) {
       inputValueList.add(textEditingController.text.trim());
     }
     keyList.add('method_name');
     inputValueList.add(methodName);
 
-    Response response =
-    await walletServiceInterface.updateWithdrawMethodInfo(
+    Response response = await walletServiceInterface.updateWithdrawMethodInfo(
         keyList, inputValueList, methodId, methodInfoId);
     Get.back();
     if (response.statusCode == 200) {
       showCustomSnackBar('updated_successfully'.tr, isError: false);
       getWithdrawMethodInfoList(1);
-    }else{
+    } else {
       ApiChecker.checkApi(response);
     }
     inputValueList.clear();
@@ -326,17 +333,20 @@ class WalletController extends GetxController implements GetxService {
     isLoading = true;
     update();
 
-    Response response = await walletServiceInterface.deleteWithdrawMethodInfo(methodId);
+    Response response =
+        await walletServiceInterface.deleteWithdrawMethodInfo(methodId);
     Get.back();
     if (response.statusCode == 200) {
-      showCustomSnackBar('successfully_delete_payment_method'.tr, isError: false);
+      showCustomSnackBar('successfully_delete_payment_method'.tr,
+          isError: false);
       getWithdrawMethodInfoList(1);
       selectedMethodInfo = null;
-    }else{
+    } else {
       showDialog(
-        barrierDismissible: false, context: Get.context!,
-        builder: (_) => const DeleteConfirmationDialogWidget(fromFailed: true)
-      );
+          barrierDismissible: false,
+          context: Get.context!,
+          builder: (_) =>
+              const DeleteConfirmationDialogWidget(fromFailed: true));
     }
     isLoading = false;
     update();
@@ -345,7 +355,8 @@ class WalletController extends GetxController implements GetxService {
   Future<void> addUpdateTextFieldTexts(SingleMethodInfo method) async {
     for (int i = 0; i < method.methodInfo!.length; i++) {
       keyList.add(method.methodInfo![i].key!);
-      inputFieldControllerList.add(TextEditingController(text: method.methodInfo![i].value!));
+      inputFieldControllerList
+          .add(TextEditingController(text: method.methodInfo![i].value!));
     }
   }
 
@@ -357,14 +368,16 @@ class WalletController extends GetxController implements GetxService {
   Future<void> getIncomeStatement(int offset) async {
     isLoading = true;
 
-    Response? response = await walletServiceInterface.getIncomeStatement(offset);
+    Response? response =
+        await walletServiceInterface.getIncomeStatement(offset);
     if (response!.statusCode == 200) {
       if (offset == 1) {
         incomeStatement = TripModel.fromJson(response.body);
       } else {
         incomeStatement!.data!.addAll(TripModel.fromJson(response.body).data!);
         incomeStatement!.offset = TripModel.fromJson(response.body).offset;
-        incomeStatement!.totalSize = TripModel.fromJson(response.body).totalSize;
+        incomeStatement!.totalSize =
+            TripModel.fromJson(response.body).totalSize;
       }
       isLoading = false;
     } else {
@@ -377,14 +390,18 @@ class WalletController extends GetxController implements GetxService {
   Future<void> getPayableHistoryList(int offset) async {
     isLoading = true;
 
-    Response? response = await walletServiceInterface.getPayableHistoryList(offset);
+    Response? response =
+        await walletServiceInterface.getPayableHistoryList(offset);
     if (response!.statusCode == 200) {
       if (offset == 1) {
         transactionModel = TransactionModel.fromJson(response.body);
       } else {
-        transactionModel!.data!.addAll(TransactionModel.fromJson(response.body).data!);
-        transactionModel!.offset = TransactionModel.fromJson(response.body).offset;
-        transactionModel!.totalSize = TransactionModel.fromJson(response.body).totalSize;
+        transactionModel!.data!
+            .addAll(TransactionModel.fromJson(response.body).data!);
+        transactionModel!.offset =
+            TransactionModel.fromJson(response.body).offset;
+        transactionModel!.totalSize =
+            TransactionModel.fromJson(response.body).totalSize;
       }
       isLoading = false;
     } else {
@@ -397,14 +414,18 @@ class WalletController extends GetxController implements GetxService {
   Future<void> getWalletHistoryList(int offset) async {
     isLoading = true;
 
-    Response? response = await walletServiceInterface.getWalletHistoryList(offset);
+    Response? response =
+        await walletServiceInterface.getWalletHistoryList(offset);
     if (response!.statusCode == 200) {
       if (offset == 1) {
         transactionModel = TransactionModel.fromJson(response.body);
       } else {
-        transactionModel!.data!.addAll(TransactionModel.fromJson(response.body).data!);
-        transactionModel!.offset = TransactionModel.fromJson(response.body).offset;
-        transactionModel!.totalSize = TransactionModel.fromJson(response.body).totalSize;
+        transactionModel!.data!
+            .addAll(TransactionModel.fromJson(response.body).data!);
+        transactionModel!.offset =
+            TransactionModel.fromJson(response.body).offset;
+        transactionModel!.totalSize =
+            TransactionModel.fromJson(response.body).totalSize;
       }
       isLoading = false;
     } else {
@@ -417,16 +438,20 @@ class WalletController extends GetxController implements GetxService {
   Future<void> getWithdrawPendingList(int offset) async {
     isLoading = true;
 
-    Response? response = await walletServiceInterface.getWithdrawPendingList(offset);
+    Response? response =
+        await walletServiceInterface.getWithdrawPendingList(offset);
     if (response!.statusCode == 200) {
       if (offset == 1) {
-        pendingSettledWithdrawModel = PendingSettledWithdrawModel.fromJson(response.body);
+        pendingSettledWithdrawModel =
+            PendingSettledWithdrawModel.fromJson(response.body);
       } else {
         pendingSettledWithdrawModel!.data!.addAll(
           PendingSettledWithdrawModel.fromJson(response.body).data!,
         );
-        pendingSettledWithdrawModel!.offset = PendingSettledWithdrawModel.fromJson(response.body).offset;
-        pendingSettledWithdrawModel!.totalSize = PendingSettledWithdrawModel.fromJson(response.body).totalSize;
+        pendingSettledWithdrawModel!.offset =
+            PendingSettledWithdrawModel.fromJson(response.body).offset;
+        pendingSettledWithdrawModel!.totalSize =
+            PendingSettledWithdrawModel.fromJson(response.body).totalSize;
       }
       isLoading = false;
     } else {
@@ -439,20 +464,19 @@ class WalletController extends GetxController implements GetxService {
   Future<void> getWithdrawSettledList(int offset) async {
     isLoading = true;
 
-    Response? response = await walletServiceInterface.getWithdrawSettledList(offset);
+    Response? response =
+        await walletServiceInterface.getWithdrawSettledList(offset);
     if (response!.statusCode == 200) {
       if (offset == 1) {
-        pendingSettledWithdrawModel = PendingSettledWithdrawModel.fromJson(response.body);
+        pendingSettledWithdrawModel =
+            PendingSettledWithdrawModel.fromJson(response.body);
       } else {
-        pendingSettledWithdrawModel!.data!.addAll(PendingSettledWithdrawModel
-            .fromJson(response.body)
-            .data!);
-        pendingSettledWithdrawModel!.offset = PendingSettledWithdrawModel
-            .fromJson(response.body)
-            .offset;
-        pendingSettledWithdrawModel!.totalSize = PendingSettledWithdrawModel
-            .fromJson(response.body)
-            .totalSize;
+        pendingSettledWithdrawModel!.data!
+            .addAll(PendingSettledWithdrawModel.fromJson(response.body).data!);
+        pendingSettledWithdrawModel!.offset =
+            PendingSettledWithdrawModel.fromJson(response.body).offset;
+        pendingSettledWithdrawModel!.totalSize =
+            PendingSettledWithdrawModel.fromJson(response.body).totalSize;
       }
       isLoading = false;
     } else {
@@ -465,24 +489,24 @@ class WalletController extends GetxController implements GetxService {
   List<List<TripDetail>>? incomeStatementData;
 
   void manipulationIncomeStatement() {
-
-    if(incomeStatement!.data != null && incomeStatement!.data!.isNotEmpty){
+    if (incomeStatement!.data != null && incomeStatement!.data!.isNotEmpty) {
       int count = 0;
       incomeStatementData = [[]];
       incomeStatementData![count].add(incomeStatement!.data![0]);
       for (int i = 1; i < incomeStatement!.data!.length; i++) {
-        if (DateConverter.isoStringToLocalDateOnly(incomeStatement!.data![i].createdAt!) ==
-            DateConverter.isoStringToLocalDateOnly(incomeStatement!.data![i - 1].createdAt!)) {
+        if (DateConverter.isoStringToLocalDateOnly(
+                incomeStatement!.data![i].createdAt!) ==
+            DateConverter.isoStringToLocalDateOnly(
+                incomeStatement!.data![i - 1].createdAt!)) {
           incomeStatementData![count].add(incomeStatement!.data![i]);
-
         } else {
           incomeStatementData!.add([]);
           count++;
-          incomeStatementData![count]= [];
+          incomeStatementData![count] = [];
           incomeStatementData![count].add(incomeStatement!.data![i]);
         }
       }
-    }else{
+    } else {
       incomeStatementData = [];
     }
 

@@ -12,7 +12,7 @@ class Dimensions {
   static const double paddingSizeTwo = 2.0;
   static const double paddingSizeTiny = 3.0;
   static const double paddingSizeExtraSmall = 5.0;
-  static const double paddingSizeSix= 6.0;
+  static const double paddingSizeSix = 6.0;
   static const double paddingSizeSeven = 7.0;
   static const double paddingSizeEight = 8.0;
   static const double paddingSizeSmall = 10.0;

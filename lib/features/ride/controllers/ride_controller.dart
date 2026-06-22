@@ -38,6 +38,7 @@ class RideController extends GetxController implements GetxService {
   String? _rideid;
 
   String? get rideId => _rideid;
+  bool arrivalApiCalled = false;
 
   void setRideId(String id) {
     _rideid = id;
@@ -146,8 +147,14 @@ class RideController extends GetxController implements GetxService {
           } else if (Get.find<RideController>().currentRideStatus ==
                   'completed' ||
               Get.find<RideController>().currentRideStatus == 'cancelled') {
-            Get.find<RideController>()
+            print('TRIP COMPLETED');
+            print('Trip Id = ${Get.find<RideController>().tripDetail!.id!}');
+
+            await Get.find<RideController>()
                 .getFinalFare(Get.find<RideController>().tripDetail!.id!);
+
+            print('GET FINAL FARE COMPLETED');
+
             Get.off(() => const PaymentReceivedScreen());
           }
         } else {
@@ -184,6 +191,10 @@ class RideController extends GetxController implements GetxService {
     Response response = await rideServiceInterface.getRideDetails(tripId);
     if (response.statusCode == 200) {
       tripDetail = TripDetailsModel.fromJson(response.body).data!;
+
+      print('Trip ID = ${tripDetail?.id}');
+      print('Current Status = ${tripDetail?.currentStatus}');
+      print('OTP = ${tripDetail?.otp}');
       polyline = tripDetail!.encodedPolyline!;
       isLoading = false;
     } else {
@@ -375,6 +386,7 @@ class RideController extends GetxController implements GetxService {
         Get.find<ProfileController>().profileInfo!.vehicle!.category!.type!;
     isLoading = true;
     Response response = await rideServiceInterface.remainDistance(tripId);
+
     List<String> status = ['accepted', 'ongoing'];
     if (response.statusCode == 200) {
       isLoading = false;
@@ -393,10 +405,21 @@ class RideController extends GetxController implements GetxService {
         matchedMode = remainingDistanceItem![0];
       }
 
-      if (matchedMode != null &&
+      print('================ DRIVER ARRIVAL CHECK ================');
+      print('Distance KM = ${matchedMode?.distance}');
+      print('Distance Meter = ${(matchedMode?.distance ?? 0) * 1000}');
+      print('Trip Status = ${tripDetail?.currentStatus}');
+      print('Trip Id = $tripId');
+      print('=====================================================');
+
+      if (!arrivalApiCalled &&
+          matchedMode != null &&
           (matchedMode!.distance! * 1000) <= 100 &&
           tripDetail != null &&
-          tripDetail!.currentStatus == 'pending') {
+          (tripDetail!.currentStatus == 'pending' ||
+              tripDetail!.currentStatus == 'accepted')) {
+        arrivalApiCalled = true;
+
         arrivalPickupPoint(tripId);
       }
 
@@ -491,12 +514,29 @@ class RideController extends GetxController implements GetxService {
   FinalFare? finalFare;
 
   Future<Response> getFinalFare(String tripId) async {
+    print('GET FINAL FARE CALLED');
+    print('Trip Id = $tripId');
     isLoading = true;
     update();
     Response response = await rideServiceInterface.getFinalFare(tripId);
+
+    print('FINAL FARE RESPONSE');
+    print(response.body);
+
+    print('ACTUAL FARE = ${response.body['data']['actual_fare']}');
+    print('PAID FARE = ${response.body['data']['paid_fare']}');
+
     if (response.statusCode == 200) {
       Get.find<RiderMapController>().initializeData();
       if (response.body['data'] != null) {
+        print('================ PAYMENT DEBUG ================');
+        print('actual_fare = ${response.body['data']['actual_fare']}');
+        print(
+            'distance_wise_fare = ${response.body['data']['distance_wise_fare']}');
+        print('idle_fee = ${response.body['data']['idle_fee']}');
+        print('delay_fee = ${response.body['data']['delay_fee']}');
+        print('vat_tax = ${response.body['data']['vat_tax']}');
+        print('================================================');
         finalFare = FinalFareModel.fromJson(response.body).data!;
       }
       isLoading = false;

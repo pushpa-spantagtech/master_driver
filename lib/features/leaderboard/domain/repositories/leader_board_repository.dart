@@ -3,12 +3,10 @@ import 'package:ride_sharing_user_app/data/api_client.dart';
 import 'package:ride_sharing_user_app/features/leaderboard/domain/repositories/leader_board_repository_interface.dart';
 import 'package:ride_sharing_user_app/util/app_constants.dart';
 
-class LeaderBoardRepository implements LeaderBoardRepositoryInterface{
+class LeaderBoardRepository implements LeaderBoardRepositoryInterface {
   final ApiClient apiClient;
 
   LeaderBoardRepository({required this.apiClient});
-
-
 
   @override
   Future<Response?> getDailyActivity() async {
@@ -16,8 +14,10 @@ class LeaderBoardRepository implements LeaderBoardRepositoryInterface{
   }
 
   @override
-  Future<Response?> getLeaderBoardList({int? offset = 1, required String selectedFilterName}) async {
-    return await apiClient.getData('${AppConstants.leaderboardUri}filter=$selectedFilterName&limit=10&offset=$offset');
+  Future<Response?> getLeaderBoardList(
+      {int? offset = 1, required String selectedFilterName}) async {
+    return await apiClient.getData(
+        '${AppConstants.leaderboardUri}filter=$selectedFilterName&limit=10&offset=$offset');
   }
 
   @override
@@ -39,7 +39,7 @@ class LeaderBoardRepository implements LeaderBoardRepositoryInterface{
   }
 
   @override
-  Future getList({int? offset = 1}) async{
+  Future getList({int? offset = 1}) async {
     // TODO: implement update
     throw UnimplementedError();
   }
@@ -49,6 +49,4 @@ class LeaderBoardRepository implements LeaderBoardRepositoryInterface{
     // TODO: implement update
     throw UnimplementedError();
   }
-
-
 }

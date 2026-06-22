@@ -263,11 +263,13 @@ class ApiClient extends GetxService {
 class MultipartBody {
   String key;
   XFile? file;
+
   MultipartBody(this.key, this.file);
 }
 
 class MultipartDocument {
   String key;
   PlatformFile? file;
+
   MultipartDocument(this.key, this.file);
 }

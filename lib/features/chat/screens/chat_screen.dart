@@ -18,6 +18,7 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   ScrollController scrollController = ScrollController();
+
   @override
   void initState() {
     Get.find<ChatController>().getChannelList(1);

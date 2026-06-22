@@ -1,54 +1,52 @@
 import 'package:ride_sharing_user_app/features/chat/domain/models/channel_model.dart';
 
 class MessageModel {
-    String? responseCode;
-    String? message;
-    int? totalSize;
-    String? limit;
-    String? offset;
-    List<Message>? data;
+  String? responseCode;
+  String? message;
+  int? totalSize;
+  String? limit;
+  String? offset;
+  List<Message>? data;
 
-   MessageModel({
-     this.responseCode,
-     this.message,
-     this.totalSize,
-     this.limit,
-     this.offset,
-     this.data,
-   });
+  MessageModel({
+    this.responseCode,
+    this.message,
+    this.totalSize,
+    this.limit,
+    this.offset,
+    this.data,
+  });
 
-  MessageModel.fromJson(Map<String, dynamic> json){
+  MessageModel.fromJson(Map<String, dynamic> json) {
     responseCode = json['response_code'];
     message = json['message'];
     totalSize = json['total_size'];
     limit = json['limit'];
     offset = json['offset'];
-    data = List.from(json['data']).map((e)=>Message.fromJson(e)).toList();
-
+    data = List.from(json['data']).map((e) => Message.fromJson(e)).toList();
   }
-
 }
 
 class Message {
-   int? id;
-   String? userId;
-   String? message;
-   String? tripId;
-   String? updatedAt;
-   String? createdAt;
-   List<ConversationFiles>? conversationFiles;
-   User? user;
-   Message({
-     this.id,
-     this.userId,
-     this.message,
-     this.updatedAt,
-     this.conversationFiles,
-     this.user,
-     this.tripId
-   });
+  int? id;
+  String? userId;
+  String? message;
+  String? tripId;
+  String? updatedAt;
+  String? createdAt;
+  List<ConversationFiles>? conversationFiles;
+  User? user;
 
-  Message.fromJson(Map<String, dynamic> json){
+  Message(
+      {this.id,
+      this.userId,
+      this.message,
+      this.updatedAt,
+      this.conversationFiles,
+      this.user,
+      this.tripId});
+
+  Message.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     userId = json['user_id'];
     message = json['message'];
@@ -64,6 +62,7 @@ class Message {
     user = json['user'] != null ? User.fromJson(json['user']) : null;
   }
 }
+
 class ConversationFiles {
   int? id;
   String? fileName;
@@ -76,5 +75,4 @@ class ConversationFiles {
     fileName = json['file_name'];
     fileType = json['file_type'];
   }
-
 }

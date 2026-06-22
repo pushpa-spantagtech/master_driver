@@ -10,6 +10,7 @@ class ImageWidget extends StatelessWidget {
   final double radius;
   final String placeholder;
   final String? svg;
+
   const ImageWidget({
     super.key,
     this.image,

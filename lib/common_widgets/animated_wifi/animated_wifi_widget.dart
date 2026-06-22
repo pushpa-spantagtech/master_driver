@@ -87,9 +87,7 @@ class DrawShapes extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    Color color = Theme.of(Get.context!)
-        .colorScheme
-        .primaryContainer;
+    Color color = Theme.of(Get.context!).colorScheme.primaryContainer;
     if ((4 - index) == ((controller * 5).toInt())) {
       color = Theme.of(Get.context!).colorScheme.outline;
     }

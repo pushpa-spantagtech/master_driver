@@ -70,7 +70,8 @@ class WalletMoneyAmountWidget extends StatelessWidget {
               child: Container(
                 width: Get.width,
                 decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor.withValues(alpha: 0.25),
+                    color:
+                        Theme.of(context).primaryColor.withValues(alpha: 0.25),
                     borderRadius:
                         BorderRadius.circular(Dimensions.paddingSizeSmall)),
                 padding: const EdgeInsets.all(Dimensions.paddingSizeSmall),

@@ -78,7 +78,8 @@ class PendingSettledCardWidget extends StatelessWidget {
                                             Dimensions.paddingSizeExtraSmall),
                                         color: pendingSettleInfo.status ==
                                                 'pending'
-                                            ? Colors.blue.withValues(alpha: 0.25)
+                                            ? Colors.blue
+                                                .withValues(alpha: 0.25)
                                             : pendingSettleInfo.status ==
                                                     'denied'
                                                 ? Theme.of(context)

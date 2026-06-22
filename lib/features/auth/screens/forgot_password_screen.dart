@@ -64,7 +64,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         Text(
                           'enter_your_verified_phone_number'.tr,
                           style: textMedium.copyWith(
-                              color: Theme.of(context).colorScheme.onTertiaryContainer),
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onTertiaryContainer),
                         ),
                         const SizedBox(
                           height: Dimensions.paddingSizeLarge,

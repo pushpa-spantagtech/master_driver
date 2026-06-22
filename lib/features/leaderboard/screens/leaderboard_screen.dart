@@ -358,7 +358,9 @@ class LeaderboardStageItem extends StatelessWidget {
                       color: Theme.of(context).primaryColor,
                       boxShadow: [
                         BoxShadow(
-                            color: Theme.of(context).hintColor.withValues(alpha: .25),
+                            color: Theme.of(context)
+                                .hintColor
+                                .withValues(alpha: .25),
                             blurRadius: 1,
                             spreadRadius: 1,
                             offset: const Offset(1, 3))

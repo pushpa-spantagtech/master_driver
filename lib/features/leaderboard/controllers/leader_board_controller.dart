@@ -5,11 +5,14 @@ import 'package:ride_sharing_user_app/features/leaderboard/domain/services/leade
 
 class LeaderBoardController extends GetxController implements GetxService {
   final LeaderBoardServiceInterface leaderBoardServiceInterface;
+
   LeaderBoardController({required this.leaderBoardServiceInterface});
 
   List<String> selectedFilterType = ['today', 'this_week', 'this_month'];
   String _selectedFilterTypeName = 'today';
+
   String get selectedFilterTypeName => _selectedFilterTypeName;
+
   void setFilterTypeName(String name) {
     _selectedFilterTypeName = name;
     update();
@@ -18,6 +21,7 @@ class LeaderBoardController extends GetxController implements GetxService {
 
   bool isLoading = false;
   LeaderBoardModel? leaderBoardModel;
+
   Future<void> getLeaderboardList(
       int offset, String selectedFilterTypeName) async {
     isLoading = true;
@@ -44,6 +48,7 @@ class LeaderBoardController extends GetxController implements GetxService {
 
   String totalIncome = '0';
   int totalTrip = 0;
+
   Future<Response> getDailyActivities() async {
     isLoading = true;
     Response? response = await leaderBoardServiceInterface.getDailyActivity();

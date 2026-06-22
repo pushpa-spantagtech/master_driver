@@ -6,28 +6,26 @@ class LoyaltyPointModel {
   String? offset;
   List<Points>? data;
 
-
   LoyaltyPointModel(
       {this.responseCode,
-        this.message,
-        this.totalSize,
-        this.limit,
-        this.offset,
-        this.data
-      });
+      this.message,
+      this.totalSize,
+      this.limit,
+      this.offset,
+      this.data});
 
   LoyaltyPointModel.fromJson(Map<String, dynamic> json) {
     responseCode = json['response_code'];
     message = json['message'];
-    totalSize = json['total_size']??0;
-    if(json['limit'] != null){
+    totalSize = json['total_size'] ?? 0;
+    if (json['limit'] != null) {
       limit = json['limit'].toString();
-    }else{
+    } else {
       limit = '10';
     }
-    if(json['offset']!=null){
+    if (json['offset'] != null) {
       offset = json['offset'].toString();
-    }else{
+    } else {
       offset = '1';
     }
 
@@ -37,9 +35,7 @@ class LoyaltyPointModel {
         data!.add(Points.fromJson(v));
       });
     }
-
   }
-
 }
 
 class Points {
@@ -52,24 +48,23 @@ class Points {
 
   Points(
       {this.userId,
-        this.model,
-        this.modelId,
-        this.points,
-        this.type,
-        this.createdAt});
+      this.model,
+      this.modelId,
+      this.points,
+      this.type,
+      this.createdAt});
 
   Points.fromJson(Map<String, dynamic> json) {
     userId = json['user_id'];
     model = json['model'];
     modelId = json['model_id'];
-    if(json['points'] != null){
+    if (json['points'] != null) {
       points = json['points'].toDouble();
-    }else{
+    } else {
       points = 0;
     }
 
     type = json['type'];
     createdAt = json['created_at'];
   }
-
 }

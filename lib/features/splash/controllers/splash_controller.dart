@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 class SplashController extends GetxController implements GetxService {
   final SplashServiceInterface splashServiceInterface;
+
   SplashController({required this.splashServiceInterface});
 
   ConfigModel? _config;
@@ -14,19 +15,20 @@ class SplashController extends GetxController implements GetxService {
   ConfigModel? get config => _config;
 
   bool loading = false;
-  Future<bool> getConfigData({bool reload= true}) async {
+
+  Future<bool> getConfigData({bool reload = true}) async {
     loading = true;
     Response response = await splashServiceInterface.getConfigData();
     bool isSuccess = false;
-    if(response.statusCode == 200) {
+    if (response.statusCode == 200) {
       isSuccess = true;
       loading = false;
       _config = ConfigModel.fromJson(response.body);
-    }else {
+    } else {
       loading = false;
       ApiChecker.checkApi(response);
     }
-    if(reload){
+    if (reload) {
       update();
     }
     return isSuccess;
@@ -35,8 +37,6 @@ class SplashController extends GetxController implements GetxService {
   Future<bool> initSharedData() {
     return splashServiceInterface.initSharedData();
   }
-
-
 
   Future<bool> removeSharedData() {
     return splashServiceInterface.removeSharedData();
@@ -51,19 +51,18 @@ class SplashController extends GetxController implements GetxService {
   String capitalize(String s) => s[0].toUpperCase() + s.substring(1);
 
   Future<void> sendMailOrCall(String url, bool isMail) async {
-    if (!await launchUrl(Uri.parse(isMail? params.toString() :url))) {
+    if (!await launchUrl(Uri.parse(isMail ? params.toString() : url))) {
       throw 'Could not launch $url';
     }
   }
 
-
   String? _pusherConnectionStatus;
+
   String? get pusherConnectionStatus => _pusherConnectionStatus;
 
-  void setPusherStatus(String? connection){
+  void setPusherStatus(String? connection) {
     _pusherConnectionStatus = connection;
   }
-
 
   bool haveOngoingRides() {
     return splashServiceInterface.haveOngoingRides();
@@ -72,6 +71,4 @@ class SplashController extends GetxController implements GetxService {
   void saveOngoingRides(bool value) {
     return splashServiceInterface.saveOngoingRides(value);
   }
-
-
 }

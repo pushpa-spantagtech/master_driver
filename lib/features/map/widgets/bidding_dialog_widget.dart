@@ -87,19 +87,22 @@ class _BiddingDialogWidgetState extends State<BiddingDialogWidget> {
                               enabledBorder: UnderlineInputBorder(
                                   borderSide: BorderSide(
                                 width: 0.0,
-                                color:
-                                    Theme.of(context).hintColor.withValues(alpha: 0),
+                                color: Theme.of(context)
+                                    .hintColor
+                                    .withValues(alpha: 0),
                               )),
                               focusedBorder: UnderlineInputBorder(
                                   borderSide: BorderSide(
                                 width: 0.0,
-                                color:
-                                    Theme.of(context).hintColor.withValues(alpha: 0),
+                                color: Theme.of(context)
+                                    .hintColor
+                                    .withValues(alpha: 0),
                               )),
                             ),
                           ))),
                       InkWell(
-                        overlayColor: WidgetStateProperty.all(Colors.transparent),
+                        overlayColor:
+                            WidgetStateProperty.all(Colors.transparent),
                         onTap: () {
                           String biddingAmount = bidingController.text.trim();
                           if (biddingAmount.isEmpty) {

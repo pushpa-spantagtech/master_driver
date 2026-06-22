@@ -128,8 +128,9 @@ class IncomeStatementCardWidget extends StatelessWidget {
                             horizontal: Dimensions.paddingSizeDefault),
                         child: DividerWidget(
                             height: .5,
-                            color:
-                                Theme.of(context).hintColor.withValues(alpha: .75)),
+                            color: Theme.of(context)
+                                .hintColor
+                                .withValues(alpha: .75)),
                       )
                     : const SizedBox(),
               ]);

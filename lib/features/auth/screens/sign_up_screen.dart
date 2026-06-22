@@ -264,10 +264,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         ),
                                         side: BorderSide(
                                           color: authController.acceptTerms
-                                              ? const Color.fromRGBO(250, 173,
-                                                  2, 1)
-                                              : Theme.of(context)
-                                                  .hintColor,
+                                              ? const Color.fromRGBO(
+                                                  250, 173, 2, 1)
+                                              : Theme.of(context).hintColor,
                                         ),
                                         activeColor: const Color.fromRGBO(
                                             250, 173, 2, 1),

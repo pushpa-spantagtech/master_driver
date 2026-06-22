@@ -117,7 +117,8 @@ class _SliderItemState extends State<SliderItem> {
                 ? Align(
                     alignment: widget.dotsAlignment,
                     child: Padding(
-                      padding: const EdgeInsets.only(bottom: 10, left: 20, right: 20, top: 10),
+                      padding: const EdgeInsets.only(
+                          bottom: 10, left: 20, right: 20, top: 10),
                       child: _dotProgress(),
                     ),
                   )
@@ -165,7 +166,7 @@ class _SliderItemState extends State<SliderItem> {
     return GestureDetector(
       onTap: () => widget.onClick(index),
       child: widget.fromNetwork
-          ? ImageWidget(image: item,fit: widget.fit)
+          ? ImageWidget(image: item, fit: widget.fit)
           : Image.asset(
               item,
               fit: widget.fit,

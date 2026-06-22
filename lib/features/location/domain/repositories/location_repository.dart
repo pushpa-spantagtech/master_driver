@@ -6,12 +6,12 @@ import 'package:ride_sharing_user_app/util/app_constants.dart';
 import 'package:ride_sharing_user_app/features/profile/controllers/profile_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
-class LocationRepository implements LocationRepositoryInterface{
+class LocationRepository implements LocationRepositoryInterface {
   final ApiClient apiClient;
   final SharedPreferences sharedPreferences;
 
-  LocationRepository({required this.apiClient, required this.sharedPreferences});
+  LocationRepository(
+      {required this.apiClient, required this.sharedPreferences});
 
   @override
   Future<Response> getZone(String lat, String lng) async {
@@ -20,34 +20,43 @@ class LocationRepository implements LocationRepositoryInterface{
 
   @override
   Future<bool?> saveUserZoneId(String zoneId) async {
-    apiClient.updateHeader(sharedPreferences.getString(AppConstants.token)??'', sharedPreferences.getString(AppConstants.languageCode), 'latitude', 'longitude', zoneId);
+    apiClient.updateHeader(
+        sharedPreferences.getString(AppConstants.token) ?? '',
+        sharedPreferences.getString(AppConstants.languageCode),
+        'latitude',
+        'longitude',
+        zoneId);
     return await sharedPreferences.setString(AppConstants.zoneId, zoneId);
   }
 
-
   @override
   Future<Response> getAddressFromGeocode(LatLng? latLng) async {
-    return await apiClient.getData('${AppConstants.geoCodeURI}?lat=${latLng!.latitude}&lng=${latLng.longitude}');
+    return await apiClient.getData(
+        '${AppConstants.geoCodeURI}?lat=${latLng!.latitude}&lng=${latLng.longitude}');
   }
 
   @override
   Future<Response> searchLocation(String text) async {
-    return await apiClient.getData('${AppConstants.searchLocationUri}?search_text=$text');
+    return await apiClient
+        .getData('${AppConstants.searchLocationUri}?search_text=$text');
   }
 
   @override
   Future<Response> getPlaceDetails(String placeID) async {
-    return await apiClient.getData('${AppConstants.placeApiDetails}?placeid=$placeID');
+    return await apiClient
+        .getData('${AppConstants.placeApiDetails}?placeid=$placeID');
   }
 
   @override
-  Future<Response> storeLastLocationApi(String lat, String lng, String zoneID) async {
-    return await apiClient.postData(AppConstants.storeLastLocationAPI,
-        {"user_id": "${Get.find<ProfileController>().profileInfo?.id}",
-          "type": "driver",
-          "latitude": lat,
-          "longitude": lng,
-          "zone_id": zoneID});
+  Future<Response> storeLastLocationApi(
+      String lat, String lng, String zoneID) async {
+    return await apiClient.postData(AppConstants.storeLastLocationAPI, {
+      "user_id": "${Get.find<ProfileController>().profileInfo?.id}",
+      "type": "driver",
+      "latitude": lat,
+      "longitude": lng,
+      "zone_id": zoneID
+    });
   }
 
   @override
@@ -79,5 +88,4 @@ class LocationRepository implements LocationRepositoryInterface{
     // TODO: implement update
     throw UnimplementedError();
   }
-
 }

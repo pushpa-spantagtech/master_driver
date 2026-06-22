@@ -3,8 +3,8 @@ class NotificationModel {
   Data data;
   String createdAt;
 
-  NotificationModel({required this.id, required this.data, required this.createdAt});
-
+  NotificationModel(
+      {required this.id, required this.data, required this.createdAt});
 }
 
 class Data {
@@ -12,7 +12,7 @@ class Data {
   String? description;
   String? image;
 
-  Data({ this.title, this.description, this.image});
+  Data({this.title, this.description, this.image});
 
   Data.fromJson(Map<String, dynamic> json) {
     title = json['title'];

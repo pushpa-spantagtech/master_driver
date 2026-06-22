@@ -5,7 +5,13 @@ class DividerWidget extends StatelessWidget {
   final double dashWidth;
   final Color color;
   final Axis axis;
-  const DividerWidget({super.key, this.height = 1, this.dashWidth = 5, this.color = Colors.black, this.axis = Axis.horizontal});
+
+  const DividerWidget(
+      {super.key,
+      this.height = 1,
+      this.dashWidth = 5,
+      this.color = Colors.black,
+      this.axis = Axis.horizontal});
 
   @override
   Widget build(BuildContext context) {

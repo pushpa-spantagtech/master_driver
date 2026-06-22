@@ -11,21 +11,20 @@ class RemainingDistanceModel {
 
   RemainingDistanceModel(
       {this.distance,
-        this.distanceText,
-        this.duration,
-        this.durationSec,
-        this.status,
-        this.driveMode,
-        this.encodedPolyline,
-        this.isPicked,
-        this.isDrop
-      });
+      this.distanceText,
+      this.duration,
+      this.durationSec,
+      this.status,
+      this.driveMode,
+      this.encodedPolyline,
+      this.isPicked,
+      this.isDrop});
 
   RemainingDistanceModel.fromJson(Map<String, dynamic> json) {
-    if(json['distance'] != null){
-      try{
+    if (json['distance'] != null) {
+      try {
         distance = json['distance'].toDouble();
-      }catch(e){
+      } catch (e) {
         distance = double.parse(json['distance'].toString());
       }
     }
@@ -39,5 +38,4 @@ class RemainingDistanceModel {
     isPicked = json['is_picked'];
     isDrop = json['is_dropped'];
   }
-
 }

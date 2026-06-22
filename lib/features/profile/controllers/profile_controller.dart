@@ -68,6 +68,7 @@ class ProfileController extends GetxController implements GetxService {
   }
 
   int _offerSelectedIndex = 0;
+
   int get offerSelectedIndex => _offerSelectedIndex;
 
   void setOfferTypeIndex(int index) {

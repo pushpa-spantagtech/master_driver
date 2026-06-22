@@ -9,12 +9,14 @@ class TitleWidget extends StatelessWidget {
   final bool isFiler;
   final Color? color;
   final Function()? onTap;
+
   const TitleWidget(
       {super.key,
       required this.title,
       this.isFiler = false,
       this.onTap,
       this.color});
+
   @override
   Widget build(BuildContext context) {
     return Padding(

@@ -49,7 +49,8 @@ class DeleteConfirmationDialogWidget extends StatelessWidget {
                   decoration: BoxDecoration(
                       borderRadius:
                           BorderRadius.circular(Dimensions.paddingSizeSmall),
-                      color: Theme.of(context).hintColor.withValues(alpha: 0.25)),
+                      color:
+                          Theme.of(context).hintColor.withValues(alpha: 0.25)),
                   child: Center(child: Text('no'.tr, style: textRegular)),
                 ),
               ),

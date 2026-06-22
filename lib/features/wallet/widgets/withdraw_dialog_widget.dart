@@ -256,8 +256,9 @@ class WithdrawRequestWidgetState extends State<WithdrawRequestWidget> {
                           decoration: InputDecoration(
                             hintText: 'enter_amount'.tr,
                             hintStyle: textRegular.copyWith(
-                              color:
-                                  Theme.of(context).hintColor.withValues(alpha: .5),
+                              color: Theme.of(context)
+                                  .hintColor
+                                  .withValues(alpha: .5),
                             ),
                             enabledBorder: UnderlineInputBorder(
                               borderSide: BorderSide(

@@ -183,8 +183,8 @@ class _MessageScreenState extends State<MessageScreen> {
               right: Dimensions.paddingSizeDefault,
               bottom: Dimensions.paddingSizeDefault,
             ),
-            child:
-                Divider(color: Theme.of(context).hintColor.withValues(alpha: 0.15)),
+            child: Divider(
+                color: Theme.of(context).hintColor.withValues(alpha: 0.15)),
           ),
           SizedBox(
             height: 45,

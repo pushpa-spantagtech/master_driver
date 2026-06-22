@@ -8,13 +8,7 @@ class WithdrawMethodInfoData {
   List<String>? errors;
 
   WithdrawMethodInfoData(
-      {responseCode,
-        message,
-        totalSize,
-        limit,
-        offset,
-        data,
-        errors});
+      {responseCode, message, totalSize, limit, offset, data, errors});
 
   WithdrawMethodInfoData.fromJson(Map<String, dynamic> json) {
     responseCode = json['response_code'];
@@ -30,7 +24,6 @@ class WithdrawMethodInfoData {
     }
     errors = json['errors'].cast<String>();
   }
-
 }
 
 class SingleMethodInfo {
@@ -41,30 +34,23 @@ class SingleMethodInfo {
   bool? isActive;
 
   SingleMethodInfo(
-      {id,
-        methodName,
-        user,
-        withdrawMethod,
-        methodInfo,
-        isActive});
+      {id, methodName, user, withdrawMethod, methodInfo, isActive});
 
   SingleMethodInfo.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     methodName = json['method_name'];
     withdrawMethod = json['withdraw_method'] != null
-        ?  WithdrawMethod.fromJson(json['withdraw_method'])
+        ? WithdrawMethod.fromJson(json['withdraw_method'])
         : null;
     if (json['method_info'] != null) {
       methodInfo = <MethodInfo>[];
       json['method_info'].forEach((v) {
-        methodInfo!.add( MethodInfo.fromJson(v));
+        methodInfo!.add(MethodInfo.fromJson(v));
       });
     }
     isActive = json['is_active'];
   }
-
 }
-
 
 class WithdrawMethod {
   int? id;
@@ -75,12 +61,7 @@ class WithdrawMethod {
   String? createdAt;
 
   WithdrawMethod(
-      {id,
-        methodName,
-        methodFields,
-        isDefault,
-        isActive,
-        createdAt});
+      {id, methodName, methodFields, isDefault, isActive, createdAt});
 
   WithdrawMethod.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -88,14 +69,13 @@ class WithdrawMethod {
     if (json['method_fields'] != null) {
       methodFields = <MethodFields>[];
       json['method_fields'].forEach((v) {
-        methodFields!.add( MethodFields.fromJson(v));
+        methodFields!.add(MethodFields.fromJson(v));
       });
     }
     isDefault = json['is_default'];
     isActive = json['is_active'];
     createdAt = json['created_at'];
   }
-
 }
 
 class MethodFields {
@@ -103,15 +83,13 @@ class MethodFields {
   String? inputName;
   String? placeholder;
 
-  MethodFields(
-      {inputType, inputName, placeholder, isRequired});
+  MethodFields({inputType, inputName, placeholder, isRequired});
 
   MethodFields.fromJson(Map<String, dynamic> json) {
     inputType = json['input_type'];
     inputName = json['input_name'];
     placeholder = json['placeholder'];
   }
-
 }
 
 class MethodInfo {
@@ -124,5 +102,4 @@ class MethodInfo {
     key = json['key'].toString();
     value = json['value'].toString();
   }
-
 }

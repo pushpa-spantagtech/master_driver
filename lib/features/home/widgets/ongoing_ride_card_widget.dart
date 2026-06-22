@@ -150,7 +150,8 @@ class OngoingRideCardWidget extends StatelessWidget {
                                     icon: CupertinoIcons.left_chevron,
                                   ),
                                   InkWell(
-                                      overlayColor: WidgetStateProperty.all(Colors.transparent),
+                                      overlayColor: WidgetStateProperty.all(
+                                          Colors.transparent),
                                       onTap: () {
                                         if (rideController.ongoingTrip![0]
                                                     .currentStatus ==

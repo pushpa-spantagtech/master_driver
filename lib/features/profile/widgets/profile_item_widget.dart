@@ -33,7 +33,8 @@ class ProfileItemWidget extends StatelessWidget {
           isLevel
               ? Container(
                   decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withValues(alpha: .10),
+                      color:
+                          Theme.of(context).primaryColor.withValues(alpha: .10),
                       borderRadius: BorderRadius.circular(
                           Dimensions.paddingSizeExtraSmall)),
                   child: Padding(

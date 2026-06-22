@@ -51,7 +51,8 @@ class NotificationCardWidget extends StatelessWidget {
                     DateConverter.isoStringToDateTimeString(
                         notification.createdAt!),
                     style: textRegular.copyWith(
-                        color: Theme.of(context).hintColor.withValues(alpha: .85),
+                        color:
+                            Theme.of(context).hintColor.withValues(alpha: .85),
                         fontSize: Dimensions.fontSizeSmall),
                   ),
                 ],

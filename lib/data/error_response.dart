@@ -3,8 +3,7 @@ class ErrorResponse {
 
   List<Errors>? get errors => _errors;
 
-  ErrorResponse({
-    List<Errors>? errors}) {
+  ErrorResponse({List<Errors>? errors}) {
     _errors = errors;
   }
 
@@ -24,7 +23,6 @@ class ErrorResponse {
     }
     return map;
   }
-
 }
 
 class Errors {
@@ -32,11 +30,10 @@ class Errors {
   String? _message;
 
   String? get code => _code;
+
   String? get message => _message;
 
-  Errors({
-    String? code,
-    String? message}){
+  Errors({String? code, String? message}) {
     _code = code;
     _message = message;
   }
@@ -52,5 +49,4 @@ class Errors {
     map["message"] = _message;
     return map;
   }
-
 }

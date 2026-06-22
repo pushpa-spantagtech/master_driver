@@ -181,8 +181,8 @@ class Images {
       'assets/image/forget_page_infography.png';
   static const String sevenTaxi = 'assets/image/seven_taxi.png';
   static const String mapIcon = 'assets/image/map_icon.png';
-  static const String mapLocationIconOne = 'assets/image/map_location_icon_one.png';
-
+  static const String mapLocationIconOne =
+      'assets/image/map_location_icon_one.png';
 
   //svg
   static const String splashBgOne = 'assets/svg/splash_bg_one.svg';

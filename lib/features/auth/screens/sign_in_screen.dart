@@ -128,7 +128,8 @@ class _SignInScreenState extends State<SignInScreen> {
                                   padding: const EdgeInsets.all(
                                       Dimensions.paddingSizeSmall),
                                   child: InkWell(
-                                    overlayColor: WidgetStateProperty.all(Colors.transparent),
+                                    overlayColor: WidgetStateProperty.all(
+                                        Colors.transparent),
                                     onTap: () =>
                                         authController.toggleRememberMe(),
                                     child: Row(children: [
@@ -330,7 +331,9 @@ class _SignInScreenState extends State<SignInScreen> {
                                       children: [
                                           Text("${'to_create_account'.tr} "),
                                           InkWell(
-                                            overlayColor: WidgetStateProperty.all(Colors.transparent),
+                                            overlayColor:
+                                                WidgetStateProperty.all(
+                                                    Colors.transparent),
                                             onTap: () =>
                                                 Get.find<SplashController>()
                                                     .sendMailOrCall(

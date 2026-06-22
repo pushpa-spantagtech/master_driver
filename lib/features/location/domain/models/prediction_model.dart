@@ -7,10 +7,10 @@ class PredictionModel {
 
   PredictionModel(
       {this.description,
-        this.id,
-        this.distanceMeters,
-        this.placeId,
-        this.reference});
+      this.id,
+      this.distanceMeters,
+      this.placeId,
+      this.reference});
 
   PredictionModel.fromJson(Map<String, dynamic> json) {
     description = json['description'];
@@ -19,5 +19,4 @@ class PredictionModel {
     placeId = json['place_id'];
     reference = json['reference'];
   }
-
 }

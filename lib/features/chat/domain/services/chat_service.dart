@@ -3,13 +3,14 @@ import 'package:ride_sharing_user_app/data/api_client.dart';
 import 'package:ride_sharing_user_app/features/chat/domain/repositories/chat_repository_interface.dart';
 import 'package:ride_sharing_user_app/features/chat/domain/services/chat_service_interface.dart';
 
-class ChatService implements ChatServiceInterface{
-final ChatRepositoryInterface chatRepositoryInterface;
- ChatService({required this.chatRepositoryInterface});
+class ChatService implements ChatServiceInterface {
+  final ChatRepositoryInterface chatRepositoryInterface;
+
+  ChatService({required this.chatRepositoryInterface});
 
   @override
   Future createChannel(String userId, String tripId) {
-    return chatRepositoryInterface.createChannel(userId,tripId);
+    return chatRepositoryInterface.createChannel(userId, tripId);
   }
 
   @override
@@ -23,14 +24,14 @@ final ChatRepositoryInterface chatRepositoryInterface;
   }
 
   @override
-  Future sendMessage(String message, String channelID, String tripId, List<MultipartBody> file, PlatformFile? platformFile) {
-    return chatRepositoryInterface.sendMessage(message, channelID, tripId, file, platformFile);
+  Future sendMessage(String message, String channelID, String tripId,
+      List<MultipartBody> file, PlatformFile? platformFile) {
+    return chatRepositoryInterface.sendMessage(
+        message, channelID, tripId, file, platformFile);
   }
 
   @override
   Future findChannelRideStatus(String channelId) {
     return chatRepositoryInterface.findChannelRideStatus(channelId);
   }
-
-
 }

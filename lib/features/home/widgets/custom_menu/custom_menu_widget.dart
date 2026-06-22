@@ -9,6 +9,7 @@ class CustomMenuWidget {
     this.label,
     this.closeSpeedDialOnPressed = true,
   });
+
   final Widget child;
   final Function onPressed;
   final Color? foregroundColor;

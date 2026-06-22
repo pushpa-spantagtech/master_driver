@@ -22,7 +22,9 @@ class SliderButtonWidget extends StatefulWidget {
   final bool vibrationFlag;
   final double dismissThresholds;
   final bool disable;
-  const SliderButtonWidget({super.key,
+
+  const SliderButtonWidget({
+    super.key,
     required this.action,
     this.radius = 100,
     this.boxShadow = const BoxShadow(
@@ -70,103 +72,112 @@ class SliderButtonWidgetState extends State<SliderButtonWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return flag == true ?
-    _control() :
-    widget.dismissible == true ?
-    Container() : Container(child: _control(),);
+    return flag == true
+        ? _control()
+        : widget.dismissible == true
+            ? Container()
+            : Container(
+                child: _control(),
+              );
   }
 
   Widget _control() => Container(
-    height: widget.height,
-    width: widget.width,
-    decoration: BoxDecoration(color:
-    widget.disable ?
-    Colors.grey.shade700 : widget.backgroundColor,
-        borderRadius: BorderRadius.circular(widget.radius)),
-    alignment: Alignment.centerLeft,
-
-
-    child: Stack(
-      alignment: Alignment.centerLeft,
-      children: <Widget>[
-        Container(alignment: widget.alignLabel,
-          child: widget.shimmer && !widget.disable ?
-          Shimmer.fromColors(
-            baseColor: widget.disable ?
-            Colors.grey : widget.baseColor,
-            highlightColor: widget.highlightedColor,
-            child: widget.label,
-          ) :
-          widget.label,
-        ),
-
-        widget.disable ? Tooltip(
-          verticalOffset: 50,
-          message: 'Button is disabled',
-
-
-          child: Container(width: widget.width,
-            height: widget.height,
-            alignment: Alignment.centerLeft,
-
-            child: widget.child ?? Container(height: widget.buttonSize,
-              width: widget.buttonSize,
-              decoration: BoxDecoration(
-                  boxShadow: [widget.boxShadow,],
-                  color: Colors.grey,
-                  borderRadius: BorderRadius.circular(widget.radius)),
-              child: Center(child: widget.icon),
+        height: widget.height,
+        width: widget.width,
+        decoration: BoxDecoration(
+            color:
+                widget.disable ? Colors.grey.shade700 : widget.backgroundColor,
+            borderRadius: BorderRadius.circular(widget.radius)),
+        alignment: Alignment.centerLeft,
+        child: Stack(
+          alignment: Alignment.centerLeft,
+          children: <Widget>[
+            Container(
+              alignment: widget.alignLabel,
+              child: widget.shimmer && !widget.disable
+                  ? Shimmer.fromColors(
+                      baseColor:
+                          widget.disable ? Colors.grey : widget.baseColor,
+                      highlightColor: widget.highlightedColor,
+                      child: widget.label,
+                    )
+                  : widget.label,
             ),
-          ),
-        ) :
+            widget.disable
+                ? Tooltip(
+                    verticalOffset: 50,
+                    message: 'Button is disabled',
+                    child: Container(
+                      width: widget.width,
+                      height: widget.height,
+                      alignment: Alignment.centerLeft,
+                      child: widget.child ??
+                          Container(
+                            height: widget.buttonSize,
+                            width: widget.buttonSize,
+                            decoration: BoxDecoration(
+                                boxShadow: [
+                                  widget.boxShadow,
+                                ],
+                                color: Colors.grey,
+                                borderRadius:
+                                    BorderRadius.circular(widget.radius)),
+                            child: Center(child: widget.icon),
+                          ),
+                    ),
+                  )
+                : Dismissible(
+                    key: const Key("cancel"),
+                    direction: DismissDirection.startToEnd,
+                    dismissThresholds: {
+                      DismissDirection.startToEnd: widget.dismissThresholds
+                    },
 
-        Dismissible(key: const Key("cancel"),
-          direction: DismissDirection.startToEnd,
-          dismissThresholds: {
-            DismissDirection.startToEnd: widget.dismissThresholds
-          },
+                    ///gives direction of swipping in argument.
+                    onDismissed: (dir) async {
+                      setState(() {
+                        if (widget.dismissible) {
+                          flag = false;
+                        } else {
+                          flag = !flag;
+                        }
+                      });
 
-          ///gives direction of swipping in argument.
-          onDismissed: (dir) async {
-            setState(() {
-              if (widget.dismissible) {
-                flag = false;
-              } else {
-                flag = !flag;
-              }
-            });
+                      widget.action();
+                      if (widget.vibrationFlag) {
+                        try {
+                          Vibration.vibrate(duration: 200);
+                        } catch (e) {
+                          // ignore: avoid_print
+                          print(e);
+                        }
+                      }
+                    },
 
-            widget.action();
-            if (widget.vibrationFlag) {
-              try {
-                Vibration.vibrate(duration: 200);
-              } catch (e) {
-                // ignore: avoid_print
-                print(e);
-              }
-            }
-          },
-
-
-          child: Container(width: widget.width - (widget.height),
-            height: widget.height,
-            alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.only(
-              left: 2,
-            ),
-            child: widget.child ??
-                Container(height: widget.buttonSize,
-                  width: widget.buttonSize,
-                  decoration: BoxDecoration(
-                      boxShadow: [widget.boxShadow,],
-                      color: widget.buttonColor,
-                      borderRadius: BorderRadius.circular(widget.radius)),
-                  child: Center(child: widget.icon),
-                ),
-          ),
+                    child: Container(
+                      width: widget.width - (widget.height),
+                      height: widget.height,
+                      alignment: Alignment.centerLeft,
+                      padding: const EdgeInsets.only(
+                        left: 2,
+                      ),
+                      child: widget.child ??
+                          Container(
+                            height: widget.buttonSize,
+                            width: widget.buttonSize,
+                            decoration: BoxDecoration(
+                                boxShadow: [
+                                  widget.boxShadow,
+                                ],
+                                color: widget.buttonColor,
+                                borderRadius:
+                                    BorderRadius.circular(widget.radius)),
+                            child: Center(child: widget.icon),
+                          ),
+                    ),
+                  ),
+            const SizedBox.expand(),
+          ],
         ),
-        const SizedBox.expand(),
-      ],
-    ),
-  );
+      );
 }

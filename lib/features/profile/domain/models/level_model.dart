@@ -9,12 +9,12 @@ class LevelModel {
 
   LevelModel(
       {this.responseCode,
-        this.message,
-        this.totalSize,
-        this.limit,
-        this.offset,
-        this.data,
-        this.errors});
+      this.message,
+      this.totalSize,
+      this.limit,
+      this.offset,
+      this.data,
+      this.errors});
 
   LevelModel.fromJson(Map<String, dynamic> json) {
     responseCode = json['response_code'];
@@ -22,10 +22,9 @@ class LevelModel {
     totalSize = json['total_size'];
     limit = json['limit'];
     offset = json['offset'];
-    data = json['data'] != null ?  Data.fromJson(json['data']) : null;
+    data = json['data'] != null ? Data.fromJson(json['data']) : null;
     errors = json['errors'].cast<String>();
   }
-
 }
 
 class Data {
@@ -34,22 +33,25 @@ class Data {
   CompletedCurrentLevelTarget? completedCurrentLevelTarget;
   bool? isCompleted;
 
-  Data({this.nextLevel, this.currentLevel, this.completedCurrentLevelTarget,this.isCompleted});
+  Data(
+      {this.nextLevel,
+      this.currentLevel,
+      this.completedCurrentLevelTarget,
+      this.isCompleted});
 
   Data.fromJson(Map<String, dynamic> json) {
     nextLevel = json['next_level'] != null
-        ?  NextLevel.fromJson(json['next_level'])
+        ? NextLevel.fromJson(json['next_level'])
         : null;
     currentLevel = json['current_level'] != null
-        ?  CurrentLevel.fromJson(json['current_level'])
+        ? CurrentLevel.fromJson(json['current_level'])
         : null;
     completedCurrentLevelTarget = json['completed_current_level_target'] != null
-        ?  CompletedCurrentLevelTarget.fromJson(
-        json['completed_current_level_target'])
+        ? CompletedCurrentLevelTarget.fromJson(
+            json['completed_current_level_target'])
         : null;
     isCompleted = json['level_completed'];
   }
-
 }
 
 class NextLevel {
@@ -72,21 +74,21 @@ class NextLevel {
 
   NextLevel(
       {this.id,
-        this.sequence,
-        this.name,
-        this.rewardType,
-        this.rewardAmount,
-        this.image,
-        this.targetedRide,
-        this.targetedRidePoint,
-        this.targetedAmount,
-        this.targetedAmountPoint,
-        this.targetedCancel,
-        this.targetedCancelPoint,
-        this.targetedReview,
-        this.targetedReviewPoint,
-        this.userType,
-        this.isActive});
+      this.sequence,
+      this.name,
+      this.rewardType,
+      this.rewardAmount,
+      this.image,
+      this.targetedRide,
+      this.targetedRidePoint,
+      this.targetedAmount,
+      this.targetedAmountPoint,
+      this.targetedCancel,
+      this.targetedCancelPoint,
+      this.targetedReview,
+      this.targetedReviewPoint,
+      this.userType,
+      this.isActive});
 
   NextLevel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -98,15 +100,17 @@ class NextLevel {
     targetedRide = double.parse(json['targeted_ride'].toString());
     targetedRidePoint = double.parse(json['targeted_ride_point'].toString());
     targetedAmount = double.parse(json['targeted_amount'].toString());
-    targetedAmountPoint = double.parse(json['targeted_amount_point'].toString());
+    targetedAmountPoint =
+        double.parse(json['targeted_amount_point'].toString());
     targetedCancel = double.parse(json['targeted_cancel'].toString());
-    targetedCancelPoint = double.parse(json['targeted_cancel_point'].toString());
+    targetedCancelPoint =
+        double.parse(json['targeted_cancel_point'].toString());
     targetedReview = double.parse(json['targeted_review'].toString());
-    targetedReviewPoint = double.parse(json['targeted_review_point'].toString());
+    targetedReviewPoint =
+        double.parse(json['targeted_review_point'].toString());
     userType = json['user_type'];
     isActive = json['is_active'];
   }
-
 }
 
 class CurrentLevel {
@@ -129,21 +133,21 @@ class CurrentLevel {
 
   CurrentLevel(
       {this.id,
-        this.sequence,
-        this.name,
-        this.rewardType,
-        this.rewardAmount,
-        this.image,
-        this.targetedRide,
-        this.targetedRidePoint,
-        this.targetedAmount,
-        this.targetedAmountPoint,
-        this.targetedCancel,
-        this.targetedCancelPoint,
-        this.targetedReview,
-        this.targetedReviewPoint,
-        this.userType,
-        this.isActive});
+      this.sequence,
+      this.name,
+      this.rewardType,
+      this.rewardAmount,
+      this.image,
+      this.targetedRide,
+      this.targetedRidePoint,
+      this.targetedAmount,
+      this.targetedAmountPoint,
+      this.targetedCancel,
+      this.targetedCancelPoint,
+      this.targetedReview,
+      this.targetedReviewPoint,
+      this.userType,
+      this.isActive});
 
   CurrentLevel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -155,15 +159,17 @@ class CurrentLevel {
     targetedRide = double.parse(json['targeted_ride'].toString());
     targetedRidePoint = double.parse(json['targeted_ride_point'].toString());
     targetedAmount = double.parse(json['targeted_amount'].toString());
-    targetedAmountPoint = double.parse(json['targeted_amount_point'].toString());
+    targetedAmountPoint =
+        double.parse(json['targeted_amount_point'].toString());
     targetedCancel = double.parse(json['targeted_cancel'].toString());
-    targetedCancelPoint = double.parse(json['targeted_cancel_point'].toString());
+    targetedCancelPoint =
+        double.parse(json['targeted_cancel_point'].toString());
     targetedReview = double.parse(json['targeted_review'].toString());
-    targetedReviewPoint = double.parse(json['targeted_review_point'].toString());
+    targetedReviewPoint =
+        double.parse(json['targeted_review_point'].toString());
     userType = json['user_type'];
     isActive = json['is_active'];
   }
-
 }
 
 class CompletedCurrentLevelTarget {
@@ -178,14 +184,13 @@ class CompletedCurrentLevelTarget {
 
   CompletedCurrentLevelTarget(
       {this.reviewGiven,
-        this.rideComplete,
-        this.earningAmount,
-        this.cancellationRate,
-        this.reviewGivenPoint,
-        this.cancellationRatePoint,
-        this.earningAmountPoint,
-        this.rideCompletePoint
-      });
+      this.rideComplete,
+      this.earningAmount,
+      this.cancellationRate,
+      this.reviewGivenPoint,
+      this.cancellationRatePoint,
+      this.earningAmountPoint,
+      this.rideCompletePoint});
 
   CompletedCurrentLevelTarget.fromJson(Map<String, dynamic> json) {
     reviewGiven = double.parse(json['review_given'].toString());
@@ -195,7 +200,7 @@ class CompletedCurrentLevelTarget {
     reviewGivenPoint = double.parse(json['review_given_point'].toString());
     rideCompletePoint = double.parse(json['ride_complete_point'].toString());
     earningAmountPoint = double.parse(json['earning_amount_point'].toString());
-    cancellationRatePoint = double.parse(json['cancellation_rate_point'].toString());
+    cancellationRatePoint =
+        double.parse(json['cancellation_rate_point'].toString());
   }
-
 }

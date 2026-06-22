@@ -6,15 +6,14 @@ class AddressModel {
   String? offset;
   List<Address>? data;
 
-
-  AddressModel(
-      {this.responseCode,
-        this.message,
-        this.totalSize,
-        this.limit,
-        this.offset,
-        this.data,
-        });
+  AddressModel({
+    this.responseCode,
+    this.message,
+    this.totalSize,
+    this.limit,
+    this.offset,
+    this.data,
+  });
 
   AddressModel.fromJson(Map<String, dynamic> json) {
     responseCode = json['response_code'];
@@ -28,7 +27,6 @@ class AddressModel {
         data!.add(Address.fromJson(v));
       });
     }
-
   }
 
   Map<String, dynamic> toJson() {
@@ -61,16 +59,16 @@ class Address {
 
   Address(
       {this.id,
-        this.userId,
-        this.latitude,
-        this.longitude,
-        this.street,
-        this.house,
-        this.contactPersonName,
-        this.contactPersonPhone,
-        this.address,
-        this.addressLabel,
-        this.createdAt});
+      this.userId,
+      this.latitude,
+      this.longitude,
+      this.street,
+      this.house,
+      this.contactPersonName,
+      this.contactPersonPhone,
+      this.address,
+      this.addressLabel,
+      this.createdAt});
 
   Address.fromJson(Map<String, dynamic> json) {
     id = json['id'];

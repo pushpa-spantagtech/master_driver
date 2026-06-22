@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ride_sharing_user_app/util/dimensions.dart';
 
-void snackBarWidget(String? message, {bool isError = true, double margin = Dimensions.paddingSizeSmall}) {
-  if(message != null && message.isNotEmpty) {
+void snackBarWidget(String? message,
+    {bool isError = true, double margin = Dimensions.paddingSizeSmall}) {
+  if (message != null && message.isNotEmpty) {
     Get.showSnackbar(GetSnackBar(
       backgroundColor: isError ? Colors.red : Colors.green,
       message: message,

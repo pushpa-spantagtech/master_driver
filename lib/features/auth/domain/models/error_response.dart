@@ -3,10 +3,7 @@ class ErrorResponse {
   String? message;
   List<Errors>? errors;
 
-  ErrorResponse(
-      {this.responseCode,
-        this.message,
-        this.errors});
+  ErrorResponse({this.responseCode, this.message, this.errors});
 
   ErrorResponse.fromJson(Map<String, dynamic> json) {
     responseCode = json['response_code'];
@@ -18,8 +15,6 @@ class ErrorResponse {
       });
     }
   }
-
-
 }
 
 class Errors {
@@ -32,5 +27,4 @@ class Errors {
     errorCode = json['error_code'];
     message = json['message'];
   }
-
 }

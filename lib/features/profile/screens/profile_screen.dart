@@ -60,7 +60,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Container(
                     decoration: BoxDecoration(
                       border: Border.all(
-                          color: Theme.of(context).hintColor.withValues(alpha: .25),
+                          color: Theme.of(context)
+                              .hintColor
+                              .withValues(alpha: .25),
                           width: .5),
                       borderRadius:
                           BorderRadius.circular(Dimensions.paddingSizeSmall),
@@ -159,8 +161,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         horizontal: Dimensions.paddingSizeSmall,
                       ),
                       decoration: BoxDecoration(
-                          color:
-                              Theme.of(context).primaryColor.withValues(alpha: 0.25),
+                          color: Theme.of(context)
+                              .primaryColor
+                              .withValues(alpha: 0.25),
                           borderRadius:
                               BorderRadius.circular(Dimensions.radiusSmall)),
                       child: Text(
@@ -429,7 +432,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                 border: Border.all(
                                                     color: Theme.of(context)
                                                         .hintColor
-                                                        .withValues(alpha: 0.25))),
+                                                        .withValues(
+                                                            alpha: 0.25))),
                                             padding: const EdgeInsets.all(
                                                 Dimensions.paddingSizeSmall),
                                             child: Column(
@@ -520,8 +524,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                                 backgroundColor: Theme.of(
                                                                         context)
                                                                     .hintColor
-                                                                    .withValues(alpha:
-                                                                        0.25),
+                                                                    .withValues(
+                                                                        alpha:
+                                                                            0.25),
                                                               ))
                                                         ]),
                                                   const SizedBox(
@@ -608,8 +613,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                                 backgroundColor: Theme.of(
                                                                         context)
                                                                     .hintColor
-                                                                    .withValues(alpha:
-                                                                        0.25),
+                                                                    .withValues(
+                                                                        alpha:
+                                                                            0.25),
                                                               ))
                                                         ]),
                                                   const SizedBox(
@@ -703,8 +709,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                                 backgroundColor: Theme.of(
                                                                         context)
                                                                     .hintColor
-                                                                    .withValues(alpha:
-                                                                        0.25),
+                                                                    .withValues(
+                                                                        alpha:
+                                                                            0.25),
                                                               ))
                                                         ]),
                                                   const SizedBox(

@@ -43,8 +43,16 @@ class _RideAcceptedWidgetState extends State<RideAcceptedWidget>
   void initState() {
     WidgetsBinding.instance.addObserver(this);
     Get.find<RiderMapController>().setSheetHeight(250, false);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      tooltipController.showTooltip();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      if (mounted) {
+        try {
+          tooltipController.showTooltip();
+        } catch (e) {
+          debugPrint('Tooltip not attached yet: $e');
+        }
+      }
     });
     super.initState();
   }

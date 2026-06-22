@@ -10,6 +10,7 @@ import 'package:ride_sharing_user_app/features/wallet/widgets/pending_settled_ca
 class PendingSettledListWidget extends StatefulWidget {
   final WalletController walletController;
   final ScrollController scrollController;
+
   const PendingSettledListWidget({
     super.key,
     required this.walletController,

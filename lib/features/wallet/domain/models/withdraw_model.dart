@@ -6,15 +6,13 @@ class WithdrawModel {
   String? offset;
   List<Withdraw>? data;
 
-
   WithdrawModel(
       {this.responseCode,
-        this.message,
-        this.totalSize,
-        this.limit,
-        this.offset,
-        this.data
-      });
+      this.message,
+      this.totalSize,
+      this.limit,
+      this.offset,
+      this.data});
 
   WithdrawModel.fromJson(Map<String, dynamic> json) {
     responseCode = json['response_code'];
@@ -41,11 +39,11 @@ class Withdraw {
 
   Withdraw(
       {this.id,
-        this.methodName,
-        this.methodFields,
-        this.isDefault,
-        this.isActive,
-        this.createdAt});
+      this.methodName,
+      this.methodFields,
+      this.isDefault,
+      this.isActive,
+      this.createdAt});
 
   Withdraw.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -75,14 +73,12 @@ class MethodFields {
     inputType = json['input_type'];
     inputName = json['input_name'];
     placeholder = json['placeholder'];
-    if(json['is_required'] != null){
-      try{
+    if (json['is_required'] != null) {
+      try {
         isRequired = json['is_required'];
-      }catch(e){
-        isRequired = json['is_required']?1:0;
+      } catch (e) {
+        isRequired = json['is_required'] ? 1 : 0;
       }
     }
-
   }
-
 }

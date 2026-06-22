@@ -37,9 +37,9 @@ enum DrawerStyle {
 
 /// Build custom style with (context, animationValue, slideWidth, menuScreen, mainScreen) {}
 typedef DrawerStyleBuilder = Widget Function(
-    BuildContext context,
-    double animationValue,
-    double slideWidth,
-    Widget menuScreen,
-    Widget mainScreen,
-    );
+  BuildContext context,
+  double animationValue,
+  double slideWidth,
+  Widget menuScreen,
+  Widget mainScreen,
+);

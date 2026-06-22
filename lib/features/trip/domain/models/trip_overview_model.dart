@@ -8,11 +8,11 @@ class TripOverView {
 
   TripOverView(
       {this.successRate,
-        this.totalTrips,
-        this.totalEarn,
-        this.totalCancel,
-        this.totalReviews,
-        this.incomeStat});
+      this.totalTrips,
+      this.totalEarn,
+      this.totalCancel,
+      this.totalReviews,
+      this.incomeStat});
 
   TripOverView.fromJson(Map<String, dynamic> json) {
     successRate = json['success_rate'].toDouble();
@@ -41,9 +41,20 @@ class IncomeStat {
   double? temPm;
   double? twoAm;
 
-
   IncomeStat(
-      {this.sun, this.mon, this.tues, this.wed, this.thu, this.fri, this.sat,this.sixAm,this.sixPm,this.temAM,this.temPm,this.twoAm,this.twoPm});
+      {this.sun,
+      this.mon,
+      this.tues,
+      this.wed,
+      this.thu,
+      this.fri,
+      this.sat,
+      this.sixAm,
+      this.sixPm,
+      this.temAM,
+      this.temPm,
+      this.twoAm,
+      this.twoPm});
 
   IncomeStat.fromJson(Map<String, dynamic> json) {
     sun = json['Sun'] != null ? json['Sun'].toDouble() : 0;

@@ -1,18 +1,13 @@
 class TripDetailsModel {
   TripDetail? data;
 
-
-  TripDetailsModel(
-      {
-        this.data,
-        });
+  TripDetailsModel({
+    this.data,
+  });
 
   TripDetailsModel.fromJson(Map<String, dynamic> json) {
-
     data = json['data'] != null ? TripDetail.fromJson(json['data']) : null;
-
   }
-
 }
 
 class TripDetail {
@@ -72,122 +67,122 @@ class TripDetail {
   bool? isLoading;
   bool? isReviewed;
 
-
   TripDetail(
       {this.id,
-        this.refId,
-        this.customer,
-        this.vehicle,
-        this.vehicleCategory,
-        this.estimatedFare,
-        this.orgEstFare,
-        this.estimatedTime,
-        this.estimatedDistance,
-        this.actualFare,
-        this.actualTime,
-        this.actualDistance,
-        this.waitingTime,
-        this.idleTime,
-        this.idleFee,
-        this.delayFee,
-        this.cancellationFee,
-        this.distanceWiseFare,
-        this.cancelledBy,
-        this.vatTax,
-        this.tips,
-        this.additionalCharge,
-        this.pickupCoordinates,
-        this.pickupAddress,
-        this.destinationCoordinates,
-        this.destinationAddress,
-        this.customerRequestCoordinates,
-        this.paymentMethod,
-        this.couponAmount,
-        this.discountAmount,
-        this.note,
-        this.totalFare,
-        this.otp,
-        this.riseRequestCount,
-        this.type,
-        this.createdAt,
-        this.completed,
-        this.entrance,
-        this.intermediateAddresses,
-        this.encodedPolyline,
-        this.customerAvgRating,
-        this.driverAvgRating,
-        this.paidFare,
-        this.currentStatus,
-        this.tripStatus,
-        this.parcelInformation,
-        this.parcelUserInfo,
-        this.paymentStatus,
-        this.fareBiddings,
-        this.screenshot,
-        this.isPaused,
-        this.isReachedDestination,
-        this.isLoading,
-        this.isReviewed,
-        this.adminCommission
-      });
+      this.refId,
+      this.customer,
+      this.vehicle,
+      this.vehicleCategory,
+      this.estimatedFare,
+      this.orgEstFare,
+      this.estimatedTime,
+      this.estimatedDistance,
+      this.actualFare,
+      this.actualTime,
+      this.actualDistance,
+      this.waitingTime,
+      this.idleTime,
+      this.idleFee,
+      this.delayFee,
+      this.cancellationFee,
+      this.distanceWiseFare,
+      this.cancelledBy,
+      this.vatTax,
+      this.tips,
+      this.additionalCharge,
+      this.pickupCoordinates,
+      this.pickupAddress,
+      this.destinationCoordinates,
+      this.destinationAddress,
+      this.customerRequestCoordinates,
+      this.paymentMethod,
+      this.couponAmount,
+      this.discountAmount,
+      this.note,
+      this.totalFare,
+      this.otp,
+      this.riseRequestCount,
+      this.type,
+      this.createdAt,
+      this.completed,
+      this.entrance,
+      this.intermediateAddresses,
+      this.encodedPolyline,
+      this.customerAvgRating,
+      this.driverAvgRating,
+      this.paidFare,
+      this.currentStatus,
+      this.tripStatus,
+      this.parcelInformation,
+      this.parcelUserInfo,
+      this.paymentStatus,
+      this.fareBiddings,
+      this.screenshot,
+      this.isPaused,
+      this.isReachedDestination,
+      this.isLoading,
+      this.isReviewed,
+      this.adminCommission});
 
   TripDetail.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     refId = json['ref_id'];
-    customer = json['customer'] != null ? Customer.fromJson(json['customer']) : null;
-    vehicle = json['vehicle'] != null ? Vehicle.fromJson(json['vehicle']) : null;
-    vehicleCategory = json['vehicle_category'] != null ? VehicleCategory.fromJson(json['vehicle_category']) : null;
+    customer =
+        json['customer'] != null ? Customer.fromJson(json['customer']) : null;
+    vehicle =
+        json['vehicle'] != null ? Vehicle.fromJson(json['vehicle']) : null;
+    vehicleCategory = json['vehicle_category'] != null
+        ? VehicleCategory.fromJson(json['vehicle_category'])
+        : null;
     estimatedFare = json['estimated_fare'].toString();
     orgEstFare = json['org_est_fare'].toString();
     estimatedTime = json['estimated_time'].toString();
-    if(json['estimated_distance'] != null){
+    if (json['estimated_distance'] != null) {
       estimatedDistance = json['estimated_distance'].toDouble();
     }
     actualFare = json['actual_fare'].toString();
-    if(json['actual_time'] != null){
-      try{
+    if (json['actual_time'] != null) {
+      try {
         actualTime = json['actual_time'].toDouble();
-      }catch(e){
+      } catch (e) {
         actualTime = double.parse(json['actual_time'].toString());
       }
-    }else{
+    } else {
       actualTime = 0;
     }
 
-    if(json['actual_distance'] != null){
-      try{
+    if (json['actual_distance'] != null) {
+      try {
         actualDistance = json['actual_distance'].toDouble();
-      }catch(e){
+      } catch (e) {
         actualDistance = double.parse(json['actual_distance'].toString());
       }
-
     }
 
     waitingTime = json['waiting_time'].toString();
     idleTime = json['idle_time'].toString();
 
-    if(json['idle_fee'] != null){
+    if (json['idle_fee'] != null) {
       idleFee = json['idle_fee'].toDouble();
     }
-    if(json['delay_fee'] != null){
+    if (json['delay_fee'] != null) {
       delayFee = json['delay_fee'].toDouble();
     }
-    if(json['cancellation_fee'] != null){
+    if (json['cancellation_fee'] != null) {
       cancellationFee = json['cancellation_fee'].toDouble();
     }
-    if(json['distance_wise_fare'] != null){
+    if (json['distance_wise_fare'] != null) {
       distanceWiseFare = json['distance_wise_fare'].toDouble();
     }
 
     cancelledBy = json['cancelled_by'];
-    if(json['vat_tax'] != null){
+    if (json['vat_tax'] != null) {
       vatTax = json['vat_tax'].toDouble();
     }
 
-    if(json['tips'] != null){
+    if (json['tips'] != null) {
       tips = json['tips'].toDouble();
     }
-
 
     additionalCharge = json['additional_charge'].toString();
     pickupCoordinates = json['pickup_coordinates'] != null
@@ -203,18 +198,18 @@ class TripDetail {
         : null;
 
     paymentMethod = json['payment_method'];
-    if(json['coupon_amount'] != null){
-      try{
+    if (json['coupon_amount'] != null) {
+      try {
         couponAmount = json['coupon_amount'].toDouble();
-      }catch(e){
+      } catch (e) {
         couponAmount = double.parse(json['coupon_amount'].toString());
       }
     }
 
-    if(json['discount_amount'] != null){
-      try{
+    if (json['discount_amount'] != null) {
+      try {
         discountAmount = json['discount_amount'].toDouble();
-      }catch(e){
+      } catch (e) {
         discountAmount = double.parse(json['discount_amount'].toString());
       }
     }
@@ -228,12 +223,16 @@ class TripDetail {
     entrance = json['entrance'];
     intermediateAddresses = json['intermediate_addresses'];
     encodedPolyline = json['encoded_polyline'];
-    customerAvgRating = json['customer_avg_rating']?? '0';
+    customerAvgRating = json['customer_avg_rating'] ?? '0';
     driverAvgRating = json['driver_avg_rating'];
     currentStatus = json['current_status'];
     paidFare = json['paid_fare'].toString();
-    tripStatus = json['trip_status'] != null ? TripStatus.fromJson(json['trip_status']) : null;
-    parcelInformation = json['parcel_information'] != null ? ParcelInformation.fromJson(json['parcel_information']) : null;
+    tripStatus = json['trip_status'] != null
+        ? TripStatus.fromJson(json['trip_status'])
+        : null;
+    parcelInformation = json['parcel_information'] != null
+        ? ParcelInformation.fromJson(json['parcel_information'])
+        : null;
     if (json['parcel_user_info'] != null) {
       parcelUserInfo = <ParcelUserInfo>[];
       json['parcel_user_info'].forEach((v) {
@@ -249,12 +248,13 @@ class TripDetail {
     }
     screenshot = json['screenshot'];
     isPaused = json['is_paused'];
-    isReachedDestination = json['is_reached_destination']?? false;
+    isReachedDestination = json['is_reached_destination'] ?? false;
     isLoading = false;
     isReviewed = json['customer_review'];
-    json['admin_commission'] != null ? adminCommission = json['admin_commission'].toDouble() : null;
+    json['admin_commission'] != null
+        ? adminCommission = json['admin_commission'].toDouble()
+        : null;
   }
-
 }
 
 class Customer {
@@ -268,18 +268,17 @@ class Customer {
   List<String>? identificationImage;
   String? profileImage;
 
-
-  Customer(
-      {this.id,
-        this.firstName,
-        this.lastName,
-        this.email,
-        this.phone,
-        this.identificationNumber,
-        this.identificationType,
-        this.identificationImage,
-        this.profileImage,
-        });
+  Customer({
+    this.id,
+    this.firstName,
+    this.lastName,
+    this.email,
+    this.phone,
+    this.identificationNumber,
+    this.identificationType,
+    this.identificationImage,
+    this.profileImage,
+  });
 
   Customer.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -291,10 +290,7 @@ class Customer {
     identificationType = json['identification_type'];
     identificationImage = json['identification_image'].cast<String>();
     profileImage = json['profile_image'];
-
   }
-
-
 }
 
 class Vehicle {
@@ -311,15 +307,15 @@ class Vehicle {
 
   Vehicle(
       {this.model,
-        this.licencePlateNumber,
-        this.licenceExpireDate,
-        this.vinNumber,
-        this.transmission,
-        this.fuelType,
-        this.ownership,
-        this.documents,
-        this.isActive,
-        this.createdAt});
+      this.licencePlateNumber,
+      this.licenceExpireDate,
+      this.vinNumber,
+      this.transmission,
+      this.fuelType,
+      this.ownership,
+      this.documents,
+      this.isActive,
+      this.createdAt});
 
   Vehicle.fromJson(Map<String, dynamic> json) {
     model = json['model'] != null ? Model.fromJson(json['model']) : null;
@@ -330,10 +326,9 @@ class Vehicle {
     fuelType = json['fuel_type'];
     ownership = json['ownership'];
     documents = json['documents'].cast<String>();
-    isActive = json['is_active'] ? 1: 0;
+    isActive = json['is_active'] ? 1 : 0;
     createdAt = json['created_at'];
   }
-
 }
 
 class Model {
@@ -350,15 +345,15 @@ class Model {
 
   Model(
       {this.id,
-        this.name,
-        this.seatCapacity,
-        this.maximumWeight,
-        this.hatchBagCapacity,
-        this.engine,
-        this.description,
-        this.image,
-        this.isActive,
-        this.createdAt});
+      this.name,
+      this.seatCapacity,
+      this.maximumWeight,
+      this.hatchBagCapacity,
+      this.engine,
+      this.description,
+      this.image,
+      this.isActive,
+      this.createdAt});
 
   Model.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -369,10 +364,9 @@ class Model {
     engine = json['engine'];
     description = json['description'];
     image = json['image'];
-    isActive = json['is_active'] ? 1: 0;
+    isActive = json['is_active'] ? 1 : 0;
     createdAt = json['created_at'];
   }
-
 }
 
 class VehicleCategory {
@@ -389,7 +383,6 @@ class VehicleCategory {
     image = json['image'];
     type = json['type'];
   }
-
 }
 
 class TripStatus {
@@ -399,14 +392,13 @@ class TripStatus {
   String? completed;
   String? cancelled;
 
-
-  TripStatus(
-      {this.pending,
-        this.accepted,
-        this.ongoing,
-        this.completed,
-        this.cancelled,
-     });
+  TripStatus({
+    this.pending,
+    this.accepted,
+    this.ongoing,
+    this.completed,
+    this.cancelled,
+  });
 
   TripStatus.fromJson(Map<String, dynamic> json) {
     pending = json['pending'];
@@ -415,7 +407,6 @@ class TripStatus {
     completed = json['completed'];
     cancelled = json['cancelled'];
   }
-
 }
 
 class PickupCoordinates {
@@ -428,9 +419,7 @@ class PickupCoordinates {
     type = json['type'];
     coordinates = json['coordinates'].cast<double>();
   }
-
 }
-
 
 class ParcelUserInfo {
   String? contactNumber;
@@ -446,12 +435,9 @@ class ParcelUserInfo {
     address = json['address'];
     userType = json['user_type'];
   }
-
 }
 
-
 class ParcelDSenderReceiver {
-
   String? senderPersonName;
   String? senderPersonPhone;
   String? senderAddress;
@@ -459,16 +445,14 @@ class ParcelDSenderReceiver {
   String? receiverPersonPhone;
   String? receiverAddress;
 
-
-  ParcelDSenderReceiver(
-      {
-        this.senderPersonName,
-        this.senderPersonPhone,
-        this.senderAddress,
-        this.receiverPersonName,
-        this.receiverPersonPhone,
-        this.receiverAddress,
-        });
+  ParcelDSenderReceiver({
+    this.senderPersonName,
+    this.senderPersonPhone,
+    this.senderAddress,
+    this.receiverPersonName,
+    this.receiverPersonPhone,
+    this.receiverAddress,
+  });
 
   ParcelDSenderReceiver.fromJson(Map<String, dynamic> json) {
     senderPersonName = json['sender_person_name'];
@@ -477,10 +461,7 @@ class ParcelDSenderReceiver {
     receiverPersonName = json['receiver_person_name'];
     receiverPersonPhone = json['receiver_person_phone'];
     receiverAddress = json['receiver_address'];
-
   }
-
-
 }
 
 class ParcelInformation {
@@ -495,26 +476,22 @@ class ParcelInformation {
     payer = json['payer'];
     weight = json['weight'].toString();
   }
-
 }
-
 
 class FareBiddings {
   String? id;
   String? tripRequestsId;
   String? bidFare;
 
-
-  FareBiddings(
-      {this.id,
-        this.tripRequestsId,
-        this.bidFare,
-        });
+  FareBiddings({
+    this.id,
+    this.tripRequestsId,
+    this.bidFare,
+  });
 
   FareBiddings.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     tripRequestsId = json['trip_requests_id'];
     bidFare = json['bid_fare'];
-
   }
 }

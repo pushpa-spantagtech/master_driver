@@ -123,8 +123,9 @@ class RiderMapController extends GetxController implements GetxService {
     _checkIsRideAccept = !_checkIsRideAccept;
   }
 
-  void setMapController(GoogleMapController mapController) {
-    mapController = mapController;
+  void setMapController(GoogleMapController controller) {
+    mapController = controller;
+    update();
   }
 
   double sheetHeight = 0;
@@ -140,7 +141,7 @@ class RiderMapController extends GetxController implements GetxService {
     List<LatLng> polylineCoordinates = [];
     if (Get.find<RideController>().polyline != '') {
       List<PointLatLng> result =
-          polylinePoints.decodePolyline(Get.find<RideController>().polyline);
+      polylinePoints.decodePolyline(Get.find<RideController>().polyline);
       if (kDebugMode) {
         print(
             'here is latlng initial==> ${result.length},${result[0].latitude}-/${result[result.length - 1].latitude},/${result[result.length - 1].longitude}');
@@ -187,13 +188,19 @@ class RiderMapController extends GetxController implements GetxService {
       _addPolyLine(polylineCoordinates);
 
       polylineCoordinateList = polylineCoordinates;
-      updateMarkerAndCircle(polylineCoordinates.first);
+
+      // Use driver's live GPS position for marker and destination-radius check.
+      // Earlier this was checking route start vs route end, so the app could show
+      // distance 0.0 but still block trip completion.
+      final LatLng currentDriverPosition =
+          Get.find<LocationController>().initialPosition;
+      updateMarkerAndCircle(currentDriverPosition);
 
       isInsideCircle(
-          result[0].latitude,
-          result[0].longitude,
-          result[result.length - 1].latitude,
-          result[result.length - 1].longitude,
+          currentDriverPosition.latitude,
+          currentDriverPosition.longitude,
+          _destinationPosition.latitude,
+          _destinationPosition.longitude,
           Get.find<SplashController>().config!.completionRadius!);
       if (mapBound) {
         boundMapScreen(_initialPosition, _destinationPosition);
@@ -221,28 +228,27 @@ class RiderMapController extends GetxController implements GetxService {
       {bool updateLiveLocation = false}) async {
     markers = HashSet();
     Uint8List fromMarker =
-        await convertAssetToUnit8List(Images.mapIcon, width: 20);
+    await convertAssetToUnit8List(Images.mapIcon, width: 30);
     Uint8List toMarker =
-        await convertAssetToUnit8List(Images.mapLocationIcon, width: 20);
+    await convertAssetToUnit8List(Images.mapLocationIcon, width: 25);
 
     markers.add(Marker(
-      markerId: const MarkerId('from'),
+      markerId: const MarkerId('pickup'),
       position: from,
       infoWindow: InfoWindow(
-        title: Get.find<RideController>().tripDetail?.pickupAddress ?? '',
-        snippet: 'pick_up_location'.tr,
+        title: 'Pickup Location',
+        snippet: Get.find<RideController>().tripDetail?.pickupAddress ?? '',
       ),
-      anchor: const Offset(0.5, 0.6),
       icon: BitmapDescriptor.bytes(fromMarker),
     ));
 
     markers.add(Marker(
-      markerId: const MarkerId('to'),
+      markerId: const MarkerId('destination'),
       position: to,
-      anchor: const Offset(0.5, 0.6),
       infoWindow: InfoWindow(
-        title: Get.find<RideController>().tripDetail?.destinationAddress ?? '',
-        snippet: 'destination'.tr,
+        title: 'Destination',
+        snippet:
+        Get.find<RideController>().tripDetail?.destinationAddress ?? '',
       ),
       icon: BitmapDescriptor.bytes(toMarker),
     ));
@@ -280,33 +286,47 @@ class RiderMapController extends GetxController implements GetxService {
     if (latLong == null) return;
 
     markers.removeWhere((marker) => marker.markerId.value == "home");
-    // Uint8List car =
-    //     await convertAssetToUnit8List(Images.mapLocationIcon, width: 60);
+
     if (currentRideState.name == "initial") {
-      markers.removeWhere(
-        (marker) => marker.markerId.value == "home",
-      );
       update();
       return;
     }
 
-    // else {
-    //   car = await convertAssetToUnit8List(
-    //       Get.find<ProfileController>().profileInfo?.vehicle?.category?.type ==
-    //               'car'
-    //           ? Images.carIconTop
-    //           : Images.bike,
-    //       width: 30);
-    // }
+    // final Uint8List car = await convertAssetToUnit8List(
+    //   Get.find<ProfileController>().profileInfo?.vehicle?.category?.type == 'car'
+    //       ? Images.carIconTop
+    //       : Images.bike,
+    //   width: 28,
+    // );
 
-    // Calculate bearing from polyline or use 0 if no polyline
-    // double bearing = 0;
-    // if (polylineCoordinateList.isNotEmpty &&
-    //     polylineCoordinateList.length > 1) {
-    //   bearing = _calculateBearing(latLong, polylineCoordinateList[1]);
-    // } else if (polylineCoordinateList.isNotEmpty) {
-    //   bearing = _calculateBearing(latLong, polylineCoordinateList.last);
-    // }
+    double bearing = 0;
+    if (polylineCoordinateList.length > 1) {
+      LatLng targetPoint = polylineCoordinateList.last;
+
+      // Find the next point on the route nearest to the driver's live position.
+      double nearestDistance = double.infinity;
+      int nearestIndex = 0;
+
+      for (int i = 0; i < polylineCoordinateList.length; i++) {
+        final double distance = distanceBetween(
+          latLong.latitude,
+          latLong.longitude,
+          polylineCoordinateList[i].latitude,
+          polylineCoordinateList[i].longitude,
+        );
+
+        if (distance < nearestDistance) {
+          nearestDistance = distance;
+          nearestIndex = i;
+        }
+      }
+
+      if (nearestIndex < polylineCoordinateList.length - 1) {
+        targetPoint = polylineCoordinateList[nearestIndex + 1];
+      }
+
+      bearing = _calculateBearing(latLong, targetPoint);
+    }
 
     // markers.add(Marker(
     //   markerId: const MarkerId("home"),
@@ -318,6 +338,34 @@ class RiderMapController extends GetxController implements GetxService {
     //   anchor: const Offset(0.5, 0.5),
     //   icon: BitmapDescriptor.bytes(car),
     // ));
+
+    // Keep destination reach status based on actual driver GPS.
+    if (_destinationPosition.latitude != 23.83721 ||
+        _destinationPosition.longitude != 90.363715) {
+      isInsideCircle(
+        latLong.latitude,
+        latLong.longitude,
+        _destinationPosition.latitude,
+        _destinationPosition.longitude,
+        Get.find<SplashController>().config?.completionRadius ?? 100,
+      );
+    }
+
+    // Follow the driver's live location while the ride is active.
+    // This keeps the map moving along with the vehicle instead of only updating the marker.
+    if (mapController != null &&
+        (currentRideState == RideState.accepted ||
+            currentRideState == RideState.ongoing)) {
+      mapController!.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: latLong,
+            zoom: 17,
+            bearing: bearing,
+          ),
+        ),
+      );
+    }
 
     update();
   }
@@ -414,7 +462,7 @@ class RiderMapController extends GetxController implements GetxService {
       );
 
       mapController?.animateCamera(
-        CameraUpdate.newLatLngBounds(bounds, 70),
+        CameraUpdate.newLatLngBounds(bounds, 250),
       );
     } catch (e) {
       if (kDebugMode) {
@@ -459,12 +507,31 @@ class RiderMapController extends GetxController implements GetxService {
 
   void isInsideCircle(double lat, double lng, double latCenter,
       double lngCenter, double radius) {
-    // Calculate the distance between two points using Haversine formula
     double distance = distanceBetween(lat, lng, latCenter, lngCenter);
-    // Check if the distance is less than or equal to the radius
-    _isInside = (distance <= radius) ? true : false;
+
+    print('======================');
+    print('Driver Lat : $lat');
+    print('Driver Lng : $lng');
+
+    print('Drop Lat   : $latCenter');
+    print('Drop Lng   : $lngCenter');
+    print('Distance   : $distance');
+    print('Radius     : $radius');
+    _isInside = distance <= radius;
+    print('Inside Radius : $_isInside');
+    print('======================');
+
     update();
   }
+
+  // void isInsideCircle(double lat, double lng, double latCenter,
+  //     double lngCenter, double radius) {
+  //   // Calculate the distance between two points using Haversine formula
+  //   double distance = distanceBetween(lat, lng, latCenter, lngCenter);
+  //   // Check if the distance is less than or equal to the radius
+  //   _isInside = (distance <= radius) ? true : false;
+  //   update();
+  // }
 
   double distanceBetween(double startLatitude, double startLongitude,
       double endLatitude, double endLongitude) {
@@ -476,7 +543,7 @@ class RiderMapController extends GetxController implements GetxService {
   void setMarkersInitialPosition() {
     if (Get.find<RideController>().polyline != '') {
       List<PointLatLng> result =
-          polylinePoints.decodePolyline(Get.find<RideController>().polyline);
+      polylinePoints.decodePolyline(Get.find<RideController>().polyline);
 
       _initialPosition = LatLng(result[0].latitude, result[0].longitude);
       _destinationPosition = LatLng(result[result.length - 1].latitude,

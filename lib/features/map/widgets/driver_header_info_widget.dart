@@ -45,8 +45,30 @@ class DriverHeaderInfoWidget extends StatelessWidget {
             InkWell(
               overlayColor: WidgetStateProperty.all(Colors.transparent),
               onTap: () async {
-                await launchUrl(Uri.parse(
-                    'google.navigation:q=${Get.find<RideController>().tripDetail!.destinationCoordinates!.coordinates![1].toString()}, ${Get.find<RideController>().tripDetail!.destinationCoordinates!.coordinates![0].toString()}&key=${AppConstants.polylineMapKey}'));
+                final trip = Get.find<RideController>().tripDetail;
+                if (trip == null) return;
+
+                final String status = trip.currentStatus ?? '';
+
+                // Before OTP / before trip start: navigate to pickup location.
+                // After OTP / ongoing: navigate to destination location.
+                final bool navigateToPickup =
+                    status == 'accepted' || status == 'pending';
+
+                final coordinates = navigateToPickup
+                    ? trip.pickupCoordinates?.coordinates
+                    : trip.destinationCoordinates?.coordinates;
+
+                if (coordinates == null || coordinates.length < 2) return;
+
+                // Backend returns coordinates as [longitude, latitude].
+                final double lat = coordinates[1];
+                final double lng = coordinates[0];
+
+                final Uri url =
+                    Uri.parse('google.navigation:q=$lat,$lng&mode=d');
+
+                await launchUrl(url, mode: LaunchMode.externalApplication);
               },
               child: Container(
                 decoration: BoxDecoration(

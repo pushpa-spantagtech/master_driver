@@ -195,7 +195,7 @@ class ProfileController extends GetxController implements GetxService {
 
             /// Fetch ride detail
             final detailResponse =
-                await rideController.getRideDetailBeforeAccept(
+            await rideController.getRideDetailBeforeAccept(
               pendingTrip.id!,
             );
             debugPrint("[ONLINE_RESYNC] Ride detail response => "
@@ -228,9 +228,9 @@ class ProfileController extends GetxController implements GetxService {
               if (!Get.currentRoute.contains('MapScreen')) {
                 Future.delayed(
                   const Duration(milliseconds: 500),
-                  () {
+                      () {
                     Get.offAll(
-                      () => const MapScreen(),
+                          () => const MapScreen(),
                     );
                   },
                 );
@@ -274,7 +274,7 @@ class ProfileController extends GetxController implements GetxService {
     brandIds.add(0);
     isLoading = true;
     Response? response =
-        await profileServiceInterface.getVehicleBrandList(offset);
+    await profileServiceInterface.getVehicleBrandList(offset);
     if (response!.statusCode == 200) {
       brandList = [];
       brandList.add(
@@ -282,7 +282,7 @@ class ProfileController extends GetxController implements GetxService {
       brandList.addAll(VehicleBrandModel.fromJson(response.body).data!);
 
       int index = brandList.indexWhere(
-          (value) => value.name == profileInfo?.vehicle?.brand?.name);
+              (value) => value.name == profileInfo?.vehicle?.brand?.name);
       if (index == -1) {
         setBrandIndex(brandList[0], true);
       } else {
@@ -304,7 +304,7 @@ class ProfileController extends GetxController implements GetxService {
       modelList.addAll(selectedBrand!.vehicleModels!);
 
       int index = modelList.indexWhere(
-          (value) => value.name == profileInfo?.vehicle?.model?.name);
+              (value) => value.name == profileInfo?.vehicle?.model?.name);
       if (index == -1) {
         selectedModel = modelList[0];
       } else {
@@ -350,7 +350,7 @@ class ProfileController extends GetxController implements GetxService {
       categoryList.add(Category(id: 'abc', name: 'select_vehicle_category'));
       categoryList.addAll(CategoryModel.fromJson(response.body).data!);
       int index = categoryList.indexWhere(
-          (value) => value.name == profileInfo?.vehicle?.category?.name);
+              (value) => value.name == profileInfo?.vehicle?.category?.name);
       if (index == -1) {
         selectedCategory = categoryList[0];
       } else {
@@ -393,8 +393,12 @@ class ProfileController extends GetxController implements GetxService {
       helpText: 'select_date'.tr,
       context: context,
       initialDate: DateTime.now(),
-      firstDate: DateTime(2022),
-      lastDate: DateTime(2030),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(
+        DateTime.now().year + 10,
+        DateTime.now().month,
+        DateTime.now().day,
+      ),
     ).then((date) {
       if (type == 'start') {
         _startDate = date!;
@@ -412,7 +416,7 @@ class ProfileController extends GetxController implements GetxService {
     update();
 
     Response? response =
-        await profileServiceInterface.addNewVehicle(vehicleBody, documents);
+    await profileServiceInterface.addNewVehicle(vehicleBody, documents);
     if (response!.statusCode == 200) {
       creating = false;
       getProfileInfo().then((value) {
@@ -434,7 +438,7 @@ class ProfileController extends GetxController implements GetxService {
     creating = true;
     update();
     Response? response =
-        await profileServiceInterface.updateVehicle(vehicleBody, driverId);
+    await profileServiceInterface.updateVehicle(vehicleBody, driverId);
     if (response!.statusCode == 200) {
       creating = false;
       getProfileInfo().then((value) {

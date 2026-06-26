@@ -15,7 +15,7 @@
   "profile": "Profile",
   "welcome_to": "Welcome to",
   "log_in": "Log In",
-  "log_in_message": "To reach your customer destination",
+  "log_in_message": "Sign in to continue driving",
   "otp_login": "OTP Login",
   "do_not_have_an_account": "Don't have an account?",
   "sign_up_as_driver": "Sign Up as Driver",
@@ -37,7 +37,7 @@
   "email": "Email",
   "first_name_is_required": "First name is required",
   "last_name_is_required": "Last name is required",
-  "phone_is_required": "Phone is required",
+  "phone_is_required": "Mobile number is required",
   "password_is_required": "Password is required",
   "confirm_password_is_required": "Confirm password is required",
   "password_is_mismatch": "Password is mismatch",
@@ -668,7 +668,7 @@
 
 
   "mobile_number" : "Mobile number",
-  "get_started" : "Get started",
+  "get_started" : "Welcome Back",
   "i_agree": "I agree",
   "terms_and_conditions": "Terms and Conditions",
   "six_digit_code": "We’ve sent a 6-digit code to your phone",

@@ -171,27 +171,24 @@ class ProfileEditScreenState extends State<ProfileEditScreen>
                   nextFocus: emailFocus,
                   inputAction: TextInputAction.next,
                 ),
-                Row(children: [
-                  TextFieldTitleWidget(title: 'phone'.tr),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(10, 17, 0, 8),
-                    child: Icon(Icons.warning,
-                        color: Theme.of(context).colorScheme.primary, size: 12),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(5, 17, 0, 8),
-                    child: Text(
-                      "phone_number_isn't_editable".tr,
-                      style: textRegular.copyWith(
-                        color: Theme.of(context).hintColor,
-                        fontSize: Dimensions.fontSizeSmall,
-                      ),
+                const SizedBox(height: 0),
+
+                Row(
+                  children: [
+                    Icon(
+                      Icons.warning_amber_rounded,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 12,
                     ),
-                  )
-                ]),
+                    const SizedBox(width: 4),
+                  ],
+                ),
+
+                const SizedBox(height: 2),
                 TextFieldWidget(
                   borderRadius: 50,
-                  hintText: 'phone',
+                  label: 'phone'.tr,
+                  hintText: 'phone'.tr,
                   isEnabled: false,
                   showCountryCode: false,
                   inputType: TextInputType.number,
@@ -210,44 +207,77 @@ class ProfileEditScreenState extends State<ProfileEditScreen>
                   focusNode: emailFocus,
                   inputAction: TextInputAction.done,
                 ),
-                TextFieldTitleWidget(title: 'identity_type'.tr),
-                Container(
-                  height: 50,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: Dimensions.paddingSizeDefault),
-                  decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(50),
-                      border: Border.all(
-                          width: .5,
-                          color: Theme.of(context)
-                              .hintColor
-                              .withValues(alpha: .7))),
-                  child: DropdownButton<String>(
-                    hint: authController.identityType == ''
-                        ? Text('select_identity_type'.tr)
-                        : Text(authController.identityType.tr,
-                            style: textRegular.copyWith(
-                                color: Theme.of(context)
-                                    .textTheme
-                                    .bodyLarge!
-                                    .color)),
-                    items: authController.identityTypeList.map((String value) {
-                      return DropdownMenuItem<String>(
-                          value: value, child: Text(value.tr));
-                    }).toList(),
-                    onChanged: (val) {
-                      authController.setIdentityType(val!);
-                    },
-                    isExpanded: true,
-                    underline: const SizedBox(),
+                // TextFieldTitleWidget(title: 'identity_type'.tr),
+                DropdownButtonFormField<String>(
+                  value: authController.identityType.isEmpty
+                      ? null
+                      : authController.identityType,
+                  isExpanded: true,
+                  style: textRegular.copyWith(
+                    fontSize: Dimensions.fontSizeDefault,
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
                   ),
+                  decoration: InputDecoration(
+                    labelText: 'identity_type'.tr,
+                    floatingLabelBehavior: FloatingLabelBehavior.auto,
+                    labelStyle: textMedium.copyWith(
+                      fontSize: Dimensions.fontSizeDefault,
+                      color: Colors.grey.shade500,
+                    ),
+                    floatingLabelStyle: textMedium.copyWith(
+                      fontSize: Dimensions.fontSizeSmall,
+                      color: Colors.grey.shade500,
+                    ),
+                    prefixIcon: Icon(
+                      Icons.badge_outlined,
+                      size: 20,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.only(
+                      left: 18,
+                      right: 16,
+                      top: 22,
+                      bottom: 16,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: Colors.grey.shade300,
+                        width: 1,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.primary,
+                        width: 1.4,
+                      ),
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  items: authController.identityTypeList.map((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(
+                        value.tr,
+                        style: textRegular.copyWith(
+                          fontSize: Dimensions.fontSizeDefault,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (val) {
+                    authController.setIdentityType(val!);
+                  },
                 ),
-                TextFieldTitleWidget(
-                  title: 'identification_number'.tr,
-                ),
+
+                const SizedBox(height: 15),
                 TextFieldWidget(
-                  hintText: 'Ex: 12345',
+                  hintText: 'identification_number'.tr,
                   inputType: TextInputType.text,
                   prefixIcon: Images.identity,
                   controller: identityNumberController,

@@ -25,114 +25,129 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     Get.find<RideController>().updateRoute(true);
+
     final List<NavigationModel> item = [
       NavigationModel(
-          name: 'home'.tr,
-          activeIcon: Images.homeActive,
-          inactiveIcon: Images.homeOutline,
-          screen: const HomeMenu()),
+        name: 'home'.tr,
+        activeIcon: Images.homeActive,
+        inactiveIcon: Images.homeOutline,
+        screen: const HomeMenu(),
+      ),
       NavigationModel(
-          name: 'activity'.tr,
-          activeIcon: Images.activityActive,
-          inactiveIcon: Images.activityOutline,
-          screen: const TripHistoryMenu()),
+        name: 'activity'.tr,
+        activeIcon: Images.activityActive,
+        inactiveIcon: Images.activityOutline,
+        screen: const TripHistoryMenu(),
+      ),
       NavigationModel(
-          name: 'notification'.tr,
-          activeIcon: Images.notificationActive,
-          inactiveIcon: Images.notificationOutline,
-          screen: const NotificationMenu()),
+        name: 'notification'.tr,
+        activeIcon: Images.notificationActive,
+        inactiveIcon: Images.notificationOutline,
+        screen: const NotificationMenu(),
+      ),
       NavigationModel(
-          name: 'money'.tr,
-          activeIcon: Images.moneyActive,
-          inactiveIcon: Images.moneyOutline,
-          screen: const WalletScreenMenu()),
+        name: 'money'.tr,
+        activeIcon: Images.moneyActive,
+        inactiveIcon: Images.moneyOutline,
+        screen: const WalletScreenMenu(),
+      ),
     ];
 
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
-        if (Get
-            .find<BottomMenuController>()
-            .currentTab != 0) {
-          if (Get
-              .find<ProfileController>()
-              .toggle) {
+        if (Get.find<BottomMenuController>().currentTab != 0) {
+          if (Get.find<ProfileController>().toggle) {
             Get.find<ProfileController>().toggleDrawer();
             Get.find<BottomMenuController>().setTabIndex(0);
           } else {
             Get.find<BottomMenuController>().setTabIndex(0);
           }
         } else {
-          if (Get
-              .find<ProfileController>()
-              .toggle) {
+          if (Get.find<ProfileController>().toggle) {
             Get.find<ProfileController>().toggleDrawer();
           } else {
             Get.find<BottomMenuController>().exitApp();
           }
         }
       },
-      child: GetBuilder<BottomMenuController>(builder: (menuController) {
-        return Scaffold(
-          resizeToAvoidBottomInset: false,
-          body: Stack(
-            children: [
-              PageStorage(
+      child: GetBuilder<BottomMenuController>(
+        builder: (menuController) {
+          return Scaffold(
+            resizeToAvoidBottomInset: false,
+            body: Stack(
+              children: [
+                PageStorage(
                   bucket: bucket,
-                  child: item[menuController.currentTab].screen),
-              Positioned(
+                  child: item[menuController.currentTab].screen,
+                ),
+                Positioned(
                   child: Align(
-                      alignment: Alignment.bottomCenter,
-                      child: Padding(
-                          padding: const EdgeInsets.all(
-                              Dimensions.paddingSizeDefault),
-                          child: Container(
-                              height: 65,
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20),
-                                  color: Theme
-                                      .of(context)
-                                      .primaryColor,
-                                  border: Border.all(
-                                      color: Theme
-                                          .of(context)
-                                          .colorScheme
-                                          .onSecondaryContainer,
-                                      width: 2),
-                                  boxShadow: [
-                                    BoxShadow(
-                                        offset: const Offset(0, 0),
-                                        blurRadius: 2,
-                                        color: Theme
-                                            .of(context)
-                                            .colorScheme
-                                            .onSecondaryContainer)
-                                  ]),
-                              child: Row(
-                                  mainAxisAlignment:
-                                  MainAxisAlignment.spaceEvenly,
-                                  children: generateBottomNavigationItems(
-                                      menuController, item))))))
-            ],
-          ),
-        );
-      }),
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: const EdgeInsets.all(
+                        Dimensions.paddingSizeDefault,
+                      ),
+                      child: Container(
+                        height: 65,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          color: Colors.white,
+                          border: Border.all(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSecondaryContainer,
+                            width: 2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              offset: const Offset(0, 0),
+                              blurRadius: 2,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSecondaryContainer,
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: generateBottomNavigationItems(
+                            menuController,
+                            item,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 
   List<Widget> generateBottomNavigationItems(
-      BottomMenuController menuController, List<NavigationModel> item) {
+      BottomMenuController menuController,
+      List<NavigationModel> item,
+      ) {
     List<Widget> items = [];
+
     for (int index = 0; index < item.length; index++) {
-      items.add(Expanded(
+      items.add(
+        Expanded(
           child: CustomMenuItem(
             isSelected: menuController.currentTab == index,
             name: item[index].name,
             activeIcon: item[index].activeIcon,
             inActiveIcon: item[index].inactiveIcon,
             onTap: () => menuController.setTabIndex(index),
-          )));
+          ),
+        ),
+      );
     }
+
     return items;
   }
 }
@@ -144,15 +159,20 @@ class CustomMenuItem extends StatelessWidget {
   final String inActiveIcon;
   final VoidCallback onTap;
 
-  const CustomMenuItem({super.key,
+  const CustomMenuItem({
+    super.key,
     required this.isSelected,
     required this.name,
     required this.activeIcon,
     required this.inActiveIcon,
-    required this.onTap});
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final Color selectedColor = Theme.of(context).colorScheme.error;
+    final Color unselectedColor = Colors.grey;
+
     return InkWell(
       overlayColor: WidgetStateProperty.all(Colors.transparent),
       highlightColor: Colors.transparent,
@@ -163,41 +183,28 @@ class CustomMenuItem extends StatelessWidget {
         child: SizedBox(
           width: isSelected ? 90 : 50,
           child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Image.asset(
-                  isSelected ? activeIcon : inActiveIcon,
-                  width: Dimensions.menuIconSize,
-                  height: Dimensions.menuIconSize,
-                  color: isSelected
-                      ? Theme
-                      .of(context)
-                      .colorScheme
-                      .error
-                      : Theme
-                      .of(context)
-                      .colorScheme
-                      .onSecondary,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset(
+                isSelected ? activeIcon : inActiveIcon,
+                width: Dimensions.menuIconSize,
+                height: Dimensions.menuIconSize,
+                color: isSelected ? selectedColor : unselectedColor,
+              ),
+              const SizedBox(height: 3),
+              Text(
+                name.tr,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: textRegular.copyWith(
+                  color: isSelected ? selectedColor : unselectedColor,
+                  fontSize: Dimensions.fontSizeExtraSmall,
                 ),
-                isSelected
-                    ? Text(name.tr,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: textRegular.copyWith(
-                        color: isSelected
-                            ? Theme
-                            .of(context)
-                            .colorScheme
-                            .error
-                            : Theme
-                            .of(context)
-                            .colorScheme
-                            .secondary,
-                        fontSize: Dimensions.fontSizeExtraSmall))
-                    : const SizedBox(),
-              ]),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -7,28 +7,42 @@ class TripCancellationCauseList {
   List<Data>? data;
   List<String>? errors;
 
-  TripCancellationCauseList(
-      {this.responseCode,
-      this.message,
-      this.totalSize,
-      this.limit,
-      this.offset,
-      this.data,
-      this.errors});
+  TripCancellationCauseList({
+    this.responseCode,
+    this.message,
+    this.totalSize,
+    this.limit,
+    this.offset,
+    this.data,
+    this.errors,
+  });
 
   TripCancellationCauseList.fromJson(Map<String, dynamic> json) {
-    responseCode = json['response_code'];
-    message = json['message'];
-    totalSize = json['total_size'];
-    limit = json['limit'];
-    offset = json['offset'];
+    print('Cancellation API Response: $json');
+
+    responseCode = json['response_code']?.toString();
+    message = json['message']?.toString();
+    totalSize = json['total_size']?.toString();
+    limit = json['limit']?.toString();
+    offset = json['offset']?.toString();
+
     if (json['data'] != null) {
       data = <Data>[];
-      json['data'].forEach((v) {
-        data!.add(Data.fromJson(v));
-      });
+
+      if (json['data'] is List) {
+        for (var v in json['data']) {
+          data!.add(Data.fromJson(v));
+        }
+      } else if (json['data'] is Map) {
+        json['data'].forEach((key, value) {
+          data!.add(Data.fromJson(value));
+        });
+      }
     }
-    errors = json['errors'].cast<String>();
+
+    errors = json['errors'] != null && json['errors'] is List
+        ? List<String>.from(json['errors'])
+        : [];
   }
 
   Map<String, dynamic> toJson() {
@@ -53,8 +67,13 @@ class Data {
   Data({this.ongoingRide, this.acceptedRide});
 
   Data.fromJson(Map<String, dynamic> json) {
-    ongoingRide = json['ongoing_ride'].cast<String>();
-    acceptedRide = json['accepted_ride'].cast<String>();
+    ongoingRide = json['ongoing_ride'] != null
+        ? List<String>.from(json['ongoing_ride'])
+        : [];
+
+    acceptedRide = json['accepted_ride'] != null
+        ? List<String>.from(json['accepted_ride'])
+        : [];
   }
 
   Map<String, dynamic> toJson() {

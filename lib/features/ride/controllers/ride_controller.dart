@@ -39,6 +39,7 @@ class RideController extends GetxController implements GetxService {
 
   String? get rideId => _rideid;
   bool arrivalApiCalled = false;
+  bool destinationApiCalled = false;
 
   void setRideId(String id) {
     _rideid = id;
@@ -145,7 +146,7 @@ class RideController extends GetxController implements GetxService {
               });
             }
           } else if (Get.find<RideController>().currentRideStatus ==
-                  'completed' ||
+              'completed' ||
               Get.find<RideController>().currentRideStatus == 'cancelled') {
             print('TRIP COMPLETED');
             print('Trip Id = ${Get.find<RideController>().tripDetail!.id!}');
@@ -207,7 +208,7 @@ class RideController extends GetxController implements GetxService {
 
   Future<Response> uploadScreenShots(String tripId, XFile file) async {
     Response response =
-        await rideServiceInterface.uploadScreenShots(tripId, file);
+    await rideServiceInterface.uploadScreenShots(tripId, file);
     if (response.statusCode == 200) {}
     update();
     return response;
@@ -219,7 +220,7 @@ class RideController extends GetxController implements GetxService {
     isLoading = true;
     update();
     Response response =
-        await rideServiceInterface.getRideDetailBeforeAccept(tripId);
+    await rideServiceInterface.getRideDetailBeforeAccept(tripId);
     if (response.statusCode == 200) {
       tripDetail = TripDetailsModel.fromJson(response.body).data!;
       isLoading = false;
@@ -274,7 +275,7 @@ class RideController extends GetxController implements GetxService {
     accepting = true;
     update();
     Response response =
-        await rideServiceInterface.tripAcceptOrReject(tripId, type);
+    await rideServiceInterface.tripAcceptOrReject(tripId, type);
     if (response.statusCode == 200) {
       if (fromList &&
           pendingRideRequestModel?.data != null &&
@@ -348,11 +349,12 @@ class RideController extends GetxController implements GetxService {
         getFinalFare(tripId).then((value) {
           if (value.statusCode == 200) {
             Get.to(() => const PaymentReceivedScreen(
-                  fromParcel: true,
-                ));
+              fromParcel: true,
+            ));
           }
         });
       } else {
+        destinationApiCalled = false;
         remainingDistance(tripDetail!.id!, mapBound: true);
         getRideDetails(tripDetail!.id!);
         Get.find<RiderMapController>().setRideCurrentState(RideState.ongoing);
@@ -361,7 +363,7 @@ class RideController extends GetxController implements GetxService {
       isPinVerificationLoading = false;
       Future.delayed(const Duration(seconds: 12)).then((value) async {
         imageFile =
-            await Get.find<RiderMapController>().mapController!.takeSnapshot();
+        await Get.find<RiderMapController>().mapController!.takeSnapshot();
         if (imageFile != null) {
           uploadScreenShots(tripDetail!.id!, XFile.fromData(imageFile!));
         }
@@ -383,7 +385,7 @@ class RideController extends GetxController implements GetxService {
   Future<Response> remainingDistance(String tripId,
       {bool mapBound = false}) async {
     myDriveMode =
-        Get.find<ProfileController>().profileInfo!.vehicle!.category!.type!;
+    Get.find<ProfileController>().profileInfo!.vehicle!.category!.type!;
     isLoading = true;
     Response response = await rideServiceInterface.remainDistance(tripId);
 
@@ -427,8 +429,11 @@ class RideController extends GetxController implements GetxService {
           tripDetail!.currentStatus == 'ongoing' &&
           !tripDetail!.isPaused! &&
           matchedMode != null &&
-          Get.find<RiderMapController>().isInside &&
-          matchedMode!.isPicked!) {
+          matchedMode!.isPicked! &&
+          !destinationApiCalled &&
+          ((matchedMode!.distance ?? 999) <= 0.10 ||
+              Get.find<RiderMapController>().isInside)) {
+        destinationApiCalled = true;
         arrivalDestination(tripId, "destination");
         getRideDetails(tripId);
         AudioPlayer audio = AudioPlayer();
@@ -593,7 +598,7 @@ class RideController extends GetxController implements GetxService {
 
   Future<Response> arrivalDestination(String tripId, String type) async {
     Response response =
-        await rideServiceInterface.arrivalDestination(tripId, type);
+    await rideServiceInterface.arrivalDestination(tripId, type);
     if (response.statusCode == 200) {
       if (kDebugMode) {
         print("===Arrived destination aria===");
@@ -609,7 +614,7 @@ class RideController extends GetxController implements GetxService {
       String tripId, String waitingStatus) async {
     isLoading = true;
     Response response =
-        await rideServiceInterface.waitingForCustomer(tripId, waitingStatus);
+    await rideServiceInterface.waitingForCustomer(tripId, waitingStatus);
     if (response.statusCode == 200) {
       getRideDetails(tripId);
       isLoading = false;

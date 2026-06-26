@@ -72,15 +72,42 @@ class AuthController extends GetxController implements GetxService {
   }
 
   void pickImage(bool isBack, bool isProfile) async {
+    final ImageSource? source = await Get.bottomSheet<ImageSource>(
+      Material(
+        color: Colors.white,
+        child: SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Camera'),
+                onTap: () => Get.back(result: ImageSource.camera),
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Gallery'),
+                onTap: () => Get.back(result: ImageSource.gallery),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (source == null) return;
+
+    final XFile? pickedFile = await ImagePicker().pickImage(source: source);
+
+    if (pickedFile == null) return;
+
     if (isProfile) {
-      _pickedProfileFile =
-          (await ImagePicker().pickImage(source: ImageSource.gallery))!;
+      _pickedProfileFile = pickedFile;
     } else {
-      identityImage =
-          (await ImagePicker().pickImage(source: ImageSource.gallery))!;
+      identityImage = pickedFile;
       identityImages.add(identityImage);
       multipartList.add(MultipartBody('identity_images[]', identityImage));
     }
+
     update();
   }
 
@@ -125,10 +152,10 @@ class AuthController extends GetxController implements GetxService {
     } else if (response.statusCode == 202) {
       if (response.body['data']['is_phone_verified'] == 0) {
         Get.to(() => VerificationScreen(
-              countryCode: countryCode,
-              number: phone,
-              from: 'login',
-            ));
+          countryCode: countryCode,
+          number: phone,
+          from: 'login',
+        ));
       }
     } else {
       _isLoading = false;
@@ -230,10 +257,10 @@ class AuthController extends GetxController implements GetxService {
 
       if (Get.find<SplashController>().config?.verification ?? false) {
         Get.to(() => VerificationScreen(
-              countryCode: code,
-              number: signUpBody.phone?.replaceAll(code, '') ?? '',
-              from: 'signup',
-            ));
+          countryCode: code,
+          number: signUpBody.phone?.replaceAll(code, '') ?? '',
+          from: 'signup',
+        ));
       } else {
         showCustomSnackBar('registration_completed_successfully'.tr,
             isError: false);
@@ -270,7 +297,7 @@ class AuthController extends GetxController implements GetxService {
     _isLoading = true;
     update();
     Response? response =
-        await authServiceInterface.sendOtp(phone: '$countryDialCode$phone');
+    await authServiceInterface.sendOtp(phone: '$countryDialCode$phone');
     if (response!.statusCode == 200) {
       _isLoading = false;
       showCustomSnackBar('otp_sent_successfully'.tr, isError: false);
@@ -290,7 +317,7 @@ class AuthController extends GetxController implements GetxService {
     String phoneNumber = '$code$phone';
 
     Response? response =
-        await authServiceInterface.verifyOtp(phone: phoneNumber, otp: otp);
+    await authServiceInterface.verifyOtp(phone: phoneNumber, otp: otp);
     if (response!.statusCode == 200) {
       clearVerificationCode();
       _isLoading = false;
@@ -342,7 +369,7 @@ class AuthController extends GetxController implements GetxService {
     _isLoading = true;
     update();
     Response? response =
-        await authServiceInterface.resetPassword(phone, password);
+    await authServiceInterface.resetPassword(phone, password);
     if (response!.statusCode == 200) {
       snackBarWidget('password_change_successfully'.tr, isError: false);
       Get.offAll(() => const SignInScreen());
@@ -357,7 +384,7 @@ class AuthController extends GetxController implements GetxService {
     _isLoading = true;
     update();
     Response? response =
-        await authServiceInterface.changePassword(password, newPassword);
+    await authServiceInterface.changePassword(password, newPassword);
     if (response!.statusCode == 200) {
       snackBarWidget('password_change_successfully'.tr, isError: false);
       Get.offAll(() => const DashboardScreen());

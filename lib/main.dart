@@ -27,16 +27,20 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  print('APP STARTED');
+
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
-        statusBarIconBrightness: Brightness.dark, // dark text for status bar
-        statusBarColor: Colors.transparent),
+      statusBarIconBrightness: Brightness.dark,
+      statusBarColor: Colors.transparent,
+    ),
   );
 
   if (ResponsiveHelper.isMobilePhone) {
     HttpOverrides.global = MyHttpOverrides();
   }
-  WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp();
 
   //firebase crashlytics

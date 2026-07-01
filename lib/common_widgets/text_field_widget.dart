@@ -91,16 +91,15 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
     final double radius = widget.borderRadius == 50 ? 12 : widget.borderRadius;
 
     final String floatingLabel =
-    (widget.label != null && widget.label!.trim().isNotEmpty)
-        ? widget.label!
-        : (widget.hintText ?? '');
+        (widget.label != null && widget.label!.trim().isNotEmpty)
+            ? widget.label!
+            : (widget.hintText ?? '');
 
-    final bool isPhoneField =
-        widget.inputType == TextInputType.phone ||
-            (widget.hintText ?? '').toLowerCase().contains('mobile') ||
-            (widget.hintText ?? '').toLowerCase().contains('phone') ||
-            (widget.label ?? '').toLowerCase().contains('mobile') ||
-            (widget.label ?? '').toLowerCase().contains('phone');
+    final bool isPhoneField = widget.inputType == TextInputType.phone ||
+        (widget.hintText ?? '').toLowerCase().contains('mobile') ||
+        (widget.hintText ?? '').toLowerCase().contains('phone') ||
+        (widget.label ?? '').toLowerCase().contains('mobile') ||
+        (widget.label ?? '').toLowerCase().contains('phone');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -116,9 +115,9 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
           textInputAction: widget.inputAction,
           keyboardType: (widget.isAmount || isPhoneField)
               ? const TextInputType.numberWithOptions(
-            signed: false,
-            decimal: true,
-          )
+                  signed: false,
+                  decimal: true,
+                )
               : widget.inputType,
           cursorColor: Theme.of(context).colorScheme.primary,
           textCapitalization: widget.capitalization,
@@ -127,25 +126,26 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
           autofillHints: widget.inputType == TextInputType.name
               ? [AutofillHints.name]
               : widget.inputType == TextInputType.emailAddress
-              ? [AutofillHints.email]
-              : isPhoneField
-              ? [AutofillHints.telephoneNumber]
-              : widget.inputType == TextInputType.streetAddress
-              ? [AutofillHints.fullStreetAddress]
-              : widget.inputType == TextInputType.url
-              ? [AutofillHints.url]
-              : widget.inputType == TextInputType.visiblePassword
-              ? [AutofillHints.password]
-              : null,
+                  ? [AutofillHints.email]
+                  : isPhoneField
+                      ? [AutofillHints.telephoneNumber]
+                      : widget.inputType == TextInputType.streetAddress
+                          ? [AutofillHints.fullStreetAddress]
+                          : widget.inputType == TextInputType.url
+                              ? [AutofillHints.url]
+                              : widget.inputType ==
+                                      TextInputType.visiblePassword
+                                  ? [AutofillHints.password]
+                                  : null,
           obscureText: widget.isPassword ? _obscureText : false,
           inputFormatters: isPhoneField
               ? <TextInputFormatter>[
-            FilteringTextInputFormatter.digitsOnly,
-            LengthLimitingTextInputFormatter(10),
-          ]
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(10),
+                ]
               : widget.isAmount
-              ? [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))]
-              : null,
+                  ? [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))]
+                  : null,
           decoration: InputDecoration(
             labelText: floatingLabel,
             floatingLabelBehavior: FloatingLabelBehavior.auto,
@@ -153,7 +153,6 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
             isDense: true,
             filled: true,
             fillColor: Colors.white,
-
             labelStyle: textMedium.copyWith(
               fontSize: Dimensions.fontSizeDefault,
               color: Colors.grey.shade500,
@@ -165,14 +164,12 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
                   : Colors.grey.shade600,
               backgroundColor: Colors.white,
             ),
-
             contentPadding: const EdgeInsets.only(
               left: 18,
               right: 16,
               top: 22,
               bottom: 16,
             ),
-
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(radius),
               borderSide: BorderSide(
@@ -215,43 +212,40 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
                 width: 1.4,
               ),
             ),
-
             prefixIconConstraints: const BoxConstraints(
               minWidth: 52,
               minHeight: 54,
             ),
-
             prefixIcon: isPhoneField
                 ? Icon(
-              Icons.phone_outlined,
-              size: 20,
-              color: Theme.of(context).colorScheme.primary,
-            )
+                    Icons.phone_outlined,
+                    size: 20,
+                    color: Theme.of(context).colorScheme.primary,
+                  )
                 : widget.prefixIcon != null
-                ? Padding(
-              padding: const EdgeInsets.only(left: 14, right: 12),
-              child: Image.asset(
-                widget.prefixIcon!,
-                height: 20,
-                width: 20,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            )
-                : null,
-
+                    ? Padding(
+                        padding: const EdgeInsets.only(left: 14, right: 12),
+                        child: Image.asset(
+                          widget.prefixIcon!,
+                          height: 20,
+                          width: 20,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      )
+                    : null,
             suffixIcon: widget.isPassword
                 ? IconButton(
-              icon: Icon(
-                _obscureText ? Icons.visibility_off : Icons.visibility,
-                color: _obscureText
-                    ? Colors.grey.shade400
-                    : Theme.of(context).colorScheme.primary,
-              ),
-              onPressed: _toggle,
-              style: IconButton.styleFrom(
-                overlayColor: Colors.transparent,
-              ),
-            )
+                    icon: Icon(
+                      _obscureText ? Icons.visibility_off : Icons.visibility,
+                      color: _obscureText
+                          ? Colors.grey.shade400
+                          : Theme.of(context).colorScheme.primary,
+                    ),
+                    onPressed: _toggle,
+                    style: IconButton.styleFrom(
+                      overlayColor: Colors.transparent,
+                    ),
+                  )
                 : null,
           ),
           onSubmitted: (text) => widget.nextFocus != null
@@ -263,6 +257,7 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
       ],
     );
   }
+
   Widget _countryCodePrefix(BuildContext context, double radius) {
     final bool isLtr = Get.find<LocalizationController>().isLtr;
 
@@ -271,32 +266,27 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
       child: Row(
         children: [
           const SizedBox(width: 8),
-
           Icon(
             Icons.phone_outlined,
             size: 20,
             color: Theme.of(context).colorScheme.primary,
           ),
-
           const SizedBox(width: 8),
-
           Container(
             width: 60,
             height: 54,
             decoration: BoxDecoration(
-              color: Theme.of(context)
-                  .colorScheme
-                  .primary
-                  .withValues(alpha: 0.10),
+              color:
+                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.10),
               borderRadius: BorderRadius.only(
                 topRight:
-                isLtr ? const Radius.circular(0) : Radius.circular(radius),
+                    isLtr ? const Radius.circular(0) : Radius.circular(radius),
                 bottomRight:
-                isLtr ? const Radius.circular(0) : Radius.circular(radius),
+                    isLtr ? const Radius.circular(0) : Radius.circular(radius),
                 topLeft:
-                isLtr ? Radius.circular(radius) : const Radius.circular(0),
+                    isLtr ? Radius.circular(radius) : const Radius.circular(0),
                 bottomLeft:
-                isLtr ? Radius.circular(radius) : const Radius.circular(0),
+                    isLtr ? Radius.circular(radius) : const Radius.circular(0),
               ),
             ),
             child: Center(
@@ -310,8 +300,7 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
                 onChanged: widget.onCountryChanged,
                 initialSelection: widget.countryDialCode,
                 favorite: [
-                  if (widget.countryDialCode != null)
-                    widget.countryDialCode!,
+                  if (widget.countryDialCode != null) widget.countryDialCode!,
                 ],
                 showDropDownButton: true,
                 showCountryOnly: true,
@@ -323,7 +312,6 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
               ),
             ),
           ),
-
           if (widget.showCountryCode)
             Padding(
               padding: const EdgeInsets.only(left: 6),
@@ -339,6 +327,7 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
       ),
     );
   }
+
   void _toggle() {
     setState(() {
       _obscureText = !_obscureText;

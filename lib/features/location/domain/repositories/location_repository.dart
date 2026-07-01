@@ -88,4 +88,15 @@ class LocationRepository implements LocationRepositoryInterface {
     // TODO: implement update
     throw UnimplementedError();
   }
+
+  @override
+  Future<Response> storeLiveLocation(String latitude, String longitude) async {
+    return await apiClient.postData(
+      AppConstants.storeLastLocationAPI,
+      {
+        'latitude': latitude,
+        'longitude': longitude,
+      },
+    );
+  }
 }

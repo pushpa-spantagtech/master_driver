@@ -12,4 +12,6 @@ abstract class LocationServiceInterface {
   Future<dynamic> getPlaceDetails(String placeID);
 
   Future<dynamic> storeLastLocationApi(String lat, String lng, String zoneID);
+
+  Future<dynamic> storeLiveLocation(String latitude, String longitude);
 }

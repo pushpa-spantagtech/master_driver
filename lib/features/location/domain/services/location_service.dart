@@ -36,4 +36,12 @@ class LocationService implements LocationServiceInterface {
   Future storeLastLocationApi(String lat, String lng, String zoneID) {
     return locationRepositoryInterface.storeLastLocationApi(lat, lng, zoneID);
   }
+
+  @override
+  Future storeLiveLocation(String latitude, String longitude) async {
+    return await locationRepositoryInterface.storeLiveLocation(
+      latitude,
+      longitude,
+    );
+  }
 }

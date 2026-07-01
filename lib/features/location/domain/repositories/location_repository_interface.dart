@@ -14,4 +14,6 @@ abstract class LocationRepositoryInterface implements RepositoryInterface {
   Future<Response> getPlaceDetails(String placeID);
 
   Future<Response> storeLastLocationApi(String lat, String lng, String zoneID);
+
+  Future<dynamic> storeLiveLocation(String latitude, String longitude);
 }

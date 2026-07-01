@@ -255,17 +255,13 @@ class AuthController extends GetxController implements GetxService {
       multipartList.clear();
       _isLoading = false;
 
-      if (Get.find<SplashController>().config?.verification ?? false) {
-        Get.to(() => VerificationScreen(
-          countryCode: code,
-          number: signUpBody.phone?.replaceAll(code, '') ?? '',
-          from: 'signup',
-        ));
-      } else {
-        showCustomSnackBar('registration_completed_successfully'.tr,
-            isError: false);
-        Get.offAll(() => const SignInScreen());
-      }
+      showCustomSnackBar(
+        'Registration completed. Please wait for admin approval.',
+        isError: false,
+      );
+
+      Get.offAll(() => const SignInScreen());
+
       Get.find<ProfileController>().updateFirstTimeShowBottomSheet(true);
     } else {
       _isLoading = false;

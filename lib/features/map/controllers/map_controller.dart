@@ -141,7 +141,7 @@ class RiderMapController extends GetxController implements GetxService {
     List<LatLng> polylineCoordinates = [];
     if (Get.find<RideController>().polyline != '') {
       List<PointLatLng> result =
-      polylinePoints.decodePolyline(Get.find<RideController>().polyline);
+          polylinePoints.decodePolyline(Get.find<RideController>().polyline);
       if (kDebugMode) {
         print(
             'here is latlng initial==> ${result.length},${result[0].latitude}-/${result[result.length - 1].latitude},/${result[result.length - 1].longitude}');
@@ -228,13 +228,14 @@ class RiderMapController extends GetxController implements GetxService {
       {bool updateLiveLocation = false}) async {
     markers = HashSet();
     Uint8List fromMarker =
-    await convertAssetToUnit8List(Images.mapIcon, width: 30);
+        await convertAssetToUnit8List(Images.mapIcon, width: 25);
     Uint8List toMarker =
-    await convertAssetToUnit8List(Images.mapLocationIcon, width: 25);
+        await convertAssetToUnit8List(Images.mapLocationIcon, width: 25);
 
     markers.add(Marker(
       markerId: const MarkerId('pickup'),
       position: from,
+      anchor: const Offset(0.5, 0.5),
       infoWindow: InfoWindow(
         title: 'Pickup Location',
         snippet: Get.find<RideController>().tripDetail?.pickupAddress ?? '',
@@ -245,10 +246,11 @@ class RiderMapController extends GetxController implements GetxService {
     markers.add(Marker(
       markerId: const MarkerId('destination'),
       position: to,
+      anchor: const Offset(0.5, 0.5),
       infoWindow: InfoWindow(
         title: 'Destination',
         snippet:
-        Get.find<RideController>().tripDetail?.destinationAddress ?? '',
+            Get.find<RideController>().tripDetail?.destinationAddress ?? '',
       ),
       icon: BitmapDescriptor.bytes(toMarker),
     ));
@@ -271,7 +273,7 @@ class RiderMapController extends GetxController implements GetxService {
       mapController!.moveCamera(CameraUpdate.newCameraPosition(CameraPosition(
         bearing: bearing,
         target: centerBounds,
-        zoom: 12,
+        zoom: 16,
       )));
       setMapPosition(mapController, bounds, centerBounds, bearing,
           padding: 0.5);
@@ -543,7 +545,7 @@ class RiderMapController extends GetxController implements GetxService {
   void setMarkersInitialPosition() {
     if (Get.find<RideController>().polyline != '') {
       List<PointLatLng> result =
-      polylinePoints.decodePolyline(Get.find<RideController>().polyline);
+          polylinePoints.decodePolyline(Get.find<RideController>().polyline);
 
       _initialPosition = LatLng(result[0].latitude, result[0].longitude);
       _destinationPosition = LatLng(result[result.length - 1].latitude,

@@ -11,6 +11,7 @@ String capitalize(String text) {
   if (text.isEmpty) return text;
   return text[0].toUpperCase() + text.substring(1).toLowerCase();
 }
+
 class ProfileLevelWidgetWidget extends StatelessWidget {
   const ProfileLevelWidgetWidget({super.key});
 
@@ -45,7 +46,7 @@ class ProfileLevelWidgetWidget extends StatelessWidget {
                   width: 40,
                   height: 40,
                   image:
-                  '${Get.find<SplashController>().config!.imageBaseUrl!.profileImage}/${profileController.profileInfo?.profileImage ?? ""}',
+                      '${Get.find<SplashController>().config!.imageBaseUrl!.profileImage}/${profileController.profileInfo?.profileImage ?? ""}',
                 ),
               ),
             ),
@@ -55,38 +56,38 @@ class ProfileLevelWidgetWidget extends StatelessWidget {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      '${capitalize(profileController.profileInfo?.firstName ?? '')} '
-                          '${capitalize(profileController.profileInfo?.lastName ?? '')}',
-                      style: textBold.copyWith(
-                          color: Theme.of(context).colorScheme.onSecondary,
-                          fontSize: Dimensions.fontSizeLarge),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                Text(
+                  '${capitalize(profileController.profileInfo?.firstName ?? '')} '
+                  '${capitalize(profileController.profileInfo?.lastName ?? '')}',
+                  style: textBold.copyWith(
+                      color: Theme.of(context).colorScheme.onSecondary,
+                      fontSize: Dimensions.fontSizeLarge),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: Dimensions.paddingSizeExtraSmall),
+                if (Get.find<SplashController>().config!.levelStatus!)
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(
+                          Dimensions.paddingSizeExtraSmall),
                     ),
-                    const SizedBox(height: Dimensions.paddingSizeExtraSmall),
-                    if (Get.find<SplashController>().config!.levelStatus!)
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).cardColor,
-                          borderRadius: BorderRadius.circular(
-                              Dimensions.paddingSizeExtraSmall),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 2.0,
-                              horizontal: Dimensions.paddingSizeExtraSmall),
-                          child: Text(
-                            (profileController.profileInfo != null &&
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 2.0,
+                          horizontal: Dimensions.paddingSizeExtraSmall),
+                      child: Text(
+                        (profileController.profileInfo != null &&
                                 profileController.profileInfo!.level != null)
-                                ? '${profileController.profileInfo?.level?.name}'
-                                : '',
-                            style: textRegular.copyWith(
-                                color: Theme.of(context).colorScheme.secondary),
-                          ),
-                        ),
+                            ? '${profileController.profileInfo?.level?.name}'
+                            : '',
+                        style: textRegular.copyWith(
+                            color: Theme.of(context).colorScheme.secondary),
                       ),
-                  ])),
+                    ),
+                  ),
+              ])),
           GestureDetector(
             onTap: () => Get.find<ProfileController>().toggleDrawer(),
             child: Icon(CupertinoIcons.clear,

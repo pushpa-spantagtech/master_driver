@@ -365,10 +365,38 @@ class _RideOngoingWidgetState extends State<RideOngoingWidget> {
                                           "ride_request")
                                   ? Column(children: [
                                       SliderButton(
-                                        action: () {
+                                        action: () async {
+                                          final rideController =
+                                              Get.find<RideController>();
+
+                                          if (rideController
+                                              .hasReachedDestination) {
+                                            final response =
+                                                await rideController
+                                                    .tripStatusUpdate(
+                                              'completed',
+                                              rideController.tripDetail!.id!,
+                                              'trip_completed_successfully',
+                                              '',
+                                            );
+
+                                            if (response.statusCode == 200) {
+                                              await rideController.getFinalFare(
+                                                  rideController
+                                                      .tripDetail!.id!);
+                                              Get.find<RiderMapController>()
+                                                  .setRideCurrentState(
+                                                      RideState.initial);
+                                              Get.off(() =>
+                                                  const PaymentReceivedScreen());
+                                            }
+                                            return;
+                                          }
+
                                           Get.dialog(
-                                              const RideCompletationDialogWidget(),
-                                              barrierDismissible: false);
+                                            const RideCompletationDialogWidget(),
+                                            barrierDismissible: false,
+                                          );
                                         },
                                         label: Text(
                                           "complete".tr,

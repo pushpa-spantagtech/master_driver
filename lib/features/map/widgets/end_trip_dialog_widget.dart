@@ -77,6 +77,41 @@ class EndTripWidget extends StatelessWidget {
                           buttonText: 'end'.tr,
                           radius: Dimensions.paddingSizeSmall,
                           onPressed: () async {
+                            final RideController rideController =
+                                Get.find<RideController>();
+
+                            // If destination is already reached, complete ride directly.
+                            // No "not near destination" popup and no confirmation popup.
+                            if (rideController.tripDetail?.type ==
+                                    "ride_request" &&
+                                rideController.hasReachedDestination) {
+                              rideController
+                                  .tripStatusUpdate(
+                                      'completed',
+                                      rideController.tripDetail!.id!,
+                                      "trip_completed_successfully",
+                                      '')
+                                  .then((value) async {
+                                if (value.statusCode == 200) {
+                                  rideController.getRideDetails(
+                                      rideController.tripDetail!.id!);
+                                  rideController
+                                      .getFinalFare(
+                                          rideController.tripDetail!.id!)
+                                      .then((value) {
+                                    if (value.statusCode == 200) {
+                                      Get.find<RiderMapController>()
+                                          .setRideCurrentState(
+                                              RideState.initial);
+                                      Get.off(
+                                          () => const PaymentReceivedScreen());
+                                    }
+                                  });
+                                }
+                              });
+                              return;
+                            }
+
                             Get.dialog(GetBuilder<RideController>(
                                 builder: (rideController) {
                               return ConfirmationDialogWidget(

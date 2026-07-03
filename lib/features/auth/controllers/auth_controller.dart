@@ -152,10 +152,10 @@ class AuthController extends GetxController implements GetxService {
     } else if (response.statusCode == 202) {
       if (response.body['data']['is_phone_verified'] == 0) {
         Get.to(() => VerificationScreen(
-          countryCode: countryCode,
-          number: phone,
-          from: 'login',
-        ));
+              countryCode: countryCode,
+              number: phone,
+              from: 'login',
+            ));
       }
     } else {
       _isLoading = false;
@@ -293,7 +293,7 @@ class AuthController extends GetxController implements GetxService {
     _isLoading = true;
     update();
     Response? response =
-    await authServiceInterface.sendOtp(phone: '$countryDialCode$phone');
+        await authServiceInterface.sendOtp(phone: '$countryDialCode$phone');
     if (response!.statusCode == 200) {
       _isLoading = false;
       showCustomSnackBar('otp_sent_successfully'.tr, isError: false);
@@ -313,7 +313,7 @@ class AuthController extends GetxController implements GetxService {
     String phoneNumber = '$code$phone';
 
     Response? response =
-    await authServiceInterface.verifyOtp(phone: phoneNumber, otp: otp);
+        await authServiceInterface.verifyOtp(phone: phoneNumber, otp: otp);
     if (response!.statusCode == 200) {
       clearVerificationCode();
       _isLoading = false;
@@ -365,7 +365,7 @@ class AuthController extends GetxController implements GetxService {
     _isLoading = true;
     update();
     Response? response =
-    await authServiceInterface.resetPassword(phone, password);
+        await authServiceInterface.resetPassword(phone, password);
     if (response!.statusCode == 200) {
       snackBarWidget('password_change_successfully'.tr, isError: false);
       Get.offAll(() => const SignInScreen());
@@ -380,7 +380,7 @@ class AuthController extends GetxController implements GetxService {
     _isLoading = true;
     update();
     Response? response =
-    await authServiceInterface.changePassword(password, newPassword);
+        await authServiceInterface.changePassword(password, newPassword);
     if (response!.statusCode == 200) {
       snackBarWidget('password_change_successfully'.tr, isError: false);
       Get.offAll(() => const DashboardScreen());

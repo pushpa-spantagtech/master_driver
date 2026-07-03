@@ -41,17 +41,70 @@ class CustomerRideRequestCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String firstRoute = '';
-    String secondRoute = '';
-    List<dynamic> extraRoute = [];
+    List<String> extraRoutes = [];
+
+    void addRoute(dynamic value) {
+      if (value == null) return;
+
+      if (value is List) {
+        for (final dynamic item in value) {
+          addRoute(item);
+        }
+        return;
+      }
+
+      if (value is Map) {
+        final dynamic mappedValue = value['address'] ??
+            value['location'] ??
+            value['name'] ??
+            value['title'];
+
+        if (mappedValue != null) {
+          addRoute(mappedValue);
+        } else {
+          for (final dynamic item in value.values) {
+            if (item is String && item.trim().isNotEmpty) {
+              addRoute(item);
+              break;
+            }
+          }
+        }
+        return;
+      }
+
+      final String route = value.toString().trim();
+      if (route.isEmpty || route == '[, ]' || route == '[]') return;
+
+      // Some API responses send all intermediate stops as one comma separated
+      // text (example: "a, bc, cd"). In that case show them as Stop 1,
+      // Stop 2, Stop 3... instead of showing one combined stop.
+      if (route.contains(',')) {
+        final List<String> separatedRoutes = route
+            .split(',')
+            .map((item) => item.trim())
+            .where((item) => item.isNotEmpty)
+            .toList();
+
+        if (separatedRoutes.length > 1) {
+          for (final String item in separatedRoutes) {
+            addRoute(item);
+          }
+          return;
+        }
+      }
+
+      if (!extraRoutes
+          .any((item) => item.toLowerCase() == route.toLowerCase())) {
+        extraRoutes.add(route);
+      }
+    }
+
     if (rideRequest.intermediateAddresses != null &&
         rideRequest.intermediateAddresses != '[[, ]]') {
-      extraRoute = jsonDecode(rideRequest.intermediateAddresses!);
-      if (extraRoute.isNotEmpty) {
-        firstRoute = extraRoute[0];
-      }
-      if (extraRoute.isNotEmpty && extraRoute.length > 1) {
-        secondRoute = extraRoute[1];
+      try {
+        addRoute(jsonDecode(rideRequest.intermediateAddresses!));
+      } catch (_) {
+        addRoute(rideRequest.intermediateAddresses);
       }
     }
     bool bidOn = Get.find<SplashController>().config!.bidOnFare!;
@@ -131,8 +184,7 @@ class CustomerRideRequestCardWidget extends StatelessWidget {
                       fromCard: true,
                       pickupAddress: rideRequest.pickupAddress!,
                       destinationAddress: rideRequest.destinationAddress!,
-                      extraOne: firstRoute,
-                      extraTwo: secondRoute,
+                      extraRoutes: extraRoutes,
                       entrance: rideRequest.entrance ?? '',
                     ),
                     if (rideRequest.customer != null)
@@ -504,8 +556,7 @@ class CustomerRideRequestCardWidget extends StatelessWidget {
                     fromCard: true,
                     pickupAddress: rideRequest.pickupAddress!,
                     destinationAddress: rideRequest.destinationAddress!,
-                    extraOne: firstRoute,
-                    extraTwo: secondRoute,
+                    extraRoutes: extraRoutes,
                     entrance: rideRequest.entrance ?? '',
                   ),
                   if (rideRequest.customer != null)

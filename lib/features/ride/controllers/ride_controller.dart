@@ -40,7 +40,13 @@ class RideController extends GetxController implements GetxService {
   String? get rideId => _rideid;
   bool arrivalApiCalled = false;
   bool destinationApiCalled = false;
+  bool localDestinationReached = false;
   Timer? _liveTrackingTimer;
+
+  bool get hasReachedDestination {
+    return localDestinationReached ||
+        (tripDetail?.isReachedDestination == true);
+  }
 
   void setRideId(String id) {
     _rideid = id;
@@ -361,10 +367,18 @@ class RideController extends GetxController implements GetxService {
         });
       } else {
         destinationApiCalled = false;
-        remainingDistance(tripDetail!.id!, mapBound: true);
-        startLiveTracking(tripDetail!.id!);
-        getRideDetails(tripDetail!.id!);
+        localDestinationReached = false;
+
+        // Destination notification fix only:
+        // After OTP success, make sure ride state is ongoing before
+        // remainingDistance() starts checking destination radius.
+        await getRideDetails(tripDetail!.id!);
+        tripDetail?.currentStatus = 'ongoing';
         Get.find<RiderMapController>().setRideCurrentState(RideState.ongoing);
+
+        await remainingDistance(tripDetail!.id!, mapBound: true);
+
+        startLiveTracking(tripDetail!.id!);
       }
       showCustomSnackBar('otp_verified_successfully'.tr, isError: false);
       isPinVerificationLoading = false;
@@ -455,19 +469,53 @@ class RideController extends GetxController implements GetxService {
         arrivalPickupPoint(tripId);
       }
 
-      if (tripDetail != null &&
-          tripDetail!.currentStatus == 'ongoing' &&
-          !tripDetail!.isPaused! &&
+      // Destination reached notification check.
+      // After OTP verification the trip status becomes `ongoing`.
+      // When the driver reaches the destination radius, call backend
+      // coordinate-arrival API once. Backend will notify the customer:
+      // "You have reached your destination."
+      //
+      // Do not depend only on `matchedMode.isPicked`, because for some trips
+      // the remaining-distance API may not set that flag even after pickup.
+
+      final bool isOngoingTrip =
+          Get.find<RiderMapController>().currentRideState ==
+                  RideState.ongoing &&
+              tripDetail != null &&
+              !(tripDetail!.isPaused ?? false) &&
+              tripDetail!.isReachedDestination != true;
+      final bool isInsideDestinationRadius =
+          Get.find<RiderMapController>().isInside;
+      final bool isRemainingDistanceReached =
+          matchedMode != null && ((matchedMode!.distance ?? 999) <= 0.10);
+
+      if (isOngoingTrip &&
           matchedMode != null &&
-          matchedMode!.isPicked! &&
           !destinationApiCalled &&
-          ((matchedMode!.distance ?? 999) <= 0.10 ||
-              Get.find<RiderMapController>().isInside)) {
+          (isRemainingDistanceReached || isInsideDestinationRadius)) {
         destinationApiCalled = true;
-        arrivalDestination(tripId, "destination");
-        getRideDetails(tripId);
-        AudioPlayer audio = AudioPlayer();
-        audio.play(AssetSource('notification.wav'));
+
+        if (kDebugMode) {
+          print('================ DESTINATION REACHED ================');
+          print('Trip Id = $tripId');
+          print('Distance KM = ${matchedMode?.distance}');
+          print('Inside Radius = $isInsideDestinationRadius');
+          print('Calling coordinate-arrival API for customer notification');
+          print('====================================================');
+        }
+
+        final Response destinationResponse =
+            await arrivalDestination(tripId, "destination");
+
+        if (destinationResponse.statusCode == 200) {
+          localDestinationReached = true;
+          tripDetail?.isReachedDestination = true;
+          await getRideDetails(tripId);
+        } else {
+          // Allow retry on next live tracking tick if backend/network failed.
+          destinationApiCalled = false;
+          localDestinationReached = false;
+        }
       }
     } else {
       isLoading = false;
@@ -610,6 +658,20 @@ class RideController extends GetxController implements GetxService {
     });
   }
 
+  bool _isResourceNotFoundResponse(Response response) {
+    final String statusText = response.statusText?.toLowerCase() ?? '';
+    final String bodyText = response.body?.toString().toLowerCase() ?? '';
+
+    // Do not depend only on 404. Backend can return Resource not found with
+    // different status codes or only in response body/statusText.
+    return statusText.contains('resource not found') ||
+        bodyText.contains('resource not found') ||
+        statusText == 'not found' ||
+        bodyText.contains('message: not found') ||
+        bodyText.contains('message:resource not found') ||
+        bodyText.contains('message: resource not found');
+  }
+
   Future<Response> arrivalPickupPoint(String tripId) async {
     isLoading = true;
     if (kDebugMode) {
@@ -620,7 +682,18 @@ class RideController extends GetxController implements GetxService {
       isLoading = false;
     } else {
       isLoading = false;
-      ApiChecker.checkApi(response);
+
+      // This method can be triggered automatically by live-location checking.
+      // Backend may sometimes return 404 / Resource not found while the trip
+      // state is changing. Do not show that as a popup to the driver.
+      if (_isResourceNotFoundResponse(response)) {
+        arrivalApiCalled = false;
+        if (kDebugMode) {
+          print('Pickup arrival API skipped: ${response.statusText}');
+        }
+      } else {
+        ApiChecker.checkApi(response);
+      }
     }
     update();
     return response;
@@ -629,13 +702,42 @@ class RideController extends GetxController implements GetxService {
   Future<Response> arrivalDestination(String tripId, String type) async {
     Response response =
         await rideServiceInterface.arrivalDestination(tripId, type);
+
     if (response.statusCode == 200) {
       if (kDebugMode) {
-        print("===Arrived destination aria===");
+        print("===Arrived destination area===");
+      }
+
+      if (Get.find<RiderMapController>().isInside) {
+        Future.delayed(const Duration(seconds: 2), () {
+          Get.snackbar(
+            'Destination Reached',
+            'You have reached your destination.',
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: Colors.white,
+            colorText: Colors.black87,
+            duration: const Duration(seconds: 10),
+            dismissDirection: DismissDirection.horizontal,
+            isDismissible: true,
+            borderRadius: 16,
+            margin: const EdgeInsets.all(12),
+            icon: const Icon(
+              Icons.location_on_rounded,
+              color: Color(0xFFFFB300),
+            ),
+          );
+
+          AudioPlayer().play(AssetSource('notification.wav'));
+        });
       }
     } else {
-      ApiChecker.checkApi(response);
+      if (_isResourceNotFoundResponse(response)) {
+        destinationApiCalled = false;
+      } else {
+        ApiChecker.checkApi(response);
+      }
     }
+
     update();
     return response;
   }

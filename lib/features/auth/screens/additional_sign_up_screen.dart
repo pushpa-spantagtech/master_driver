@@ -87,7 +87,9 @@ class AdditionalSignUpScreen extends StatelessWidget {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: Theme.of(context).colorScheme.tertiaryContainer,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .tertiaryContainer,
                                 width: 1.5,
                               ),
                             ),
@@ -98,29 +100,36 @@ class AdditionalSignUpScreen extends StatelessWidget {
                                 children: [
                                   authController.pickedProfileFile == null
                                       ? ClipRRect(
-                                    borderRadius: BorderRadius.circular(40),
-                                    child: const ImageWidget(
-                                      image: '',
-                                      height: 76,
-                                      width: 76,
-                                      placeholder: Images.personPlaceholder,
-                                    ),
-                                  )
+                                          borderRadius:
+                                              BorderRadius.circular(40),
+                                          child: const ImageWidget(
+                                            image: '',
+                                            height: 76,
+                                            width: 76,
+                                            placeholder:
+                                                Images.personPlaceholder,
+                                          ),
+                                        )
                                       : CircleAvatar(
-                                    radius: 38,
-                                    backgroundImage: FileImage(
-                                      File(authController.pickedProfileFile!.path),
-                                    ),
-                                  ),
+                                          radius: 38,
+                                          backgroundImage: FileImage(
+                                            File(authController
+                                                .pickedProfileFile!.path),
+                                          ),
+                                        ),
                                   Positioned(
                                     right: 5,
                                     bottom: -3,
                                     child: InkWell(
-                                      overlayColor: WidgetStateProperty.all(Colors.transparent),
-                                      onTap: () => authController.pickImage(false, true),
+                                      overlayColor: WidgetStateProperty.all(
+                                          Colors.transparent),
+                                      onTap: () =>
+                                          authController.pickImage(false, true),
                                       child: Container(
                                         decoration: BoxDecoration(
-                                          color: Theme.of(context).colorScheme.primary,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
                                           shape: BoxShape.circle,
                                         ),
                                         padding: const EdgeInsets.all(5),
@@ -168,12 +177,10 @@ class AdditionalSignUpScreen extends StatelessWidget {
                       value: authController.identityType.isEmpty
                           ? null
                           : authController.identityType,
-
                       style: textRegular.copyWith(
                         fontSize: Dimensions.fontSizeDefault,
                         color: Theme.of(context).textTheme.bodyMedium?.color,
                       ),
-
                       decoration: InputDecoration(
                         prefixIcon: Padding(
                           padding: const EdgeInsets.only(left: 14, right: 12),
@@ -187,31 +194,26 @@ class AdditionalSignUpScreen extends StatelessWidget {
                           minWidth: 52,
                           minHeight: 54,
                         ),
-
                         filled: true,
                         fillColor: Colors.white,
-
                         contentPadding: const EdgeInsets.only(
                           left: 18,
                           right: 16,
                           top: 22,
                           bottom: 16,
                         ),
-
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide(
                             color: Colors.grey.shade300,
                           ),
                         ),
-
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide(
                             color: Colors.grey.shade300,
                           ),
                         ),
-
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide(
@@ -220,7 +222,6 @@ class AdditionalSignUpScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-
                       hint: Text(
                         'select_identity_type'.tr,
                         style: textRegular.copyWith(
@@ -228,8 +229,8 @@ class AdditionalSignUpScreen extends StatelessWidget {
                           color: Colors.grey.shade500,
                         ),
                       ),
-
-                      items: authController.identityTypeList.map((String value) {
+                      items:
+                          authController.identityTypeList.map((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
                           child: Text(
@@ -240,7 +241,6 @@ class AdditionalSignUpScreen extends StatelessWidget {
                           ),
                         );
                       }).toList(),
-
                       onChanged: (val) {
                         authController.setIdentityType(val!);
                       },
@@ -269,216 +269,216 @@ class AdditionalSignUpScreen extends StatelessWidget {
                           authController.identityImages.length >= 2
                               ? 2
                               : authController.identityImages.length + 1,
-                              (index) {
+                          (index) {
                             return index == authController.identityImages.length
                                 ? GestureDetector(
-                              onTap: () =>
-                                  authController.pickImage(false, false),
-                              child: DottedBorder(
-                                strokeWidth: 2,
-                                dashPattern: const [10, 5],
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .secondaryContainer,
-                                borderType: BorderType.RRect,
-                                radius: const Radius.circular(
-                                  Dimensions.paddingSizeSmall,
-                                ),
-                                child: Stack(
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(
+                                    onTap: () =>
+                                        authController.pickImage(false, false),
+                                    child: DottedBorder(
+                                      strokeWidth: 2,
+                                      dashPattern: const [10, 5],
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .secondaryContainer,
+                                      borderType: BorderType.RRect,
+                                      radius: const Radius.circular(
                                         Dimensions.paddingSizeSmall,
                                       ),
-                                      child: SizedBox(
-                                        height: MediaQuery.of(context)
-                                            .size
-                                            .width /
-                                            4.3,
-                                        width: MediaQuery.of(context)
-                                            .size
-                                            .width,
-                                        child: Image.asset(
-                                          Images.cameraPlaceholder,
-                                          scale: 3,
-                                        ),
-                                      ),
-                                    ),
-                                    Positioned(
-                                      bottom: 0,
-                                      right: 0,
-                                      top: 0,
-                                      left: 0,
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          color: Theme.of(context)
-                                              .hintColor
-                                              .withValues(alpha: 0.07),
-                                          borderRadius:
-                                          BorderRadius.circular(
-                                            Dimensions.paddingSizeSmall,
+                                      child: Stack(
+                                        children: [
+                                          ClipRRect(
+                                            borderRadius: BorderRadius.circular(
+                                              Dimensions.paddingSizeSmall,
+                                            ),
+                                            child: SizedBox(
+                                              height: MediaQuery.of(context)
+                                                      .size
+                                                      .width /
+                                                  4.3,
+                                              width: MediaQuery.of(context)
+                                                  .size
+                                                  .width,
+                                              child: Image.asset(
+                                                Images.cameraPlaceholder,
+                                                scale: 3,
+                                              ),
+                                            ),
                                           ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            )
-                                : Stack(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                    bottom: Dimensions.paddingSizeSmall,
-                                  ),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color:
-                                      Theme.of(context).primaryColor,
-                                      borderRadius:
-                                      const BorderRadius.all(
-                                        Radius.circular(20),
-                                      ),
-                                    ),
-                                    child: ClipRRect(
-                                      borderRadius:
-                                      const BorderRadius.all(
-                                        Radius.circular(
-                                          Dimensions
-                                              .paddingSizeExtraSmall,
-                                        ),
-                                      ),
-                                      child: Image.file(
-                                        File(
-                                          authController
-                                              .identityImages[index].path,
-                                        ),
-                                        width: MediaQuery.of(context)
-                                            .size
-                                            .width,
-                                        height: MediaQuery.of(context)
-                                            .size
-                                            .width /
-                                            4.3,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Positioned(
-                                  top: 0,
-                                  right: 0,
-                                  child: InkWell(
-                                    overlayColor: WidgetStateProperty.all(
-                                        Colors.transparent),
-                                    onTap: () =>
-                                        authController.removeImage(index),
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .shadow,
-                                            blurRadius: 2,
-                                            offset: const Offset(0, 0),
+                                          Positioned(
+                                            bottom: 0,
+                                            right: 0,
+                                            top: 0,
+                                            left: 0,
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                color: Theme.of(context)
+                                                    .hintColor
+                                                    .withValues(alpha: 0.07),
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                  Dimensions.paddingSizeSmall,
+                                                ),
+                                              ),
+                                            ),
                                           ),
                                         ],
-                                        color: Theme.of(context)
-                                            .primaryColor,
-                                        borderRadius:
-                                        const BorderRadius.all(
-                                          Radius.circular(
-                                            Dimensions.paddingSizeDefault,
+                                      ),
+                                    ),
+                                  )
+                                : Stack(
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          bottom: Dimensions.paddingSizeSmall,
+                                        ),
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color:
+                                                Theme.of(context).primaryColor,
+                                            borderRadius:
+                                                const BorderRadius.all(
+                                              Radius.circular(20),
+                                            ),
+                                          ),
+                                          child: ClipRRect(
+                                            borderRadius:
+                                                const BorderRadius.all(
+                                              Radius.circular(
+                                                Dimensions
+                                                    .paddingSizeExtraSmall,
+                                              ),
+                                            ),
+                                            child: Image.file(
+                                              File(
+                                                authController
+                                                    .identityImages[index].path,
+                                              ),
+                                              width: MediaQuery.of(context)
+                                                  .size
+                                                  .width,
+                                              height: MediaQuery.of(context)
+                                                      .size
+                                                      .width /
+                                                  4.3,
+                                              fit: BoxFit.cover,
+                                            ),
                                           ),
                                         ),
                                       ),
-                                      child: Padding(
-                                        padding:
-                                        const EdgeInsets.all(4.0),
-                                        child: Icon(
-                                          Icons.delete_forever_rounded,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .error,
-                                          size: 15,
+                                      Positioned(
+                                        top: 0,
+                                        right: 0,
+                                        child: InkWell(
+                                          overlayColor: WidgetStateProperty.all(
+                                              Colors.transparent),
+                                          onTap: () =>
+                                              authController.removeImage(index),
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .shadow,
+                                                  blurRadius: 2,
+                                                  offset: const Offset(0, 0),
+                                                ),
+                                              ],
+                                              color: Theme.of(context)
+                                                  .primaryColor,
+                                              borderRadius:
+                                                  const BorderRadius.all(
+                                                Radius.circular(
+                                                  Dimensions.paddingSizeDefault,
+                                                ),
+                                              ),
+                                            ),
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(4.0),
+                                              child: Icon(
+                                                Icons.delete_forever_rounded,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .error,
+                                                size: 15,
+                                              ),
+                                            ),
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            );
+                                    ],
+                                  );
                           },
                         ),
                       ),
                     ),
                     authController.isLoading
                         ? Center(
-                        child: SpinKitCircle(
-                            color: Theme.of(context).colorScheme.primary,
-                            size: 40.0))
+                            child: SpinKitCircle(
+                                color: Theme.of(context).colorScheme.primary,
+                                size: 40.0))
                         : ButtonWidget(
-                        buttonText: 'send'.tr,
-                        onPressed: () {
-                          String email =
-                              authController.emailController.text;
-                          String address =
-                              authController.addressController.text;
-                          String identityNumber =
-                              authController.identityNumberController.text;
-                          if (authController.pickedProfileFile == null) {
-                            showCustomSnackBar(
-                                'profile_image_is_required'.tr);
-                          } else if (email.isEmpty) {
-                            showCustomSnackBar('email_is_required'.tr);
-                            FocusScope.of(context)
-                                .requestFocus(authController.emailNode);
-                          } else if (EmailChecker.isNotValid(email)) {
-                            showCustomSnackBar(
-                                'enter_valid_email_address'.tr);
-                            FocusScope.of(context)
-                                .requestFocus(authController.emailNode);
-                          } else if (address.isEmpty) {
-                            showCustomSnackBar('address_is_required'.tr);
-                            FocusScope.of(context)
-                                .requestFocus(authController.addressNode);
-                          } else if (identityNumber.isEmpty) {
-                            showCustomSnackBar(
-                                'identity_number_is_required'.tr);
-                            FocusScope.of(context).requestFocus(
-                                authController.identityNumberNode);
-                          } else if (authController
-                              .identityImages.isEmpty) {
-                            showCustomSnackBar(
-                                'identity_image_is_required'.tr);
-                          } else if (authController.identityType.isEmpty) {
-                            showCustomSnackBar(
-                                'identity_type_is_required'.tr);
-                          } else {
-                            SignUpBody signUpBody = SignUpBody(
-                                userType: AppConstants.driverType,
-                                email: email,
-                                address: address,
-                                identityNumber: identityNumber,
-                                identificationType:
-                                authController.identityType,
-                                fName: authController.fNameController.text,
-                                lName: authController.lNameController.text,
-                                phone: countryCode +
-                                    authController.phoneController.text,
-                                password:
-                                authController.passwordController.text,
-                                confirmPassword: authController
-                                    .confirmPasswordController.text,
-                                deviceToken:
-                                authController.getDeviceToken(),
-                                services: services);
-                            authController.register(
-                                countryCode, signUpBody);
-                          }
-                        },
-                        radius: 50),
+                            buttonText: 'send'.tr,
+                            onPressed: () {
+                              String email =
+                                  authController.emailController.text;
+                              String address =
+                                  authController.addressController.text;
+                              String identityNumber =
+                                  authController.identityNumberController.text;
+                              if (authController.pickedProfileFile == null) {
+                                showCustomSnackBar(
+                                    'profile_image_is_required'.tr);
+                              } else if (email.isEmpty) {
+                                showCustomSnackBar('email_is_required'.tr);
+                                FocusScope.of(context)
+                                    .requestFocus(authController.emailNode);
+                              } else if (EmailChecker.isNotValid(email)) {
+                                showCustomSnackBar(
+                                    'enter_valid_email_address'.tr);
+                                FocusScope.of(context)
+                                    .requestFocus(authController.emailNode);
+                              } else if (address.isEmpty) {
+                                showCustomSnackBar('address_is_required'.tr);
+                                FocusScope.of(context)
+                                    .requestFocus(authController.addressNode);
+                              } else if (identityNumber.isEmpty) {
+                                showCustomSnackBar(
+                                    'identity_number_is_required'.tr);
+                                FocusScope.of(context).requestFocus(
+                                    authController.identityNumberNode);
+                              } else if (authController
+                                  .identityImages.isEmpty) {
+                                showCustomSnackBar(
+                                    'identity_image_is_required'.tr);
+                              } else if (authController.identityType.isEmpty) {
+                                showCustomSnackBar(
+                                    'identity_type_is_required'.tr);
+                              } else {
+                                SignUpBody signUpBody = SignUpBody(
+                                    userType: AppConstants.driverType,
+                                    email: email,
+                                    address: address,
+                                    identityNumber: identityNumber,
+                                    identificationType:
+                                        authController.identityType,
+                                    fName: authController.fNameController.text,
+                                    lName: authController.lNameController.text,
+                                    phone: countryCode +
+                                        authController.phoneController.text,
+                                    password:
+                                        authController.passwordController.text,
+                                    confirmPassword: authController
+                                        .confirmPasswordController.text,
+                                    deviceToken:
+                                        authController.getDeviceToken(),
+                                    services: services);
+                                authController.register(
+                                    countryCode, signUpBody);
+                              }
+                            },
+                            radius: 50),
                     const SizedBox(
                       height: Dimensions.paddingSizeDefault,
                     ),

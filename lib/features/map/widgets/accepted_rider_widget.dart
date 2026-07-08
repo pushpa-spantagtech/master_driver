@@ -319,225 +319,13 @@ class _RideAcceptedWidgetState extends State<RideAcceptedWidget>
                           ),
                         ),
                         const SizedBox(height: Dimensions.paddingSizeDefault),
-                        if (rideController.tripDetail!.type != 'parcel')
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: Dimensions.paddingSizeExtraLarge),
-                            child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(children: [
-                                    SizedBox(
-                                        width: Dimensions.iconSizeMedium,
-                                        child: Image.asset(
-                                          Images.distanceCalculated,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .primary,
-                                        )),
-                                    const SizedBox(
-                                        width: Dimensions.paddingSizeSmall),
-                                    Text("total_distance".tr,
-                                        style: textRegular.copyWith()),
-                                  ]),
-                                  const SizedBox(
-                                      width: Dimensions.paddingSizeSmall),
-                                  Text(
-                                    totalDistance.contains('km')
-                                        ? rideController
-                                            .tripDetail!.estimatedDistance
-                                            .toString()
-                                        : '${double.parse(rideController.tripDetail!.estimatedDistance.toString()).toStringAsFixed(2)} km',
-                                    style: textBold.copyWith(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSecondary),
-                                  ),
-                                ]),
-                          ),
                         const SizedBox(height: Dimensions.paddingSizeDefault),
-                        Container(
-                          decoration: BoxDecoration(
-                            borderRadius:
-                                BorderRadius.circular(Dimensions.radiusLarge),
-                            color: Theme.of(context)
-                                .primaryColor
-                                .withValues(alpha: 0.15),
-                          ),
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: Dimensions.paddingSizeDefault),
-                          padding: const EdgeInsets.all(
-                              Dimensions.paddingSizeDefault),
-                          child: Column(children: [
-                            Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                      child: Row(children: [
-                                    Image.asset(
-                                      Images.paymentTypeIcon,
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
-                                      height: Dimensions.paddingSizeDefault,
-                                      width: Dimensions.paddingSizeDefault,
-                                    ),
-                                    const SizedBox(
-                                        width: Dimensions.paddingSizeSmall),
-                                    Text(
-                                      'payment_method'.tr,
-                                      style: textRegular.copyWith(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onPrimary,
-                                        fontSize: Dimensions.fontSizeDefault,
-                                      ),
-                                    ),
-                                    if (rideController.tripDetail?.type ==
-                                        'parcel')
-                                      JustTheTooltip(
-                                        backgroundColor: Get.isDarkMode
-                                            ? Theme.of(context)
-                                                .colorScheme
-                                                .secondary
-                                            : Theme.of(context)
-                                                .textTheme
-                                                .bodyMedium!
-                                                .color,
-                                        controller: tooltipController,
-                                        preferredDirection: AxisDirection.up,
-                                        tailLength: 10,
-                                        isModal: true,
-                                        tailBaseWidth: 20,
-                                        content: Container(
-                                          width: 200,
-                                          padding: const EdgeInsets.all(
-                                              Dimensions.paddingSizeSmall),
-                                          child: Text(
-                                            _paymentToolTipText(
-                                              rideController
-                                                      .tripDetail
-                                                      ?.parcelInformation
-                                                      ?.payer ??
-                                                  'sender',
-                                              rideController.tripDetail
-                                                      ?.paymentMethod ??
-                                                  'cash',
-                                            ),
-                                            style: textRegular.copyWith(
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .onPrimary,
-                                                fontSize:
-                                                    Dimensions.fontSizeDefault),
-                                          ),
-                                        ),
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal:
-                                                Dimensions.paddingSizeSmall,
-                                          ),
-                                          child: Icon(Icons.info,
-                                              color: Theme.of(context)
-                                                  .primaryColor,
-                                              size: 16),
-                                        ),
-                                      )
-                                  ])),
-                                  Text(
-                                      rideController.tripDetail?.paymentMethod
-                                              ?.replaceAll(
-                                                  RegExp('[\\W_]+'), ' ')
-                                              .capitalize ??
-                                          'cash'.tr,
-                                      style: textBold.copyWith(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onPrimary))
-                                ]),
-                            const SizedBox(height: Dimensions.paddingSizeSmall),
-                            Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(children: [
-                                    Image.asset(
-                                      Images.farePrice,
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
-                                      height: Dimensions.paddingSizeDefault,
-                                      width: Dimensions.paddingSizeDefault,
-                                    ),
-                                    const SizedBox(
-                                        width: Dimensions.paddingSizeSmall),
-                                    Text(
-                                      'fare_price'.tr,
-                                      style: textRegular.copyWith(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onPrimary,
-                                        fontSize: Dimensions.fontSizeDefault,
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                        width: Dimensions.paddingSizeSmall),
-                                    if (rideController.tripDetail?.type ==
-                                        'parcel')
-                                      Container(
-                                        decoration: BoxDecoration(
-                                            color: Theme.of(context)
-                                                .primaryColor
-                                                .withValues(alpha: 0.25),
-                                            borderRadius: BorderRadius.circular(
-                                                Dimensions
-                                                    .paddingSizeExtraSmall)),
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal:
-                                                Dimensions.paddingSizeSmall),
-                                        child: Text(
-                                          (rideController
-                                                          .tripDetail
-                                                          ?.parcelInformation
-                                                          ?.payer ??
-                                                      'sender') ==
-                                                  'sender'
-                                              ? 'sender_will_pay'.tr
-                                              : 'receiver_will_pay'.tr,
-                                          style: textRegular.copyWith(
-                                              fontSize: 12),
-                                        ),
-                                      ),
-                                  ]),
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(
-                                          Dimensions.radiusSmall),
-                                      color: Theme.of(context)
-                                          .primaryColor
-                                          .withValues(alpha: 0.2),
-                                    ),
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical:
-                                          Dimensions.paddingSizeExtraSmall,
-                                    ),
-                                    child: Text(
-                                      PriceConverter.convertPrice(
-                                        context,
-                                        double.parse(rideController
-                                            .tripDetail!.estimatedFare!),
-                                      ),
-                                      style: textBold.copyWith(
-                                        fontSize: Dimensions.fontSizeSmall,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onPrimary,
-                                      ),
-                                    ),
-                                  )
-                                ]),
-                          ]),
+                        _buildTripInfoCard(
+                          context: context,
+                          rideController: rideController,
+                          totalDistance: totalDistance,
                         ),
+                        const SizedBox(height: Dimensions.paddingSizeDefault),
                         (rideController.tripDetail!.type == "ride_request")
                             ? Padding(
                                 padding: const EdgeInsets.symmetric(
@@ -554,25 +342,33 @@ class _RideAcceptedWidgetState extends State<RideAcceptedWidget>
                                   label: Text(
                                     'cancel_ride'.tr,
                                     style: textSemiBold.copyWith(
-                                        fontSize: 14,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .primary),
+                                      fontSize: 14,
+                                      color: const Color(0xFFFFA000),
+                                    ),
                                   ),
                                   dismissThresholds: 0.5,
                                   dismissible: false,
                                   shimmer: false,
-                                  width: 1170,
-                                  height: 40,
-                                  buttonSize: 40,
-                                  radius: 20,
+                                  width: Get.width -
+                                      (Dimensions.paddingSizeDefault * 2),
+                                  height: 54,
+                                  buttonSize: 48,
+                                  radius: 28,
                                   icon: Center(
                                       child: Container(
-                                    width: 36,
-                                    height: 36,
+                                    width: 42,
+                                    height: 42,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       color: Theme.of(context).cardColor,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black
+                                              .withValues(alpha: 0.08),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 4),
+                                        ),
+                                      ],
                                     ),
                                     child: Center(
                                         child: Icon(
@@ -586,12 +382,18 @@ class _RideAcceptedWidgetState extends State<RideAcceptedWidget>
                                   )),
                                   isLtr:
                                       Get.find<LocalizationController>().isLtr,
-                                  boxShadow: const BoxShadow(blurRadius: 0),
+                                  boxShadow: BoxShadow(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .primary
+                                        .withValues(alpha: 0.10),
+                                    blurRadius: 14,
+                                    offset: const Offset(0, 6),
+                                  ),
                                   buttonColor: Colors.transparent,
-                                  backgroundColor: Theme.of(context)
-                                      .colorScheme
-                                      .primaryContainer,
-                                  baseColor: Theme.of(context).primaryColor,
+                                  backgroundColor: const Color(0xFFFFF3D6),
+                                  baseColor:
+                                      Theme.of(context).colorScheme.primary,
                                 ),
                               )
                             : const SizedBox(),
@@ -697,6 +499,217 @@ class _RideAcceptedWidgetState extends State<RideAcceptedWidget>
         );
       });
     });
+  }
+
+  Widget _buildTripInfoCard({
+    required BuildContext context,
+    required RideController rideController,
+    required String totalDistance,
+  }) {
+    final Color primary = Theme.of(context).colorScheme.primary;
+    final Color cardColor = Theme.of(context).cardColor;
+    final Color titleColor =
+        Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black87;
+    final Color dividerColor =
+        Theme.of(context).hintColor.withValues(alpha: 0.14);
+
+    final String distanceText = totalDistance.contains('km')
+        ? rideController.tripDetail!.estimatedDistance.toString()
+        : '${double.parse(rideController.tripDetail!.estimatedDistance.toString()).toStringAsFixed(2)} km';
+
+    return Container(
+      margin:
+          const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeDefault),
+      padding: const EdgeInsets.symmetric(
+        horizontal: Dimensions.paddingSizeDefault,
+        vertical: Dimensions.paddingSizeSmall,
+      ),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: Theme.of(context).hintColor.withValues(alpha: 0.14),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.035),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(children: [
+        if (rideController.tripDetail!.type != 'parcel') ...[
+          _buildTripInfoRow(
+            context: context,
+            icon: Images.distanceCalculated,
+            title: 'total_distance'.tr,
+            value: distanceText,
+            primary: primary,
+            titleColor: titleColor,
+            chip: false,
+          ),
+          Divider(height: 18, thickness: 1, color: dividerColor),
+        ],
+        _buildTripInfoRow(
+          context: context,
+          icon: Images.paymentTypeIcon,
+          title: 'payment_method'.tr,
+          value: rideController.tripDetail?.paymentMethod
+                  ?.replaceAll(RegExp('[\\W_]+'), ' ')
+                  .capitalize ??
+              'cash'.tr,
+          primary: primary,
+          titleColor: titleColor,
+          chip: true,
+          tooltip: rideController.tripDetail?.type == 'parcel'
+              ? JustTheTooltip(
+                  backgroundColor: Get.isDarkMode
+                      ? Theme.of(context).colorScheme.secondary
+                      : Theme.of(context).textTheme.bodyMedium!.color,
+                  controller: tooltipController,
+                  preferredDirection: AxisDirection.up,
+                  tailLength: 10,
+                  isModal: true,
+                  tailBaseWidth: 20,
+                  content: Container(
+                    width: 200,
+                    padding: const EdgeInsets.all(Dimensions.paddingSizeSmall),
+                    child: Text(
+                      _paymentToolTipText(
+                        rideController.tripDetail?.parcelInformation?.payer ??
+                            'sender',
+                        rideController.tripDetail?.paymentMethod ?? 'cash',
+                      ),
+                      style: textRegular.copyWith(
+                        color: Theme.of(context).colorScheme.onPrimary,
+                        fontSize: Dimensions.fontSizeDefault,
+                      ),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: Dimensions.paddingSizeSmall,
+                    ),
+                    child: Icon(Icons.info, color: primary, size: 16),
+                  ),
+                )
+              : null,
+        ),
+        Divider(height: 18, thickness: 1, color: dividerColor),
+        _buildTripInfoRow(
+          context: context,
+          icon: Images.farePrice,
+          title: 'fare_price'.tr,
+          value: PriceConverter.convertPrice(
+            context,
+            double.parse(rideController.tripDetail!.estimatedFare!),
+          ),
+          primary: primary,
+          titleColor: titleColor,
+          chip: true,
+          extraLabel: rideController.tripDetail?.type == 'parcel'
+              ? Container(
+                  margin:
+                      const EdgeInsets.only(left: Dimensions.paddingSizeSmall),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: Dimensions.paddingSizeSmall,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: primary.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    (rideController.tripDetail?.parcelInformation?.payer ??
+                                'sender') ==
+                            'sender'
+                        ? 'sender_will_pay'.tr
+                        : 'receiver_will_pay'.tr,
+                    style: textRegular.copyWith(fontSize: 11),
+                  ),
+                )
+              : null,
+        ),
+      ]),
+    );
+  }
+
+  Widget _buildTripInfoRow({
+    required BuildContext context,
+    required String icon,
+    required String title,
+    required String value,
+    required Color primary,
+    required Color titleColor,
+    bool chip = false,
+    Widget? tooltip,
+    Widget? extraLabel,
+  }) {
+    return Row(
+      children: [
+        Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            color: primary.withValues(alpha: 0.10),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Center(
+            child: Image.asset(
+              icon,
+              color: primary,
+              height: 17,
+              width: 17,
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Row(
+            children: [
+              Flexible(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: textMedium.copyWith(
+                    color: titleColor,
+                    fontSize: Dimensions.fontSizeDefault,
+                  ),
+                ),
+              ),
+              if (tooltip != null) tooltip,
+              if (extraLabel != null) extraLabel,
+            ],
+          ),
+        ),
+        const SizedBox(width: 10),
+        Container(
+          padding: chip
+              ? const EdgeInsets.symmetric(horizontal: 12, vertical: 7)
+              : EdgeInsets.zero,
+          decoration: chip
+              ? BoxDecoration(
+                  color: const Color(0xFFFFF6E0),
+                  borderRadius: BorderRadius.circular(100),
+                  border: Border.all(
+                    color: const Color(0xFFFFD98A),
+                    width: 1,
+                  ),
+                )
+              : null,
+          child: Text(
+            value,
+            style: textBold.copyWith(
+              color: titleColor,
+              fontSize: Dimensions.fontSizeSmall,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   String _paymentToolTipText(String whoPay, String paymentMethod) {

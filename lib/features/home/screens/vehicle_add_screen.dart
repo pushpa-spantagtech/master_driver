@@ -15,7 +15,6 @@ import 'package:ride_sharing_user_app/features/profile/domain/models/vehicle_bra
 import 'package:ride_sharing_user_app/features/profile/domain/models/vehicle_body.dart';
 import 'package:ride_sharing_user_app/common_widgets/app_bar_widget.dart';
 import 'package:ride_sharing_user_app/common_widgets/button_widget.dart';
-import 'package:ride_sharing_user_app/common_widgets/date_picker_widget.dart';
 
 class VehicleAddScreen extends StatefulWidget {
   final Vehicle? vehicleInfo;

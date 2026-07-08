@@ -6,7 +6,6 @@ import 'package:ride_sharing_user_app/features/ride/controllers/ride_controller.
 import 'package:ride_sharing_user_app/helper/display_helper.dart';
 import 'package:ride_sharing_user_app/localization/localization_controller.dart';
 import 'package:ride_sharing_user_app/util/dimensions.dart';
-import 'package:ride_sharing_user_app/util/images.dart';
 import 'package:ride_sharing_user_app/util/styles.dart';
 import 'dart:math' as math;
 
@@ -25,14 +24,14 @@ class _OtpVerificationWidgetState extends State<OtpVerificationWidget> {
   @override
   void initState() {
     super.initState();
-
     _otpController = TextEditingController();
-
     Get.find<OtpTimeCountController>().startCountingState();
   }
 
   @override
   void dispose() {
+    // Keep same behavior as your original code to avoid functionality changes.
+    // Do not dispose here because PinCodeTextField may manage the controller during rebuilds.
     _otpController = null;
     super.dispose();
   }
@@ -47,36 +46,42 @@ class _OtpVerificationWidgetState extends State<OtpVerificationWidget> {
                   alignment: Alignment.topRight,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: Dimensions.paddingSizeSmall,
-                      vertical: Dimensions.paddingSizeExtraSmall,
+                      horizontal: 12,
+                      vertical: 8,
                     ),
                     margin: const EdgeInsets.symmetric(
-                        horizontal: Dimensions.paddingSizeLarge),
+                      horizontal: Dimensions.paddingSizeLarge,
+                    ),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(100),
-                      color:
-                          Theme.of(context).hintColor.withValues(alpha: .085),
+                      color: const Color(0xFFFFF8E8),
+                      borderRadius: BorderRadius.circular(30),
+                      border: Border.all(
+                        color: const Color(0xFFFFE2A6),
+                        width: 1,
+                      ),
                     ),
                     child: Row(mainAxisSize: MainAxisSize.min, children: [
+                      const Icon(
+                        Icons.access_time_filled_rounded,
+                        size: 16,
+                        color: Color(0xFFFFB300),
+                      ),
+                      const SizedBox(width: 6),
                       Text(
-                          '${otpTimeController.min.toString().padLeft(2, '0')}:${otpTimeController.sec.toString().padLeft(2, '0')}',
-                          style: textBold.copyWith(
-                              color: Theme.of(context)
-                                  .textTheme
-                                  .bodyLarge!
-                                  .color)),
-                      const SizedBox(width: Dimensions.paddingSizeSmall),
-                      Image.asset(Images.clockIcon,
-                          color: Theme.of(context).colorScheme.primary,
-                          height: 17,
-                          width: 17),
+                        '${otpTimeController.min.toString().padLeft(2, '0')}:${otpTimeController.sec.toString().padLeft(2, '0')}',
+                        style: textBold.copyWith(
+                          fontSize: 13,
+                          color: Colors.black87,
+                        ),
+                      ),
                     ]),
                   ),
                 )
               : const SizedBox(height: Dimensions.paddingSizeExtraSmall),
           Container(
             padding: const EdgeInsets.symmetric(
-                horizontal: Dimensions.paddingSizeSignUp),
+              horizontal: Dimensions.paddingSizeSignUp,
+            ),
             decoration: BoxDecoration(
               color: Theme.of(context).cardColor,
               borderRadius:
@@ -87,39 +92,48 @@ class _OtpVerificationWidgetState extends State<OtpVerificationWidget> {
                   ? Text(
                       'enter_trip_otp'.tr,
                       style: textBold.copyWith(
-                          fontSize: Dimensions.fontSizeLarge,
-                          color: Theme.of(context).colorScheme.onSecondary),
+                        fontSize: Dimensions.fontSizeLarge,
+                        color: Theme.of(context).colorScheme.onSecondary,
+                      ),
                     )
-                  : Text('did_customer_arrived'.tr,
+                  : Text(
+                      'did_customer_arrived'.tr,
                       style: textBold.copyWith(
-                          color: Theme.of(context).colorScheme.onSecondary,
-                          fontSize: Dimensions.fontSizeDefault)),
+                        color: Theme.of(context).colorScheme.onSecondary,
+                        fontSize: Dimensions.fontSizeDefault,
+                      ),
+                    ),
               otpTimeController.currentState == 0
-                  ? Text('collect_the_otp_from_customer'.tr,
+                  ? Text(
+                      'collect_the_otp_from_customer'.tr,
                       style: textRegular.copyWith(
                         color: Theme.of(context).colorScheme.secondary,
                       ),
-                      textAlign: TextAlign.center)
-                  : Text('please_hold_on_a_little_more'.tr,
+                      textAlign: TextAlign.center,
+                    )
+                  : Text(
+                      'please_hold_on_a_little_more'.tr,
                       style: textBold.copyWith(
                         color: Theme.of(context).colorScheme.tertiary,
                         fontSize: Dimensions.fontSizeDefault,
-                      )),
+                      ),
+                    ),
               Padding(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: Dimensions.paddingSizeExtraSmall),
+                  horizontal: Dimensions.paddingSizeExtraSmall,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Expanded(
-                        child: Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        Dimensions.paddingSizeDefault,
-                        Dimensions.paddingSizeDefault,
-                        Dimensions.paddingSizeDefault,
-                        0,
-                      ),
-                      child: PinCodeTextField(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(
+                          Dimensions.paddingSizeDefault,
+                          Dimensions.paddingSizeDefault,
+                          Dimensions.paddingSizeDefault,
+                          0,
+                        ),
+                        child: PinCodeTextField(
                           controller: _otpController,
                           length: 4,
                           appContext: context,
@@ -152,10 +166,15 @@ class _OtpVerificationWidgetState extends State<OtpVerificationWidget> {
                           },
                           beforeTextPaste: (text) {
                             return true;
-                          }),
-                    )),
+                          },
+                        ),
+                      ),
+                    ),
                     InkWell(
-                      overlayColor: WidgetStateProperty.all(Colors.transparent),
+                      borderRadius: BorderRadius.circular(14),
+                      overlayColor: WidgetStateProperty.all(
+                        const Color(0xFFFFB300).withValues(alpha: 0.12),
+                      ),
                       onTap: rideController.isPinVerificationLoading
                           ? null
                           : () async {
@@ -165,16 +184,25 @@ class _OtpVerificationWidgetState extends State<OtpVerificationWidget> {
                                   _otpController!.text,
                                 );
                               } else {
-                                showCustomSnackBar("pin_code_is_required".tr);
+                                showCustomSnackBar('pin_code_is_required'.tr);
                               }
                             },
                       child: rideController.isPinVerificationLoading
                           ? SizedBox(
-                              width: 30,
-                              height: 30,
-                              child: CircularProgressIndicator(
-                                color: Theme.of(context).colorScheme.primary,
-                              ))
+                              width: 48,
+                              height: 48,
+                              child: Center(
+                                child: SizedBox(
+                                  width: 26,
+                                  height: 26,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                  ),
+                                ),
+                              ),
+                            )
                           : Padding(
                               padding: const EdgeInsets.fromLTRB(
                                 0,
@@ -182,22 +210,36 @@ class _OtpVerificationWidgetState extends State<OtpVerificationWidget> {
                                 Dimensions.paddingSizeDefault,
                                 Dimensions.paddingSizeTiny,
                               ),
-                              child: SizedBox(
-                                  width: Dimensions.iconSizeLarge,
-                                  child: Transform(
-                                    alignment: Alignment.center,
-                                    transform:
-                                        Get.find<LocalizationController>().isLtr
-                                            ? Matrix4.rotationY(0)
-                                            : Matrix4.rotationY(math.pi),
-                                    child: Image.asset(
-                                      Images.arrowRight,
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
-                                    ),
-                                  )),
+                              child: Transform(
+                                alignment: Alignment.center,
+                                transform:
+                                    Get.find<LocalizationController>().isLtr
+                                        ? Matrix4.rotationY(0)
+                                        : Matrix4.rotationY(math.pi),
+                                child: Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFFB300),
+                                    borderRadius: BorderRadius.circular(14),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFFFFB300)
+                                            .withValues(alpha: 0.30),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Icon(
+                                    Icons.arrow_forward_rounded,
+                                    color: Colors.white,
+                                    size: 26,
+                                  ),
+                                ),
+                              ),
                             ),
-                    )
+                    ),
                   ],
                 ),
               ),

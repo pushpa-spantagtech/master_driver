@@ -17,7 +17,6 @@ import 'package:ride_sharing_user_app/features/auth/screens/verification_screen.
 import 'package:ride_sharing_user_app/features/location/screens/access_location_screen.dart';
 import 'package:ride_sharing_user_app/features/profile/controllers/profile_controller.dart';
 import 'package:ride_sharing_user_app/features/ride/controllers/ride_controller.dart';
-import 'package:ride_sharing_user_app/features/splash/controllers/splash_controller.dart';
 import 'package:ride_sharing_user_app/common_widgets/snackbar_widget.dart';
 
 class AuthController extends GetxController implements GetxService {

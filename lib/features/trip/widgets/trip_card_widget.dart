@@ -21,6 +21,10 @@ class TripCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String pickupAddress = tripModel.pickupAddress ?? '';
+    final String destinationAddress = tripModel.destinationAddress ?? '';
+    final double paidFare = double.tryParse(tripModel.paidFare ?? '0') ?? 0;
+
     return GestureDetector(
       onTap: () {
         if (tripModel.currentStatus == 'accepted' ||
@@ -70,112 +74,236 @@ class TripCard extends StatelessWidget {
           Dimensions.paddingSizeDefault,
           Dimensions.paddingSizeDefault,
         ),
-        child: Container(
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(Dimensions.paddingSizeSmall),
+        child: Material(
+          color: Theme.of(context).cardColor,
+          elevation: 0,
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            decoration: BoxDecoration(
               color: Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: Theme.of(context).dividerColor.withValues(alpha: 0.12),
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: Theme.of(context).hintColor.withValues(alpha: .20),
-                  blurRadius: 1,
-                  spreadRadius: 1,
-                  offset: const Offset(1, 1),
-                )
-              ]),
-          child: Column(children: [
-            if (tripModel.currentStatus == 'ongoing' &&
-                tripModel.type != 'parcel')
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: tripModel.screenshot != null
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(
-                            Dimensions.paddingSizeDefault),
-                        child: ImageWidget(
-                          image: tripModel.screenshot,
-                          width: Get.width,
-                          height: Get.width / 1.5,
-                          fit: BoxFit.fitWidth,
+                  color: Theme.of(context).shadowColor.withValues(alpha: 0.07),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Column(children: [
+                if (tripModel.currentStatus == 'ongoing' &&
+                    tripModel.type != 'parcel')
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: tripModel.screenshot != null
+                        ? ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: ImageWidget(
+                        image: tripModel.screenshot,
+                        width: Get.width,
+                        height: Get.width / 1.5,
+                        fit: BoxFit.fitWidth,
+                      ),
+                    )
+                        : ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Image.asset(Images.mapSample),
+                    ),
+                  ),
+                Padding(
+                  padding: const EdgeInsets.all(Dimensions.paddingSizeDefault),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        height: 54,
+                        width: 54,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest
+                              .withValues(alpha: 0.55),
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                      )
-                    : Image.asset(Images.mapSample),
-              ),
-            Padding(
-              padding: const EdgeInsets.all(Dimensions.paddingSizeDefault),
-              child: Row(children: [
-                Container(
-                  decoration: BoxDecoration(
-                      color: Theme.of(context).hintColor.withValues(alpha: .15),
-                      borderRadius: BorderRadius.circular(
-                          Dimensions.paddingSizeExtraSmall)),
-                  height: Dimensions.orderStatusIconHeight,
-                  width: Dimensions.orderStatusIconHeight,
-                  child: Padding(
-                    padding: const EdgeInsets.all(Dimensions.paddingSizeSmall),
-                    child: tripModel.type == 'parcel'
-                        ? Image.asset(Images.parcel)
-                        : Image.asset(
+                        child: Padding(
+                          padding:
+                          const EdgeInsets.all(Dimensions.paddingSizeSmall),
+                          child: tripModel.type == 'parcel'
+                              ? Image.asset(Images.parcel)
+                              : Image.asset(
                             tripModel.vehicleCategory != null
                                 ? tripModel.vehicleCategory!.type == "car"
-                                    ? Images.car
-                                    : Images.bike
+                                ? Images.car
+                                : Images.bike
                                 : Images.car,
                           ),
-                  ),
-                ),
-                const SizedBox(width: Dimensions.paddingSizeDefault),
-                Expanded(
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                      Text(tripModel.pickupAddress!, style: textMedium),
-                      Text(tripModel.destinationAddress!, style: textRegular),
-                      Text(
-                        DateConverter.isoStringToDateTimeString(
-                            tripModel.createdAt!),
-                        style: textRegular.copyWith(
-                          color: Theme.of(context)
-                              .hintColor
-                              .withValues(alpha: .85),
-                          fontSize: Dimensions.fontSizeSmall,
                         ),
                       ),
-                      Row(children: [
-                        Text(
-                            '${'total'.tr} ${PriceConverter.convertPrice(context, double.parse(tripModel.paidFare!))}'),
-                        const Spacer(),
-                        if (tripModel.currentStatus == 'ongoing')
-                          Container(
-                            margin: const EdgeInsets.symmetric(
-                                horizontal: Dimensions.paddingSizeSmall),
-                            padding: const EdgeInsets.symmetric(
-                              vertical: Dimensions.paddingSizeTiny,
-                              horizontal: Dimensions.paddingSizeExtraSmall,
+                      const SizedBox(width: Dimensions.paddingSizeDefault),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _AddressLine(
+                              icon: Icons.radio_button_checked_rounded,
+                              iconColor: Theme.of(context).colorScheme.primary,
+                              text: pickupAddress,
+                              textStyle: textMedium.copyWith(
+                                color: Theme.of(context).colorScheme.onSurface,
+                                fontSize: Dimensions.fontSizeDefault,
+                              ),
                             ),
-                            decoration: BoxDecoration(
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                  left: 6, top: 3, bottom: 3),
+                              child: Container(
+                                height: 14,
+                                width: 1.5,
                                 color: Theme.of(context)
-                                    .primaryColor
-                                    .withValues(alpha: 0.25),
-                                borderRadius: BorderRadius.circular(
-                                    Dimensions.paddingSizeExtraSmall)),
-                            child: Text(
-                                tripModel.type == 'parcel'
-                                    ? 'on_the_way'.tr
-                                    : 'ongoing'.tr,
-                                style: textBold),
-                          )
-                      ]),
-                    ])),
-                SizedBox(
-                  width: Dimensions.iconSizeSmall,
-                  child: Icon(Icons.arrow_forward_ios_rounded,
-                      color: Theme.of(context).colorScheme.primary),
+                                    .dividerColor
+                                    .withValues(alpha: 0.45),
+                              ),
+                            ),
+                            _AddressLine(
+                              icon: Icons.location_on_rounded,
+                              iconColor: Theme.of(context).colorScheme.error,
+                              text: destinationAddress,
+                              textStyle: textRegular.copyWith(
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium!
+                                    .color,
+                                fontSize: Dimensions.fontSizeSmall,
+                              ),
+                            ),
+                            const SizedBox(height: Dimensions.paddingSizeSmall),
+                            Row(children: [
+                              Icon(Icons.calendar_today_outlined,
+                                  size: 14,
+                                  color: Theme.of(context).hintColor),
+                              const SizedBox(width: 7),
+                              Expanded(
+                                child: Text(
+                                  DateConverter.isoStringToDateTimeString(
+                                      tripModel.createdAt!),
+                                  style: textRegular.copyWith(
+                                    color: Theme.of(context)
+                                        .hintColor
+                                        .withValues(alpha: .82),
+                                    fontSize: Dimensions.fontSizeSmall,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ]),
+                            const SizedBox(height: Dimensions.paddingSizeSmall),
+                            Row(children: [
+                              Expanded(
+                                child: Text(
+                                  '${'total'.tr} ${PriceConverter.convertPrice(context, paidFare)}',
+                                  style: textBold.copyWith(
+                                    color:
+                                    Theme.of(context).colorScheme.primary,
+                                    fontSize: Dimensions.fontSizeDefault,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (tripModel.currentStatus == 'ongoing')
+                                Container(
+                                  margin: const EdgeInsets.only(
+                                      left: Dimensions.paddingSizeSmall),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: Dimensions.paddingSizeExtraSmall,
+                                    horizontal: Dimensions.paddingSizeSmall,
+                                  ),
+                                  decoration: BoxDecoration(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .primaryContainer
+                                          .withValues(alpha: 0.55),
+                                      borderRadius: BorderRadius.circular(50)),
+                                  child: Text(
+                                      tripModel.type == 'parcel'
+                                          ? 'on_the_way'.tr
+                                          : 'ongoing'.tr,
+                                      style: textBold.copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                        fontSize: Dimensions.fontSizeSmall,
+                                      )),
+                                )
+                            ]),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: Dimensions.paddingSizeSmall),
+                      Container(
+                        height: 34,
+                        width: 34,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest
+                              .withValues(alpha: 0.55),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(Icons.chevron_right_rounded,
+                            size: 24,
+                            color: Theme.of(context).colorScheme.primary),
+                      ),
+                    ],
+                  ),
                 ),
               ]),
             ),
-          ]),
+          ),
         ),
       ),
+    );
+  }
+}
+
+class _AddressLine extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String text;
+  final TextStyle textStyle;
+
+  const _AddressLine({
+    required this.icon,
+    required this.iconColor,
+    required this.text,
+    required this.textStyle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 2),
+          child: Icon(icon, size: 14, color: iconColor),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: textStyle,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 }

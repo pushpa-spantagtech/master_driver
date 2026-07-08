@@ -134,14 +134,21 @@ class CustomerRideRequestCardWidget extends StatelessWidget {
                   vertical: Dimensions.paddingSizeExtraSmall,
                 ),
                 child: Container(
-                  padding: const EdgeInsets.only(top: 8, left: 8, right: 8),
+                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor,
-                    borderRadius:
-                        BorderRadius.circular(Dimensions.paddingSizeDefault),
+                    color: Theme.of(context).cardColor,
+                    borderRadius: BorderRadius.circular(22),
                     border: Border.all(
-                      color: Theme.of(context).hintColor,
+                      color:
+                          Theme.of(context).hintColor.withValues(alpha: 0.18),
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.07),
+                        blurRadius: 18,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
                   ),
                   child: Column(children: [
                     Row(
@@ -150,9 +157,12 @@ class CustomerRideRequestCardWidget extends StatelessWidget {
                           Text(
                             'trip_type'.tr,
                             style: textMedium.copyWith(
-                                color: Theme.of(Get.context!)
-                                    .colorScheme
-                                    .secondary),
+                                fontSize: Dimensions.fontSizeDefault,
+                                fontWeight: FontWeight.w600,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge
+                                    ?.color),
                           ),
                           const SizedBox(
                               width: Dimensions.paddingSizeExtraSmall),
@@ -164,16 +174,22 @@ class CustomerRideRequestCardWidget extends StatelessWidget {
                             decoration: BoxDecoration(
                               color: Theme.of(context)
                                   .colorScheme
-                                  .secondaryContainer,
-                              borderRadius: BorderRadius.circular(
-                                  Dimensions.paddingSizeExtraSmall),
+                                  .primary
+                                  .withValues(alpha: 0.10),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withValues(alpha: 0.16),
+                              ),
                             ),
                             child: Text(
                               rideRequest.type!.tr,
                               style: textMedium.copyWith(
-                                  color: Theme.of(Get.context!)
-                                      .colorScheme
-                                      .secondary),
+                                  fontSize: Dimensions.fontSizeSmall,
+                                  fontWeight: FontWeight.w600,
+                                  color: Theme.of(context).colorScheme.primary),
                             ),
                           ),
                         ]),
@@ -198,23 +214,35 @@ class CustomerRideRequestCardWidget extends StatelessWidget {
                         ? Padding(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: Dimensions.paddingSizeDefault),
-                            child: Row(children: [
-                              Icon(
-                                Icons.arrow_forward_outlined,
-                                color:
-                                    Theme.of(Get.context!).colorScheme.primary,
-                                size: Dimensions.iconSizeMedium,
+                            child: Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withValues(alpha: 0.06),
+                                borderRadius: BorderRadius.circular(14),
                               ),
-                              const SizedBox(
-                                  width: Dimensions.paddingSizeSmall),
-                              Text(
-                                '${Get.find<RideController>().matchedMode!.duration!} ${'pickup_time'.tr}',
-                                style: textMedium.copyWith(
-                                    color: Theme.of(Get.context!)
-                                        .colorScheme
-                                        .secondary),
-                              ),
-                            ]),
+                              child: Row(children: [
+                                Icon(
+                                  Icons.near_me_rounded,
+                                  color: Theme.of(context).colorScheme.primary,
+                                  size: Dimensions.iconSizeMedium,
+                                ),
+                                const SizedBox(
+                                    width: Dimensions.paddingSizeSmall),
+                                Text(
+                                  '${Get.find<RideController>().matchedMode!.duration!} ${'pickup_time'.tr}',
+                                  style: textMedium.copyWith(
+                                      color: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge
+                                          ?.color),
+                                ),
+                              ]),
+                            ),
                           )
                         : const SizedBox(),
                     fromParcel
@@ -379,8 +407,8 @@ class CustomerRideRequestCardWidget extends StatelessWidget {
                                       size: 40.0)
                                   : Row(children: [
                                       Expanded(
-                                          child: ButtonWidget(
-                                        buttonText: (bidOn &&
+                                          child: _ModernActionButton(
+                                        text: (bidOn &&
                                                 rideRequest.type != 'parcel' &&
                                                 rideRequest.fareBiddings !=
                                                     null &&
@@ -388,10 +416,7 @@ class CustomerRideRequestCardWidget extends StatelessWidget {
                                                     .fareBiddings!.isEmpty)
                                             ? 'bid'.tr
                                             : 'reject'.tr,
-                                        transparent: true,
-                                        borderWidth: 1,
-                                        showBorder: true,
-                                        radius: Dimensions.paddingSizeSmall,
+                                        isPrimary: false,
                                         onPressed: () {
                                           if (bidOn &&
                                               rideRequest.fareBiddings !=
@@ -424,9 +449,9 @@ class CustomerRideRequestCardWidget extends StatelessWidget {
                                       const SizedBox(
                                           width: Dimensions.paddingSizeLarge),
                                       Expanded(
-                                          child: ButtonWidget(
-                                        buttonText: 'accept'.tr,
-                                        radius: Dimensions.paddingSizeSmall,
+                                          child: _ModernActionButton(
+                                        text: 'accept'.tr,
+                                        isPrimary: true,
                                         onPressed: () async {
                                           rideController
                                               .tripAcceptOrRejected(
@@ -500,14 +525,20 @@ class CustomerRideRequestCardWidget extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(Dimensions.paddingSizeSmall),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor,
-                  borderRadius:
-                      BorderRadius.circular(Dimensions.paddingSizeDefault),
+                  color: Theme.of(context).cardColor,
+                  borderRadius: BorderRadius.circular(22),
                   border: Border.all(
                     color: Theme.of(Get.context!)
                         .hintColor
-                        .withValues(alpha: 0.45),
+                        .withValues(alpha: 0.18),
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.06),
+                      blurRadius: 16,
+                      offset: const Offset(0, 7),
+                    ),
+                  ],
                 ),
                 child: Column(children: [
                   Text(
@@ -674,5 +705,54 @@ class CustomerRideRequestCardWidget extends StatelessWidget {
               ),
             ),
           );
+  }
+}
+
+class _ModernActionButton extends StatelessWidget {
+  final String text;
+  final bool isPrimary;
+  final VoidCallback onPressed;
+
+  const _ModernActionButton({
+    required this.text,
+    required this.isPrimary,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final Color primary = Theme.of(context).colorScheme.primary;
+    final Color border = Theme.of(context).hintColor.withValues(alpha: 0.22);
+
+    return SizedBox(
+      height: 46,
+      child: Material(
+        color: isPrimary ? primary : Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+        elevation: isPrimary ? 3 : 0,
+        shadowColor: primary.withValues(alpha: 0.30),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: onPressed,
+          child: Container(
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: isPrimary ? null : Border.all(color: border),
+            ),
+            child: Text(
+              text,
+              style: textMedium.copyWith(
+                color: isPrimary
+                    ? Colors.white
+                    : Theme.of(context).textTheme.bodyLarge?.color,
+                fontSize: Dimensions.fontSizeDefault,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

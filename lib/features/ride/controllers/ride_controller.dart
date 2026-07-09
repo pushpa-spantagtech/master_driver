@@ -17,6 +17,7 @@ import 'package:ride_sharing_user_app/features/location/screens/access_location_
 import 'package:ride_sharing_user_app/features/map/controllers/map_controller.dart';
 import 'package:ride_sharing_user_app/features/map/screens/map_screen.dart';
 import 'package:ride_sharing_user_app/features/profile/controllers/profile_controller.dart';
+import 'package:ride_sharing_user_app/features/splash/controllers/splash_controller.dart';
 import 'package:ride_sharing_user_app/features/ride/domain/models/final_fare_model.dart';
 import 'package:ride_sharing_user_app/features/ride/domain/models/on_going_trip_model.dart';
 import 'package:ride_sharing_user_app/features/ride/domain/models/parcel_list_model.dart';
@@ -190,6 +191,41 @@ class RideController extends GetxController implements GetxService {
     return response;
   }
 
+  Future<Map<String, dynamic>> activeRideInfoForNotification() async {
+    // IMPORTANT: This method is used only from notification click.
+    // Do NOT call currentRideStatus() here because that method has navigation
+    // side effects and can redirect to Home/Login/Map.
+    String localStatus = currentRideStatus.toLowerCase();
+    String localRideId = tripDetail?.id?.toString() ?? '';
+
+    if (localStatus != 'accepted' && localStatus != 'ongoing') {
+      localStatus = (tripDetail?.currentStatus ?? '').toLowerCase();
+    }
+
+    bool hasSavedOngoingRide = false;
+    try {
+      hasSavedOngoingRide = Get.find<SplashController>().haveOngoingRides();
+    } catch (_) {
+      hasSavedOngoingRide = false;
+    }
+
+    if (localStatus == 'accepted' ||
+        localStatus == 'ongoing' ||
+        hasSavedOngoingRide) {
+      return {
+        'hasRide': true,
+        'rideId': localRideId,
+        'status': localStatus.isNotEmpty ? localStatus : 'ongoing',
+      };
+    }
+
+    return {
+      'hasRide': false,
+      'rideId': '',
+      'status': '',
+    };
+  }
+
   TripDetail? tripDetail;
 
   Future<Response> getRideDetails(String tripId,
@@ -201,6 +237,7 @@ class RideController extends GetxController implements GetxService {
     Response response = await rideServiceInterface.getRideDetails(tripId);
     if (response.statusCode == 200) {
       tripDetail = TripDetailsModel.fromJson(response.body).data!;
+      currentRideStatus = (tripDetail?.currentStatus ?? currentRideStatus);
 
       print('Trip ID = ${tripDetail?.id}');
       print('Current Status = ${tripDetail?.currentStatus}');
@@ -300,6 +337,8 @@ class RideController extends GetxController implements GetxService {
         showCustomSnackBar('trip_is_accepted'.tr, isError: false);
         Get.find<OtpTimeCountController>().initialCounter();
         await getRideDetails(tripId);
+        currentRideStatus = 'accepted';
+        tripDetail?.currentStatus = 'accepted';
         Get.find<RiderMapController>().setRideCurrentState(RideState.accepted);
         await remainingDistance(tripId, mapBound: true);
         startLiveTracking(tripId);

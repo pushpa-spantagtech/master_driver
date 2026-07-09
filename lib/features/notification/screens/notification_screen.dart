@@ -42,14 +42,28 @@ class NotificationScreen extends StatefulWidget {
 }
 
 class _NotificationScreenState extends State<NotificationScreen> {
-  ScrollController scrollController = ScrollController();
+  final ScrollController scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Get.find<NotificationController>().getNotificationList(1);
+    });
+  }
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    Get.find<NotificationController>().getNotificationList(1);
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7FB),
-      body: GetBuilder<NotificationController>(builder: (notificationController) {
+      body:
+          GetBuilder<NotificationController>(builder: (notificationController) {
         return Column(
           children: [
             AppBarWidget(
@@ -64,42 +78,57 @@ class _NotificationScreenState extends State<NotificationScreen> {
               child: GetBuilder<NotificationController>(
                 builder: (notificationController) {
                   return notificationController.notificationModel != null
-                      ? (notificationController.notificationModel!.data != null &&
-                      notificationController.notificationModel!.data!.isNotEmpty)
-                      ? SingleChildScrollView(
-                    controller: scrollController,
-                    child: PaginatedListViewWidget(
-                      scrollController: scrollController,
-                      totalSize: notificationController.notificationModel!.totalSize,
-                      offset: (notificationController.notificationModel != null &&
-                          notificationController.notificationModel!.offset != null)
-                          ? int.parse(notificationController.notificationModel!.offset.toString())
-                          : null,
-                      onPaginate: (int? offset) async {
-                        await notificationController.getNotificationList(offset!);
-                      },
-                      itemView: Padding(
-                        padding: const EdgeInsets.fromLTRB(
-                          Dimensions.paddingSizeDefault,
-                          Dimensions.paddingSizeDefault,
-                          Dimensions.paddingSizeDefault,
-                          88,
-                        ),
-                        child: ListView.builder(
-                          itemCount: notificationController.notificationModel!.data!.length,
-                          padding: EdgeInsets.zero,
-                          physics: const NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          itemBuilder: (BuildContext context, int index) {
-                            return NotificationCardWidget(
-                              notification: notificationController.notificationModel!.data![index],
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                  )
-                      : const NoDataWidget(title: 'no_notification_found')
+                      ? (notificationController.notificationModel!.data !=
+                                  null &&
+                              notificationController
+                                  .notificationModel!.data!.isNotEmpty)
+                          ? SingleChildScrollView(
+                              controller: scrollController,
+                              child: PaginatedListViewWidget(
+                                scrollController: scrollController,
+                                totalSize: notificationController
+                                    .notificationModel!.totalSize,
+                                offset:
+                                    (notificationController.notificationModel !=
+                                                null &&
+                                            notificationController
+                                                    .notificationModel!
+                                                    .offset !=
+                                                null)
+                                        ? int.parse(notificationController
+                                            .notificationModel!.offset
+                                            .toString())
+                                        : null,
+                                onPaginate: (int? offset) async {
+                                  await notificationController
+                                      .getNotificationList(offset!);
+                                },
+                                itemView: Padding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    Dimensions.paddingSizeDefault,
+                                    Dimensions.paddingSizeDefault,
+                                    Dimensions.paddingSizeDefault,
+                                    88,
+                                  ),
+                                  child: ListView.builder(
+                                    itemCount: notificationController
+                                        .notificationModel!.data!.length,
+                                    padding: EdgeInsets.zero,
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
+                                    shrinkWrap: true,
+                                    itemBuilder:
+                                        (BuildContext context, int index) {
+                                      return NotificationCardWidget(
+                                        notification: notificationController
+                                            .notificationModel!.data![index],
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                            )
+                          : const NoDataWidget(title: 'no_notification_found')
                       : const NotificationShimmerWidget();
                 },
               ),

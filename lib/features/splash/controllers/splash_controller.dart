@@ -18,7 +18,12 @@ class SplashController extends GetxController implements GetxService {
 
   Future<bool> getConfigData({bool reload = true}) async {
     loading = true;
+
+    print('STEP 1 - Calling config API');
     Response response = await splashServiceInterface.getConfigData();
+
+    print('STEP 2 - Status: ${response.statusCode}');
+    print('STEP 3 - Body: ${response.body}');
     bool isSuccess = false;
     if (response.statusCode == 200) {
       isSuccess = true;

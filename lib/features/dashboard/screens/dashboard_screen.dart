@@ -23,6 +23,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final PageStorageBucket bucket = PageStorageBucket();
 
   @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Get.find<RideController>().updateRoute(true, notify: true);
+      Get.find<ProfileController>().getProfileInfo();
+      Get.find<RideController>().getCurrentRideStatus(fromRefresh: true);
+      Get.find<RideController>().getPendingRideRequestList(1);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     Get.find<RideController>().updateRoute(true);
 

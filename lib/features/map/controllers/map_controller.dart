@@ -50,6 +50,8 @@ class RiderMapController extends GetxController implements GetxService {
 
   GoogleMapController? mapController;
 
+  final Map<String, Uint8List> _markerIconCache = {};
+
   bool profileOnline = true;
 
   void toggleProfileStatus() {
@@ -371,11 +373,88 @@ class RiderMapController extends GetxController implements GetxService {
     update();
   }
 
-  // Add markers for pending trip requests
+  // Add markers for pending trip requests immediately after request refresh.
+  // This keeps the driver map useful while the bottom sheet is open and avoids
+  // markers appearing late after the request card is already visible.
   void addPendingTripRequestMarkers(List<dynamic> pendingTrips) async {
     markers
-        .removeWhere((marker) => marker.markerId.value.startsWith("request_"));
+        .removeWhere((marker) => marker.markerId.value.startsWith('request_'));
+
+    if (currentRideState != RideState.initial || pendingTrips.isEmpty) {
+      update();
+      return;
+    }
+
+    final Uint8List requestMarker =
+        await convertAssetToUnit8List(Images.mapIcon, width: 34);
+    final List<LatLng> requestPositions = [];
+
+    for (int i = 0; i < pendingTrips.length; i++) {
+      final trip = pendingTrips[i];
+      final coordinates = trip.pickupCoordinates?.coordinates;
+
+      if (coordinates == null || coordinates.length < 2) {
+        continue;
+      }
+
+      final LatLng pickupPosition = LatLng(
+        (coordinates[1] as num).toDouble(),
+        (coordinates[0] as num).toDouble(),
+      );
+      requestPositions.add(pickupPosition);
+
+      markers.add(
+        Marker(
+          markerId: MarkerId('request_${trip.id ?? i}'),
+          position: pickupPosition,
+          anchor: const Offset(0.5, 0.5),
+          zIndexInt: 100,
+          icon: BitmapDescriptor.bytes(requestMarker),
+          infoWindow: InfoWindow(
+            title: 'Pickup Location',
+            snippet: trip.pickupAddress ?? '',
+          ),
+        ),
+      );
+    }
+
+    _boundPendingRequests(requestPositions);
     update();
+  }
+
+  void _boundPendingRequests(List<LatLng> positions) {
+    if (mapController == null || positions.isEmpty) return;
+
+    if (positions.length == 1) {
+      mapController!.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(target: positions.first, zoom: 16.5),
+        ),
+      );
+      return;
+    }
+
+    double minLat = positions.first.latitude;
+    double maxLat = positions.first.latitude;
+    double minLng = positions.first.longitude;
+    double maxLng = positions.first.longitude;
+
+    for (final LatLng position in positions) {
+      minLat = math.min(minLat, position.latitude);
+      maxLat = math.max(maxLat, position.latitude);
+      minLng = math.min(minLng, position.longitude);
+      maxLng = math.max(maxLng, position.longitude);
+    }
+
+    mapController!.animateCamera(
+      CameraUpdate.newLatLngBounds(
+        LatLngBounds(
+          southwest: LatLng(minLat, minLng),
+          northeast: LatLng(maxLat, maxLng),
+        ),
+        90,
+      ),
+    );
   }
 
   double _calculateBearing(LatLng startPoint, LatLng endPoint) {
@@ -401,13 +480,21 @@ class RiderMapController extends GetxController implements GetxService {
 
   Future<Uint8List> convertAssetToUnit8List(String imagePath,
       {int width = 50}) async {
+    final String cacheKey = '$imagePath-$width';
+    if (_markerIconCache.containsKey(cacheKey)) {
+      return _markerIconCache[cacheKey]!;
+    }
+
     ByteData data = await rootBundle.load(imagePath);
     ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(),
         targetWidth: width);
     ui.FrameInfo fi = await codec.getNextFrame();
-    return (await fi.image.toByteData(format: ui.ImageByteFormat.png))!
-        .buffer
-        .asUint8List();
+    final Uint8List markerBytes =
+        (await fi.image.toByteData(format: ui.ImageByteFormat.png))!
+            .buffer
+            .asUint8List();
+    _markerIconCache[cacheKey] = markerBytes;
+    return markerBytes;
   }
 
   Future<void> setMapPosition(GoogleMapController? controller,

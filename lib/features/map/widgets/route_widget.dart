@@ -86,11 +86,18 @@ class RouteWidget extends StatelessWidget {
         width: double.infinity,
         padding: EdgeInsets.all(fromCard ? 10 : Dimensions.paddingSizeSmall),
         decoration: BoxDecoration(
-          color: Theme.of(context).cardColor.withValues(alpha: 0.35),
-          borderRadius: BorderRadius.circular(Dimensions.paddingSizeSmall),
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: Theme.of(context).hintColor.withValues(alpha: 0.18),
+            color: Theme.of(context).hintColor.withValues(alpha: 0.12),
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Theme.of(context).shadowColor.withValues(alpha: 0.06),
+              blurRadius: 14,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           _RouteTile(
@@ -156,8 +163,8 @@ class _RouteTile extends StatelessWidget {
           else
             const SizedBox(height: 8),
           Container(
-            width: 26,
-            height: 26,
+            width: 30,
+            height: 30,
             decoration: BoxDecoration(
               color: isFirst
                   ? Theme.of(context)
@@ -180,7 +187,7 @@ class _RouteTile extends StatelessWidget {
             ),
             child: Icon(
               icon,
-              size: 16,
+              size: 17,
               color: isLast
                   ? Theme.of(context).colorScheme.error
                   : Theme.of(context).colorScheme.primary,
@@ -207,14 +214,16 @@ class _RouteTile extends StatelessWidget {
               Text(
                 title,
                 style: textMedium.copyWith(
-                  fontSize: Dimensions.fontSizeSmall,
+                  fontSize: 11,
                   color: Theme.of(context).colorScheme.secondary,
                 ),
               ),
               const SizedBox(height: 3),
               Text(
                 address,
-                style: textRegular.copyWith(
+                style: textMedium.copyWith(
+                  fontSize: 13,
+                  height: 1.35,
                   color: Theme.of(context).textTheme.bodyMedium!.color,
                 ),
                 maxLines: 2,

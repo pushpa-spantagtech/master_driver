@@ -78,48 +78,60 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _route() async {
-    bool isSuccess = await Get.find<SplashController>().getConfigData();
-    if (isSuccess) {
+    try {
+      bool isSuccess = await Get.find<SplashController>().getConfigData();
+
+      if (!isSuccess) {
+        Get.offAll(() => const SignInScreen());
+        return;
+      }
+
       if (Get.find<AuthController>().getUserToken().isNotEmpty) {
         PusherHelper.initilizePusher();
       }
+
       if (Get.find<AuthController>().getZoneId() == '') {
         Get.offAll(() => const AccessLocationScreen());
-      } else {
-        Get.find<AuthController>().updateToken();
-        Future.delayed(const Duration(milliseconds: 1000), () {
-          if (Get.find<AuthController>().isLoggedIn()) {
-            Get.find<ProfileController>().getProfileInfo().then((value) {
-              if (value.statusCode == 200) {
-                Get.find<LocationController>()
-                    .getCurrentLocation()
-                    .then((value) {
-                  Get.offAll(() => const DashboardScreen());
-                });
-                PusherHelper()
-                    .driverTripRequestSubscribe(value.body['data']['id']);
-              }
-            });
-          } else {
-            if (Get.find<SplashController>().config!.maintenanceMode != null &&
-                Get.find<SplashController>()
-                        .config!
-                        .maintenanceMode!
-                        .maintenanceStatus ==
-                    1 &&
-                Get.find<SplashController>()
-                        .config!
-                        .maintenanceMode!
-                        .selectedMaintenanceSystem!
-                        .driverApp ==
-                    1) {
-              Get.offAll(() => const MaintenanceScreen());
-            } else {
-              Get.offAll(() => const SignInScreen());
-            }
-          }
-        });
+        return;
       }
+
+      Get.find<AuthController>().updateToken();
+
+      await Future.delayed(const Duration(milliseconds: 1000));
+
+      if (Get.find<AuthController>().isLoggedIn()) {
+        final profileResponse =
+            await Get.find<ProfileController>().getProfileInfo();
+
+        if (profileResponse.statusCode == 200) {
+          try {
+            await Get.find<LocationController>().getCurrentLocation();
+          } catch (e) {
+            debugPrint('Location error: $e');
+          }
+
+          PusherHelper().driverTripRequestSubscribe(
+            profileResponse.body['data']['id'],
+          );
+
+          Get.offAll(() => const DashboardScreen());
+        } else {
+          Get.offAll(() => const SignInScreen());
+        }
+      } else {
+        final config = Get.find<SplashController>().config;
+
+        if (config?.maintenanceMode != null &&
+            config!.maintenanceMode!.maintenanceStatus == 1 &&
+            config.maintenanceMode!.selectedMaintenanceSystem?.driverApp == 1) {
+          Get.offAll(() => const MaintenanceScreen());
+        } else {
+          Get.offAll(() => const SignInScreen());
+        }
+      }
+    } catch (e) {
+      debugPrint('Splash route error: $e');
+      Get.offAll(() => const SignInScreen());
     }
   }
 

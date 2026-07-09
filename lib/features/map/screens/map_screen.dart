@@ -37,6 +37,8 @@ class _MapScreenState extends State<MapScreen> {
   void initState() {
     super.initState();
 
+    _driverMarkerFuture = getMarker();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Get.find<RideController>().updateRoute(false, notify: true);
     });
@@ -78,6 +80,9 @@ class _MapScreenState extends State<MapScreen> {
 
   StreamSubscription? _locationSubscription;
   Marker? marker;
+  Future<Uint8List>? _driverMarkerFuture;
+  bool _isMapReady = false;
+  bool _didMoveToInitialLocation = false;
 
   Future<Uint8List> getMarker() async {
     ByteData data = await rootBundle.load(Images.carIconTop);
@@ -131,7 +136,7 @@ class _MapScreenState extends State<MapScreen> {
 
   void getCurrentLocation() async {
     try {
-      Uint8List imageData = await getMarker();
+      Uint8List imageData = await (_driverMarkerFuture ?? getMarker());
 
       // Check permissions first using LocationController
       bool hasPermission =
@@ -153,15 +158,14 @@ class _MapScreenState extends State<MapScreen> {
         _locationSubscription!.cancel();
       }
 
-      // Wait for map controller to be ready before animating
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      if (_mapController != null && mounted) {
-        _mapController!
-            .moveCamera(CameraUpdate.newCameraPosition(CameraPosition(
-          target: LatLng(location.latitude, location.longitude),
-          zoom: 16,
-        )));
+      if (_mapController != null && mounted && !_didMoveToInitialLocation) {
+        _didMoveToInitialLocation = true;
+        _mapController!.animateCamera(CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: LatLng(location.latitude, location.longitude),
+            zoom: 16.5,
+          ),
+        ));
       }
 
       // Start listening to location updates
@@ -248,6 +252,10 @@ class _MapScreenState extends State<MapScreen> {
                       ),
                       onMapCreated: (GoogleMapController controller) async {
                         riderMapController.mapController = controller;
+                        _mapController = controller;
+                        if (mounted) {
+                          setState(() => _isMapReady = true);
+                        }
                         if (riderMapController.currentRideState.name !=
                             'initial') {
                           if (riderMapController.currentRideState.name ==
@@ -261,7 +269,6 @@ class _MapScreenState extends State<MapScreen> {
                             riderMapController.getPickupToDestinationPolyline();
                           }
                         }
-                        _mapController = controller;
                       },
                       onCameraMove: (CameraPosition cameraPosition) {},
                       onCameraIdle: () {},
@@ -270,15 +277,71 @@ class _MapScreenState extends State<MapScreen> {
                       markers: Set<Marker>.of(riderMapController.markers),
                       polylines: riderMapController.polylines,
                       zoomControlsEnabled: false,
+                      padding: EdgeInsets.only(
+                        top: 88,
+                        left: 12,
+                        right: 12,
+                        bottom: riderMapController.sheetHeight + 34,
+                      ),
                       trafficEnabled: riderMapController.isTrafficEnable,
                       indoorViewEnabled: true,
                       mapToolbarEnabled: true,
                     ),
                   ),
+                  if (!_isMapReady)
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: Container(
+                          color: Theme.of(context)
+                              .scaffoldBackgroundColor
+                              .withOpacity(0.35),
+                          child: Center(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 18,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context)
+                                    .cardColor
+                                    .withOpacity(0.92),
+                                borderRadius: BorderRadius.circular(18),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.08),
+                                    blurRadius: 18,
+                                    offset: const Offset(0, 6),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  SizedBox(
+                                    height: 18,
+                                    width: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Text(
+                                    'Loading map...',
+                                    style: textMedium.copyWith(fontSize: 13),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   const DriverHeaderInfoWidget(),
                   Positioned(
-                      bottom: Get.width * 0.87,
-                      right: 0,
+                      bottom: riderMapController.sheetHeight + 112,
+                      right: 14,
                       child: Align(
                         alignment: Alignment.bottomRight,
                         child: GetBuilder<LocationController>(
@@ -297,8 +360,8 @@ class _MapScreenState extends State<MapScreen> {
                         }),
                       )),
                   Positioned(
-                      bottom: Get.width * 0.73,
-                      right: 0,
+                      bottom: riderMapController.sheetHeight + 56,
+                      right: 14,
                       child: Align(
                         alignment: Alignment.bottomRight,
                         child: GetBuilder<LocationController>(
@@ -369,9 +432,23 @@ class _MapScreenState extends State<MapScreen> {
                           onTap: () => Get.to(() => const RideRequestScreen()),
                           child: Container(
                             decoration: BoxDecoration(
-                              color: Theme.of(context).primaryColor,
+                              color:
+                                  Theme.of(context).cardColor.withOpacity(0.94),
                               borderRadius: BorderRadius.circular(
                                   Dimensions.paddingSizeExtraLarge),
+                              border: Border.all(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withOpacity(0.16),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.08),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ],
                             ),
                             child: Padding(
                               padding: const EdgeInsets.symmetric(

@@ -10,74 +10,81 @@ class ProfileItemWidget extends StatelessWidget {
   final String value;
   final bool isStatus;
   final bool isLevel;
+  final IconData? icon;
 
   const ProfileItemWidget(
       {super.key,
       required this.title,
       required this.value,
+      this.icon,
       this.isStatus = false,
       this.isLevel = false});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: Dimensions.paddingSizeExtraLarge),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
         children: [
-          Text(
-            title.tr,
-            style: textMedium.copyWith(
-                color: Theme.of(context).colorScheme.secondary),
-          ),
-          isLevel
-              ? Container(
-                  decoration: BoxDecoration(
-                      color:
-                          Theme.of(context).primaryColor.withValues(alpha: .10),
-                      borderRadius: BorderRadius.circular(
-                          Dimensions.paddingSizeExtraSmall)),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 2.0,
-                        horizontal: Dimensions.paddingSizeExtraSmall),
-                    child: Text(
-                      '${Get.find<ProfileController>().profileInfo!.level != null ? Get.find<ProfileController>().profileInfo!.level!.name! : 0}',
-                      style: textMedium.copyWith(
-                          color: Theme.of(context).colorScheme.onSecondary),
+          Row(
+            children: [
+              if (icon != null)
+                CircleAvatar(
+                  radius: 20,
+                  backgroundColor: Colors.red.withOpacity(0.08),
+                  child: Icon(
+                    icon,
+                    color: Colors.red,
+                    size: 20,
+                  ),
+                ),
+              const SizedBox(width: 16),
+              Expanded(
+                flex: 3,
+                child: Text(
+                  title.tr,
+                  style: textRegular.copyWith(
+                      color: Theme.of(context).colorScheme.secondary),
+                ),
+              ),
+              if (isStatus)
+                FlutterSwitch(
+                  width: 40,
+                  height: 22,
+                  toggleSize: 18,
+                  value: Get.find<ProfileController>()
+                          .profileInfo!
+                          .details!
+                          .isOnline ==
+                      "1",
+                  borderRadius: 20,
+                  padding: 2,
+                  activeColor: Theme.of(context).primaryColor,
+                  showOnOff: false,
+                  toggleColor: Colors.white,
+                  onToggle: (val) {},
+                )
+              else
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    isLevel
+                        ? Get.find<ProfileController>()
+                                .profileInfo
+                                ?.level
+                                ?.name ??
+                            "-"
+                        : value,
+                    textAlign: TextAlign.end,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: textMedium.copyWith(
+                      color: Theme.of(context).colorScheme.secondary,
                     ),
                   ),
-                )
-              : isStatus
-                  ? FlutterSwitch(
-                      width: 37.0,
-                      height: 19.0,
-                      valueFontSize: 14.0,
-                      toggleSize: 15.0,
-                      value: Get.find<ProfileController>()
-                                  .profileInfo!
-                                  .details!
-                                  .isOnline !=
-                              null
-                          ? Get.find<ProfileController>()
-                                  .profileInfo!
-                                  .details!
-                                  .isOnline! ==
-                              "1"
-                          : false,
-                      borderRadius: 30.0,
-                      padding: 2,
-                      activeColor: Theme.of(context).colorScheme.primary,
-                      showOnOff: false,
-                      activeTextFontWeight: FontWeight.w700,
-                      toggleColor: Colors.white,
-                      onToggle: (val) {},
-                    )
-                  : Text(
-                      value,
-                      style: textRegular.copyWith(
-                          color: Theme.of(context).colorScheme.secondary),
-                    ),
+                ),
+            ],
+          ),
         ],
       ),
     );

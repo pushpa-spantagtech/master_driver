@@ -194,6 +194,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 null)
                               ProfileItemWidget(
                                 title: 'service',
+                                icon: Icons.local_taxi_outlined,
                                 value: profileController.profileInfo!.details!
                                             .services!.length ==
                                         1
@@ -202,12 +203,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     : '${profileController.profileInfo!.details!.services![0].tr} & ${profileController.profileInfo!.details!.services![1].tr}',
                               ),
                             ProfileItemWidget(
+                              icon: Icons.phone_outlined,
                               title: 'contact',
                               value: Get.find<LocalizationController>().isLtr
                                   ? profileController.profileInfo?.phone ?? ''
                                   : '${profileController.profileInfo!.phone!.substring(1)}+',
                             ),
                             ProfileItemWidget(
+                              icon: Icons.email_outlined,
                               title: 'mail_address',
                               value: profileController.profileInfo?.email ?? '',
                             ),
@@ -215,8 +218,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               title: 'identification_type',
                               value: profileController
                                   .profileInfo!.identificationType!.tr,
+                              icon: Icons.badge_outlined,
                             ),
                             ProfileItemWidget(
+                              icon: Icons.numbers_outlined,
                               title: 'identification_number',
                               value: profileController
                                       .profileInfo?.identificationNumber ??
@@ -235,24 +240,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       value: profileController.profileInfo!
                                               .vehicle!.category!.name ??
                                           'N/A',
+                                      icon: Icons.category,
                                     ),
                                     ProfileItemWidget(
-                                      title: 'vehicle_brand',
-                                      value: profileController.profileInfo
-                                              ?.vehicle?.brand?.name ??
-                                          '',
-                                    ),
+                                        title: 'vehicle_brand',
+                                        value: profileController.profileInfo
+                                                ?.vehicle?.brand?.name ??
+                                            '',
+                                        icon: Icons.directions_car),
                                     ProfileItemWidget(
                                       title: 'vehicle_model',
                                       value: profileController.profileInfo
                                               ?.vehicle?.model?.name ??
                                           '',
+                                      icon: Icons.airport_shuttle,
                                     ),
                                     ProfileItemWidget(
                                       title: 'license_number_plate',
                                       value: profileController.profileInfo
                                               ?.vehicle?.licencePlateNumber ??
                                           '',
+                                      icon: Icons.badge,
                                     ),
                                     ProfileItemWidget(
                                       title: 'license_expire_date',
@@ -262,12 +270,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                 ?.licenceExpireDate ??
                                             '',
                                       ),
+                                      icon: Icons.calendar_month,
                                     ),
                                     ProfileItemWidget(
                                       title: 'fuel_type',
                                       value: profileController
                                               .profileInfo?.vehicle?.fuelType ??
                                           '',
+                                      icon: Icons.local_gas_station,
                                     ),
                                   ]),
                                 )
@@ -784,28 +794,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                           padding: const EdgeInsets.all(
                               Dimensions.paddingSizeDefault),
+                          margin: const EdgeInsets.only(
+                              top: Dimensions.paddingSizeEight),
                           child: GestureDetector(
                             onTap: () => Get.to(() => const ResetPasswordScreen(
                                   phoneNumber: '',
                                   fromChangePassword: true,
                                 )),
-                            child: Row(children: [
-                              SizedBox(
-                                width: Dimensions.iconSizeMedium,
-                                child: Image.asset(
-                                  Images.changePasswordIcon,
-                                  color: Theme.of(context).colorScheme.primary,
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  width: Dimensions.iconSizeMedium,
+                                  child: Image.asset(
+                                    Images.changePasswordIcon,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(
-                                  width: Dimensions.paddingSizeSmall),
-                              Text('change_password'.tr,
+                                const SizedBox(
+                                    width: Dimensions.paddingSizeSmall),
+                                Text(
+                                  'change_password'.tr,
                                   style: textRegular.copyWith(
                                     color:
                                         Theme.of(context).colorScheme.secondary,
                                     fontSize: Dimensions.fontSizeDefault,
-                                  ))
-                            ]),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         )
                       : const SizedBox(),

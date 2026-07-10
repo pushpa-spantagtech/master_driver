@@ -661,6 +661,7 @@ class RideController extends GetxController implements GetxService {
         print('================================================');
         finalFare = FinalFareModel.fromJson(response.body).data!;
       }
+
       isLoading = false;
     } else {
       isLoading = false;

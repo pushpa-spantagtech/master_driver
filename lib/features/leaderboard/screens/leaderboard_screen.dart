@@ -1,17 +1,18 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ride_sharing_user_app/util/dimensions.dart';
-import 'package:ride_sharing_user_app/util/styles.dart';
+import 'package:ride_sharing_user_app/common_widgets/app_bar_widget.dart';
+import 'package:ride_sharing_user_app/common_widgets/image_widget.dart';
+import 'package:ride_sharing_user_app/common_widgets/no_data_widget.dart';
+import 'package:ride_sharing_user_app/common_widgets/paginated_list_view_widget.dart';
 import 'package:ride_sharing_user_app/features/leaderboard/controllers/leader_board_controller.dart';
 import 'package:ride_sharing_user_app/features/leaderboard/widgets/leader_board_card_widget.dart';
 import 'package:ride_sharing_user_app/features/leaderboard/widgets/today_leaderboard_status_widget.dart';
 import 'package:ride_sharing_user_app/features/notification/widgets/notification_shimmer_widget.dart';
 import 'package:ride_sharing_user_app/features/splash/controllers/splash_controller.dart';
-import 'package:ride_sharing_user_app/common_widgets/app_bar_widget.dart';
-import 'package:ride_sharing_user_app/common_widgets/image_widget.dart';
-import 'package:ride_sharing_user_app/common_widgets/no_data_widget.dart';
-import 'package:ride_sharing_user_app/common_widgets/paginated_list_view_widget.dart';
+import 'package:ride_sharing_user_app/helper/price_converter.dart';
+import 'package:ride_sharing_user_app/util/dimensions.dart';
+import 'package:ride_sharing_user_app/util/styles.dart';
 
 class LeaderboardScreen extends StatefulWidget {
   const LeaderboardScreen({super.key});
@@ -21,7 +22,7 @@ class LeaderboardScreen extends StatefulWidget {
 }
 
 class _LeaderboardScreenState extends State<LeaderboardScreen> {
-  ScrollController scrollController = ScrollController();
+  final ScrollController scrollController = ScrollController();
 
   @override
   void initState() {
@@ -32,361 +33,371 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   }
 
   @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      body: GetBuilder<LeaderBoardController>(builder: (leaderboardController) {
-        return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          AppBarWidget(
-            title: 'leader_board'.tr,
-            showBackButton: true,
-          ),
-          const TodayLeaderBoardStatusWidget(),
-          Padding(
-            padding: const EdgeInsets.symmetric(
-                horizontal: Dimensions.paddingSizeDefault),
-            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              Text(
-                'see_others'.tr,
-                style: textSemiBold.copyWith(
-                  color: Theme.of(context).textTheme.bodyMedium!.color,
-                  fontSize: Dimensions.fontSizeExtraLarge,
-                ),
+      backgroundColor: colorScheme.surface,
+      body: GetBuilder<LeaderBoardController>(
+        builder: (leaderboardController) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppBarWidget(
+                title: 'leader_board'.tr,
+                showBackButton: true,
               ),
-              const Spacer(),
-              Container(
-                width: Dimensions.dropDownWidth,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withValues(alpha: 0.06),
-                  borderRadius: BorderRadius.circular(50),
-                  border: Border.all(
-                      width: 1,
-                      color:
-                          Theme.of(context).hintColor.withValues(alpha: 0.2)),
-                ),
-                child: Theme(
-                  data: Theme.of(context).copyWith(
-                    splashColor: Colors.transparent,
-                  ),
-                  child: DropdownButtonFormField2<String>(
-                    isExpanded: true,
-                    isDense: true,
-                    decoration: InputDecoration(
-                      contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                      focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(50),
-                          borderSide: BorderSide(
-                              color: Theme.of(context).colorScheme.primary)),
-                      enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(50),
-                          borderSide: BorderSide(
-                              color: Theme.of(context)
-                                  .hintColor
-                                  .withValues(alpha: 0.45))),
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(50),
-                          borderSide: BorderSide(
-                              color: Theme.of(context)
-                                  .hintColor
-                                  .withValues(alpha: 0.45))),
-                    ),
-                    hint: Text('today'.tr,
-                        style: textRegular.copyWith(
-                            color:
-                                Theme.of(context).textTheme.bodyMedium!.color)),
-                    items: leaderboardController.selectedFilterType
-                        .map((item) => DropdownMenuItem<String>(
-                              value: item,
-                              child: Text(item.tr,
-                                  style: textRegular.copyWith(
-                                    fontSize: Dimensions.fontSizeSmall,
-                                    color: leaderboardController
-                                                .selectedFilterTypeName ==
-                                            item
-                                        ? Theme.of(context)
-                                            .colorScheme
-                                            .onPrimary
-                                        : Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium!
-                                            .color,
-                                  )),
-                            ))
-                        .toList(),
-                    onChanged: (value) {
-                      leaderboardController.setFilterTypeName(value!);
-                    },
-                    buttonStyleData: const ButtonStyleData(
-                        padding: EdgeInsets.only(right: 8)),
-                    iconStyleData: IconStyleData(
-                      icon: Icon(Icons.arrow_drop_down,
-                          color: Theme.of(context).colorScheme.primary),
-                      iconSize: 24,
-                    ),
-                    dropdownStyleData: DropdownStyleData(
-                      decoration:
-                          BoxDecoration(borderRadius: BorderRadius.circular(5)),
-                    ),
-                    menuItemStyleData: const MenuItemStyleData(
-                        padding: EdgeInsets.symmetric(horizontal: 16)),
-                  ),
-                ),
-              ),
-            ]),
-          ),
-          Expanded(
-              child: Padding(
-            padding: const EdgeInsets.only(bottom: Dimensions.paddingSizeSmall),
-            child: SingleChildScrollView(
-              child: GetBuilder<LeaderBoardController>(
+              const TodayLeaderBoardStatusWidget(),
+              Expanded(
+                child: GetBuilder<LeaderBoardController>(
                   builder: (leaderboardController) {
-                return leaderboardController.leaderBoardModel != null
-                    ? leaderboardController.leaderBoardModel!.data != null &&
-                            leaderboardController
-                                .leaderBoardModel!.data!.isNotEmpty
-                        ? Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                                Row(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      if (leaderboardController
-                                              .leaderBoardModel!.data!.length >
-                                          1)
-                                        Expanded(
-                                            child: LeaderboardStageItem(
-                                          color: Theme.of(context)
-                                              .hintColor
-                                              .withValues(alpha: 0.25),
-                                          index: 2,
-                                          profile: leaderboardController
-                                                  .leaderBoardModel!
-                                                  .data![1]
-                                                  .driver
-                                                  ?.profileImage ??
-                                              '',
-                                          name:
-                                              '${leaderboardController.leaderBoardModel!.data![1].driver?.firstName ?? ''} ',
-                                          tripCount: leaderboardController
-                                                  .leaderBoardModel!
-                                                  .data![1]
-                                                  .totalRecords ??
-                                              0,
-                                        )),
-                                      if (leaderboardController
-                                          .leaderBoardModel!.data!.isNotEmpty)
-                                        Expanded(
-                                            child: LeaderboardStageItem(
-                                          color: Theme.of(context)
-                                              .hintColor
-                                              .withValues(alpha: 0.25),
-                                          index: 1,
-                                          profile: leaderboardController
-                                              .leaderBoardModel!
-                                              .data![0]
-                                              .driver!
-                                              .profileImage!,
-                                          name:
-                                              '${leaderboardController.leaderBoardModel!.data![0].driver!.firstName!} ',
-                                          tripCount: leaderboardController
-                                              .leaderBoardModel!
-                                              .data![0]
-                                              .totalRecords!,
-                                        )),
-                                      if (leaderboardController
-                                              .leaderBoardModel!.data!.length >
-                                          2)
-                                        Expanded(
-                                            child: LeaderboardStageItem(
-                                          color: Theme.of(context)
-                                              .hintColor
-                                              .withValues(alpha: 0.25),
-                                          index: 3,
-                                          profile: leaderboardController
-                                              .leaderBoardModel!
-                                              .data![2]
-                                              .driver!
-                                              .profileImage!,
-                                          name:
-                                              '${leaderboardController.leaderBoardModel!.data![2].driver!.firstName!} ',
-                                          tripCount: leaderboardController
-                                              .leaderBoardModel!
-                                              .data![2]
-                                              .totalRecords!,
-                                        )),
-                                    ]),
-                                const SizedBox(
-                                    height: Dimensions.paddingSizeDefault),
-                                Padding(
-                                    padding: const EdgeInsets.fromLTRB(
-                                      Dimensions.paddingSizeDefault,
-                                      Dimensions.paddingSizeExtraLarge,
-                                      Dimensions.paddingSizeDefault,
-                                      Dimensions.paddingSizeSmall,
+                    if (leaderboardController.leaderBoardModel == null) {
+                      return const NotificationShimmerWidget();
+                    }
+
+                    final leaders =
+                        leaderboardController.leaderBoardModel!.data;
+
+                    if (leaders == null || leaders.isEmpty) {
+                      return const NoDataWidget();
+                    }
+
+                    return SingleChildScrollView(
+                      controller: scrollController,
+                      padding: const EdgeInsets.only(
+                        bottom: Dimensions.paddingSizeLarge,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.fromLTRB(
+                              Dimensions.paddingSizeDefault,
+                              Dimensions.paddingSizeSmall,
+                              Dimensions.paddingSizeDefault,
+                              Dimensions.paddingSizeSmall,
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: Dimensions.paddingSizeDefault,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).primaryColor,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: colorScheme.outlineVariant,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: colorScheme.shadow
+                                      .withValues(alpha: 0.04),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    'see_others'.tr,
+                                    style: textSemiBold.copyWith(
+                                      color: colorScheme.onPrimary,
+                                      fontSize: Dimensions.fontSizeLarge,
                                     ),
-                                    child: Text('on_the_serial'.tr,
-                                        style: textSemiBold)),
-                                PaginatedListViewWidget(
-                                  scrollController: scrollController,
-                                  totalSize: leaderboardController
-                                      .leaderBoardModel!.totalSize,
-                                  offset:
-                                      (leaderboardController.leaderBoardModel !=
-                                                  null &&
-                                              leaderboardController
-                                                      .leaderBoardModel!
-                                                      .offset !=
-                                                  null)
-                                          ? int.parse(leaderboardController
-                                              .leaderBoardModel!.offset
-                                              .toString())
-                                          : null,
-                                  onPaginate: (int? offset) async {
-                                    // await leaderboardController.getLeaderboardList(offset!,leaderboardController.selectedFilterTypeName);
-                                  },
-                                  itemView: ListView.builder(
-                                    itemCount: leaderboardController
-                                        .leaderBoardModel!.data!.length,
-                                    padding: const EdgeInsets.all(0),
-                                    physics:
-                                        const NeverScrollableScrollPhysics(),
-                                    shrinkWrap: true,
-                                    itemBuilder:
-                                        (BuildContext context, int index) {
-                                      return Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: LeaderBoardCardWidget(
-                                            index: index,
-                                            leaderBoard: leaderboardController
-                                                .leaderBoardModel!
-                                                .data![index]),
-                                      );
-                                    },
                                   ),
                                 ),
-                              ])
-                        : Padding(
-                            padding: EdgeInsets.only(top: Get.height / 5),
-                            child: const NoDataWidget())
-                    : SizedBox(
-                        height: Get.height,
-                        child: const NotificationShimmerWidget());
-              }),
-            ),
-          ))
-        ]);
-      }),
+                                _FilterDropdown(
+                                  controller: leaderboardController,
+                                ),
+                              ],
+                            ),
+                          ),
+                          _TopDriverCard(
+                            leader: leaders.first,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(
+                              Dimensions.paddingSizeDefault,
+                              Dimensions.paddingSizeExtraLarge,
+                              Dimensions.paddingSizeDefault,
+                              Dimensions.paddingSizeSmall,
+                            ),
+                            child: Text(
+                              'on_the_serial'.tr,
+                              style: textSemiBold.copyWith(
+                                fontSize: Dimensions.fontSizeLarge,
+                                color: colorScheme.onPrimary,
+                              ),
+                            ),
+                          ),
+                          PaginatedListViewWidget(
+                            scrollController: scrollController,
+                            totalSize: leaderboardController
+                                .leaderBoardModel!.totalSize,
+                            offset: leaderboardController
+                                .leaderBoardModel!.offset !=
+                                null
+                                ? int.tryParse(
+                              leaderboardController
+                                  .leaderBoardModel!.offset
+                                  .toString(),
+                            )
+                                : null,
+                            onPaginate: (int? offset) async {
+                              // Existing pagination functionality unchanged.
+                            },
+                            itemView: ListView.separated(
+                              itemCount: leaders.length,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: Dimensions.paddingSizeDefault,
+                              ),
+                              physics:
+                              const NeverScrollableScrollPhysics(),
+                              shrinkWrap: true,
+                              separatorBuilder: (_, __) =>
+                              const SizedBox(height: 10),
+                              itemBuilder: (context, index) {
+                                return LeaderBoardCardWidget(
+                                  index: index,
+                                  leaderBoard: leaders[index],
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 }
 
-class LeaderboardStageItem extends StatelessWidget {
-  final Color color;
-  final int index;
-  final String name;
-  final int tripCount;
-  final bool isFirst;
-  final bool isSecond;
-  final String profile;
+class _FilterDropdown extends StatelessWidget {
+  final LeaderBoardController controller;
 
-  const LeaderboardStageItem(
-      {super.key,
-      required this.color,
-      required this.index,
-      required this.name,
-      required this.tripCount,
-      this.isFirst = false,
-      this.isSecond = false,
-      required this.profile});
+  const _FilterDropdown({
+    required this.controller,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 6,
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
+
+    return SizedBox(
+      width: 125,
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton2<String>(
+          isExpanded: true,
+          value: controller.selectedFilterTypeName,
+          items: controller.selectedFilterType.map((item) {
+            return DropdownMenuItem<String>(
+              value: item,
+              child: Text(
+                item.tr,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: textRegular.copyWith(
+                  fontSize: Dimensions.fontSizeSmall,
+                  color: colorScheme.onSecondary,
+                ),
+              ),
+            );
+          }).toList(),
+          selectedItemBuilder: (context) {
+            return controller.selectedFilterType.map((item) {
+              return Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  item.tr,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: textMedium.copyWith(
+                    fontSize: Dimensions.fontSizeSmall,
+                    color: colorScheme.onPrimary,
+                  ),
+                ),
+              );
+            }).toList();
+          },
+          onChanged: (value) {
+            if (value != null) {
+              controller.setFilterTypeName(value);
+            }
+          },
+          buttonStyleData: ButtonStyleData(
+            height: 38,
+            width: 125,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: colorScheme.outlineVariant,
+              ),
+            ),
+          ),
+          iconStyleData: IconStyleData(
+            icon: Icon(
+              Icons.keyboard_arrow_down_rounded,
+              color: colorScheme.onSecondary,
+              size: 18,
+            ),
+          ),
+          dropdownStyleData: DropdownStyleData(
+            width: 125,
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor,
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          menuItemStyleData: const MenuItemStyleData(
+            height: 42,
+            padding: EdgeInsets.symmetric(horizontal: 12),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TopDriverCard extends StatelessWidget {
+  final dynamic leader;
+
+  const _TopDriverCard({
+    required this.leader,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
+
+    final String income = leader.income ?? '0';
+    final double parsedIncome = double.tryParse(income) ?? 0;
+
+    final String firstName = leader.driver?.firstName ?? '';
+    final String lastName = leader.driver?.lastName ?? '';
+    final String fullName = '$firstName $lastName'.trim();
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(
+        horizontal: Dimensions.paddingSizeDefault,
+      ),
+      padding: const EdgeInsets.all(
+        Dimensions.paddingSizeLarge,
+      ),
+      decoration: BoxDecoration(
+        color: Theme.of(context).primaryColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: colorScheme.outlineVariant,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.shadow.withValues(alpha: 0.06),
+            blurRadius: 16,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Column(
         children: [
-          Text(
-            tripCount.toString().padLeft(2, '0'),
-            style: textBold.copyWith(
-                fontSize: Dimensions.fontSizeExtraLarge,
-                color: Theme.of(context).colorScheme.secondary),
-          ),
-          Padding(
-              padding: const EdgeInsets.only(
-                  top: Dimensions.paddingSizeExtraSmall,
-                  bottom: Dimensions.paddingSizeSmall),
-              child: Text('trips'.tr,
-                  style: textMedium.copyWith(
-                      fontSize: Dimensions.fontSizeExtraLarge,
-                      color: Theme.of(context).colorScheme.secondary))),
-          Padding(
-              padding:
-                  const EdgeInsets.only(bottom: Dimensions.paddingSizeDefault),
-              child: ClipRRect(
-                  borderRadius: BorderRadius.circular(100),
-                  child: ImageWidget(
-                    image:
-                        '${Get.find<SplashController>().config!.imageBaseUrl!.profileImage!}/$profile',
-                    width: 50,
-                    height: 50,
-                  ))),
           Container(
+            width: 34,
+            height: 34,
+            alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(Dimensions.paddingSizeSeven),
+              color: colorScheme.primaryContainer,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.emoji_events_rounded,
+              color: colorScheme.primary,
+              size: 20,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            width: 92,
+            height: 92,
+            padding: const EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
               border: Border.all(
-                color: Theme.of(context).hintColor.withValues(alpha: 0.25),
+                color: colorScheme.primary,
+                width: 2.5,
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
+            ),
+            child: ClipOval(
+              child: ImageWidget(
+                image:
+                '${Get.find<SplashController>().config!.imageBaseUrl!.profileImage!}/${leader.driver?.profileImage ?? ''}',
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            fullName,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: textSemiBold.copyWith(
+              color: colorScheme.onPrimary,
+              fontSize: Dimensions.fontSizeLarge,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '${leader.totalRecords ?? 0} ${'trips'.tr}',
+            style: textRegular.copyWith(
+              color: colorScheme.onSecondary,
+              fontSize: Dimensions.fontSizeSmall,
+            ),
+          ),
+          const SizedBox(height: 14),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(
+              horizontal: Dimensions.paddingSizeDefault,
+              vertical: Dimensions.paddingSizeSmall,
+            ),
+            decoration: BoxDecoration(
+              color: colorScheme.primaryContainer,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.payments_outlined,
+                  color: colorScheme.primary,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  PriceConverter.convertPrice(
+                    context,
+                    parsedIncome,
+                  ),
+                  style: textSemiBold.copyWith(
+                    color: colorScheme.onPrimary,
+                    fontSize: Dimensions.fontSizeLarge,
+                  ),
                 ),
               ],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: Dimensions.paddingSizeSmall,
-                  vertical: Dimensions.paddingSizeSmall),
-              child: Column(children: [
-                Container(
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(50),
-                      color: Theme.of(context).primaryColor,
-                      boxShadow: [
-                        BoxShadow(
-                            color: Theme.of(context)
-                                .hintColor
-                                .withValues(alpha: .25),
-                            blurRadius: 1,
-                            spreadRadius: 1,
-                            offset: const Offset(1, 3))
-                      ]),
-                  width: 25,
-                  height: 25,
-                  child: Center(
-                      child: Text(
-                    index.toString(),
-                    style: textBold.copyWith(
-                        fontSize: Dimensions.fontSizeExtraLarge,
-                        color: Theme.of(context).colorScheme.onPrimary),
-                  )),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(
-                      top: Dimensions.paddingSizeExtraSmall),
-                  child: Center(
-                      child: Text(
-                    name.toString(),
-                    maxLines: 2,
-                    style: textSemiBold.copyWith(
-                        color: Theme.of(context).colorScheme.secondary),
-                  )),
-                )
-              ]),
             ),
           ),
         ],

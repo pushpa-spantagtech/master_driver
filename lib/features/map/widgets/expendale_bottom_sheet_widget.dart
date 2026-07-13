@@ -37,142 +37,132 @@ class RiderBottomSheetWidget extends StatelessWidget {
           builder: (rideController) {
             return GetBuilder<ProfileController>(
               builder: (profileController) {
-                return SafeArea(
-                  top: false,
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(maxHeight: maxSheetHeight),
-                    child: SingleChildScrollView(
-                      physics: const ClampingScrollPhysics(),
-                      padding: EdgeInsets.only(
-                        bottom: mediaQuery.padding.bottom +
-                            Dimensions.paddingSizeSmall,
-                      ),
-                      child: Container(
-                        width: mediaQuery.size.width,
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).cardColor,
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(
-                              Dimensions.paddingSizeDefault,
-                            ),
-                            topRight: Radius.circular(
-                              Dimensions.paddingSizeDefault,
-                            ),
+                return ConstrainedBox(
+                  constraints: BoxConstraints(maxHeight: maxSheetHeight),
+                  child: SingleChildScrollView(
+                    physics: const ClampingScrollPhysics(),
+                    padding: EdgeInsets.zero,
+                    child: Container(
+                      width: mediaQuery.size.width,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).cardColor,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(
+                            Dimensions.paddingSizeDefault,
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Theme.of(context).hintColor,
-                              blurRadius: 5,
-                              spreadRadius: 1,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
+                          topRight: Radius.circular(
+                            Dimensions.paddingSizeDefault,
+                          ),
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.only(
-                            top: Dimensions.paddingSizeDefault,
-                            left: Dimensions.paddingSizeDefault,
-                            right: Dimensions.paddingSizeDefault,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Theme.of(context).hintColor,
+                            blurRadius: 5,
+                            spreadRadius: 1,
+                            offset: const Offset(0, 2),
                           ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                height: 5,
-                                width: 30,
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).disabledColor,
-                                  borderRadius: BorderRadius.circular(
-                                    Dimensions.paddingSizeExtraSmall,
-                                  ),
+                        ],
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          top: Dimensions.paddingSizeDefault,
+                          left: Dimensions.paddingSizeDefault,
+                          right: Dimensions.paddingSizeDefault,
+                          bottom: mediaQuery.padding.bottom,
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              height: 5,
+                              width: 30,
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).disabledColor,
+                                borderRadius: BorderRadius.circular(
+                                  Dimensions.paddingSizeExtraSmall,
                                 ),
                               ),
-                              if (riderController.currentRideState ==
-                                  RideState.initial)
-                                const StayOnlineWidget(),
-                              if (riderController.currentRideState ==
-                                  RideState.pending)
-                                CustomerRideRequestCardWidget(
-                                  rideRequest: rideController.tripDetail!,
-                                ),
-                              if (riderController.currentRideState ==
-                                  RideState.accepted)
-                                RideAcceptedWidget(
-                                  expandableKey: expandableKey,
-                                ),
-                              if (riderController.currentRideState ==
-                                  RideState.ongoing)
-                                RideOngoingWidget(
-                                  tripId: rideController.tripDetail!.id!,
-                                  expandableKey: expandableKey,
-                                ),
-                              if (riderController.currentRideState ==
-                                  RideState.end)
-                                const EndTripWidget(),
-                              if (riderController.currentRideState ==
-                                  RideState.completed)
-                                const CalculatingSubTotalWidget(),
-                              if (riderController.currentRideState ==
-                                  RideState.initial)
-                                Padding(
-                                  padding: const EdgeInsets.fromLTRB(
-                                    0,
-                                    Dimensions.paddingSizeSmall,
-                                    0,
-                                    Dimensions.paddingSizeDefault,
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      riderController.isRefresh
-                                          ? const LoaderWidget()
-                                          : CustomIconCardWidget(
-                                              title: 'refresh'.tr,
-                                              index: 0,
-                                              icon: Images.mIcon3,
-                                              iconColor: Theme.of(context)
-                                                  .colorScheme
-                                                  .primary,
-                                              onTap: riderController
-                                                  .isRefreshLoader,
-                                            ),
-                                      CustomIconCardWidget(
-                                        title: 'leader_board'.tr,
-                                        index: 1,
-                                        icon: Images.mIcon2,
-                                        iconColor: Theme.of(context)
-                                            .colorScheme
-                                            .primary,
-                                        onTap: () => Get.to(
-                                          () => const LeaderboardScreen(),
-                                        ),
-                                      ),
-                                      CustomIconCardWidget(
-                                        title: 'trip_request'.tr,
-                                        index: 2,
-                                        icon: Images.mIcon1,
-                                        iconColor: Theme.of(context)
-                                            .colorScheme
-                                            .primary,
-                                        onTap: () {
-                                          if (!Get.currentRoute.contains(
-                                            'RideRequestScreen',
-                                          )) {
-                                            Get.to(
-                                              () => const RideRequestScreen(),
-                                            );
-                                          }
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              const SizedBox(
-                                height: Dimensions.paddingSizeExtraSmall,
+                            ),
+                            if (riderController.currentRideState ==
+                                RideState.initial)
+                              const StayOnlineWidget(),
+                            if (riderController.currentRideState ==
+                                RideState.pending)
+                              CustomerRideRequestCardWidget(
+                                rideRequest: rideController.tripDetail!,
                               ),
-                            ],
-                          ),
+                            if (riderController.currentRideState ==
+                                RideState.accepted)
+                              RideAcceptedWidget(
+                                expandableKey: expandableKey,
+                              ),
+                            if (riderController.currentRideState ==
+                                RideState.ongoing)
+                              RideOngoingWidget(
+                                tripId: rideController.tripDetail!.id!,
+                                expandableKey: expandableKey,
+                              ),
+                            if (riderController.currentRideState ==
+                                RideState.end)
+                              const EndTripWidget(),
+                            if (riderController.currentRideState ==
+                                RideState.completed)
+                              const CalculatingSubTotalWidget(),
+                            if (riderController.currentRideState ==
+                                RideState.initial)
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  0,
+                                  Dimensions.paddingSizeSmall,
+                                  0,
+                                  Dimensions.paddingSizeDefault,
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    riderController.isRefresh
+                                        ? const LoaderWidget()
+                                        : CustomIconCardWidget(
+                                            title: 'refresh'.tr,
+                                            index: 0,
+                                            icon: Images.mIcon3,
+                                            iconColor: Theme.of(context)
+                                                .colorScheme
+                                                .primary,
+                                            onTap:
+                                                riderController.isRefreshLoader,
+                                          ),
+                                    CustomIconCardWidget(
+                                      title: 'leader_board'.tr,
+                                      index: 1,
+                                      icon: Images.mIcon2,
+                                      iconColor:
+                                          Theme.of(context).colorScheme.primary,
+                                      onTap: () => Get.to(
+                                        () => const LeaderboardScreen(),
+                                      ),
+                                    ),
+                                    CustomIconCardWidget(
+                                      title: 'trip_request'.tr,
+                                      index: 2,
+                                      icon: Images.mIcon1,
+                                      iconColor:
+                                          Theme.of(context).colorScheme.primary,
+                                      onTap: () {
+                                        if (!Get.currentRoute.contains(
+                                          'RideRequestScreen',
+                                        )) {
+                                          Get.to(
+                                            () => const RideRequestScreen(),
+                                          );
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                     ),

@@ -673,5 +673,7 @@
   "terms_and_conditions": "Terms and Conditions",
   "six_digit_code": "We’ve sent a 6-digit code to your phone",
   "did_not_receive_the_code_?": "Did not receive otp ?",
-  "verification_code": "Enter your number to receive a verification code"
+  "verification_code": "Enter your number to receive a verification code",
+  "choose_your_preferred_language": "Choose your preferred language",
+  "select_how_the_app_should_look": "Select how the app should look"
 }

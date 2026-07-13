@@ -44,10 +44,19 @@ class _MapScreenState extends State<MapScreen> {
 
     _driverMarkerFuture = getMarker();
 
-    // Notify only after the first frame is complete.
+    // Notify only after the first frame is complete and open the bottom
+    // sheet at its normal content height when this screen is first shown.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       Get.find<RideController>().updateRoute(false, notify: true);
+
+      Future.delayed(const Duration(milliseconds: 120), () {
+        if (!mounted) return;
+        key.currentState?.expand();
+        if (!_isBottomSheetExpanded) {
+          setState(() => _isBottomSheetExpanded = true);
+        }
+      });
     });
     Get.find<RiderMapController>().setSheetHeight(50, false);
     Get.find<RideController>().getPendingRideRequestList(1).then((_) {
@@ -96,6 +105,36 @@ class _MapScreenState extends State<MapScreen> {
   Future<Uint8List>? _driverMarkerFuture;
   bool _isMapReady = false;
   bool _didMoveToInitialLocation = false;
+  bool _isBottomSheetExpanded = false;
+
+  Future<void> _moveToCurrentLocation() async {
+    final locationController = Get.find<LocationController>();
+    final bool hasPermission = await locationController.checkPermission(() {});
+
+    if (!hasPermission || _mapController == null || !mounted) {
+      return;
+    }
+
+    try {
+      final Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.bestForNavigation,
+        timeLimit: const Duration(seconds: 10),
+      );
+
+      await _mapController!.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: LatLng(position.latitude, position.longitude),
+            zoom: 18,
+            bearing: 0,
+            tilt: 0,
+          ),
+        ),
+      );
+    } catch (e) {
+      debugPrint('Unable to move to current location: $e');
+    }
+  }
 
   Future<Uint8List> getMarker() async {
     ByteData data = await rootBundle.load(Images.carIconTop);
@@ -234,8 +273,23 @@ class _MapScreenState extends State<MapScreen> {
         resizeToAvoidBottomInset: true,
         body: GetBuilder<RiderMapController>(builder: (riderMapController) {
           return GetBuilder<RideController>(builder: (rideController) {
+            final double safeBottom = MediaQuery.of(context).padding.bottom;
+            final double mapActionBottom = _isBottomSheetExpanded
+                ? 310 + safeBottom
+                : riderMapController.sheetHeight + 56;
+
             return ExpandableBottomSheet(
               key: key,
+              onIsExtendedCallback: () {
+                if (mounted && !_isBottomSheetExpanded) {
+                  setState(() => _isBottomSheetExpanded = true);
+                }
+              },
+              onIsContractedCallback: () {
+                if (mounted && _isBottomSheetExpanded) {
+                  setState(() => _isBottomSheetExpanded = false);
+                }
+              },
               persistentContentHeight: riderMapController.sheetHeight,
               background: GetBuilder<RideController>(builder: (rideController) {
                 return Stack(children: [
@@ -250,7 +304,7 @@ class _MapScreenState extends State<MapScreen> {
                           .toDouble(),
                     ),
                     child: GoogleMap(
-                      myLocationEnabled: false,
+                      myLocationEnabled: true,
                       myLocationButtonEnabled: false,
                       compassEnabled: false,
                       // style: Get.isDarkMode`
@@ -359,7 +413,7 @@ class _MapScreenState extends State<MapScreen> {
                     ),
                   const DriverHeaderInfoWidget(),
                   Positioned(
-                      bottom: riderMapController.sheetHeight + 112,
+                      bottom: mapActionBottom + 56,
                       right: 14,
                       child: Align(
                         alignment: Alignment.bottomRight,
@@ -379,7 +433,7 @@ class _MapScreenState extends State<MapScreen> {
                         }),
                       )),
                   Positioned(
-                      bottom: riderMapController.sheetHeight + 56,
+                      bottom: mapActionBottom,
                       right: 14,
                       child: Align(
                         alignment: Alignment.bottomRight,
@@ -390,11 +444,7 @@ class _MapScreenState extends State<MapScreen> {
                             title: '',
                             index: 5,
                             icon: Images.currentLocation,
-                            onTap: () async {
-                              await locationController.getCurrentLocation(
-                                  mapController: _mapController,
-                                  isAnimate: false);
-                            },
+                            onTap: _moveToCurrentLocation,
                           );
                         }),
                       )),
@@ -520,17 +570,14 @@ class _MapScreenState extends State<MapScreen> {
                   )),
               expandableContent: Builder(
                 builder: (context) {
-                  return SafeArea(
-                    top: false,
-                    child: AnimatedPadding(
-                      duration: const Duration(milliseconds: 180),
-                      curve: Curves.easeOut,
-                      padding: EdgeInsets.only(
-                        bottom: MediaQuery.of(context).viewInsets.bottom,
-                      ),
-                      child: RiderBottomSheetWidget(
-                        expandableKey: key,
-                      ),
+                  return AnimatedPadding(
+                    duration: const Duration(milliseconds: 180),
+                    curve: Curves.easeOut,
+                    padding: EdgeInsets.only(
+                      bottom: MediaQuery.of(context).viewInsets.bottom,
+                    ),
+                    child: RiderBottomSheetWidget(
+                      expandableKey: key,
                     ),
                   );
                 },

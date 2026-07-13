@@ -8,62 +8,108 @@ class ThemeChangeWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<ThemeController>(builder: (themeController) {
-      return Padding(
-        padding:
-            const EdgeInsets.symmetric(vertical: Dimensions.paddingSizeDefault),
-        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          InkWell(
-            overlayColor: WidgetStateProperty.all(Colors.transparent),
-            onTap: () => themeController.changeThemeSetting(false),
-            child: Row(children: [
-              Container(
-                height: 15,
-                width: 15,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Theme.of(context).hintColor.withValues(alpha: 0.2),
-                ),
-                child: !themeController.darkTheme
-                    ? Center(
-                        child: Icon(Icons.circle,
-                            size: 10,
-                            color:
-                                Theme.of(context).textTheme.bodyLarge!.color),
-                      )
-                    : const SizedBox.shrink(),
-              ),
-              const SizedBox(width: 7),
-              Text('light'.tr),
-            ]),
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
+
+    return GetBuilder<ThemeController>(
+      builder: (themeController) {
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            borderRadius: BorderRadius.circular(Dimensions.radiusDefault),
+            border: Border.all(
+              color: colorScheme.outlineVariant,
+            ),
           ),
-          const SizedBox(width: Dimensions.paddingSizeLarge),
-          InkWell(
-            overlayColor: WidgetStateProperty.all(Colors.transparent),
-            onTap: () => themeController.changeThemeSetting(true),
-            child: Row(children: [
-              Container(
-                height: 15,
-                width: 15,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Theme.of(context).hintColor.withValues(alpha: 0.2),
+          child: Row(
+            children: [
+              Expanded(
+                child: _ThemeOption(
+                  title: 'light'.tr,
+                  icon: Icons.light_mode_rounded,
+                  selected: !themeController.darkTheme,
+                  onTap: () {
+                    themeController.changeThemeSetting(false);
+                  },
                 ),
-                child: themeController.darkTheme
-                    ? Center(
-                        child: Icon(Icons.circle,
-                            size: 10,
-                            color:
-                                Theme.of(context).textTheme.bodyMedium!.color),
-                      )
-                    : const SizedBox.shrink(),
               ),
-              const SizedBox(width: 7),
-              Text('dark'.tr),
-            ]),
+              const SizedBox(width: 4),
+              Expanded(
+                child: _ThemeOption(
+                  title: 'dark'.tr,
+                  icon: Icons.dark_mode_rounded,
+                  selected: themeController.darkTheme,
+                  onTap: () {
+                    themeController.changeThemeSetting(true);
+                  },
+                ),
+              ),
+            ],
           ),
-        ]),
-      );
-    });
+        );
+      },
+    );
+  }
+}
+
+class _ThemeOption extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _ThemeOption({
+    required this.title,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final TextTheme textTheme = Theme.of(context).textTheme;
+
+    return Material(
+      color: selected ? colorScheme.primary : colorScheme.surface,
+      borderRadius: BorderRadius.circular(Dimensions.radiusDefault),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(Dimensions.radiusDefault),
+        child: Container(
+          height: 48,
+          padding: const EdgeInsets.symmetric(
+            horizontal: Dimensions.paddingSizeSmall,
+          ),
+          alignment: Alignment.center,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: Dimensions.iconSizeMedium,
+                color:
+                    selected ? colorScheme.onPrimary : colorScheme.onSecondary,
+              ),
+              const SizedBox(width: Dimensions.paddingSizeExtraSmall),
+              Flexible(
+                child: Text(
+                  title,
+                  overflow: TextOverflow.ellipsis,
+                  style: textTheme.labelLarge?.copyWith(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: selected
+                        ? colorScheme.onPrimary
+                        : colorScheme.onSecondary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

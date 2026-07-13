@@ -60,23 +60,22 @@ class OngoingRideCardWidget extends StatelessWidget {
       return rideController.ongoingTrip != null
           ? rideController.ongoingTrip!.isNotEmpty
               ? Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: Dimensions.paddingSizeLarge),
+                  padding: const EdgeInsets.fromLTRB(20, 2, 20, 0),
                   child: Container(
                     decoration: BoxDecoration(
-                        boxShadow: [
-                          BoxShadow(
-                            color: Theme.of(context).colorScheme.onSecondary,
-                            blurRadius: 1,
-                          )
-                        ],
-                        border: Border.all(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSecondaryContainer),
-                        color: Theme.of(context).primaryColor,
-                        borderRadius: BorderRadius.circular(
-                            Dimensions.paddingSizeDefault)),
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: const Color(0xFFE7E9EE),
+                      ),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x0D101828),
+                          blurRadius: 20,
+                          offset: Offset(0, 8),
+                        ),
+                      ],
+                    ),
                     child: Column(
                       children: [
                         Padding(

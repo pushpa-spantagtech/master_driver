@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ride_sharing_user_app/util/dimensions.dart';
-import 'package:ride_sharing_user_app/util/styles.dart';
 import 'package:ride_sharing_user_app/features/location/controllers/location_controller.dart';
 import 'package:ride_sharing_user_app/features/profile/controllers/profile_controller.dart';
 import 'package:ride_sharing_user_app/features/splash/controllers/splash_controller.dart';
@@ -16,181 +14,184 @@ String capitalize(String text) {
 class ProfileStatusCardWidget extends StatelessWidget {
   final ProfileController profileController;
 
-  const ProfileStatusCardWidget({super.key, required this.profileController});
+  const ProfileStatusCardWidget({
+    super.key,
+    required this.profileController,
+  });
+
+  static const Color _ink = Color(0xFF111827);
+  static const Color _muted = Color(0xFF667085);
+  static const Color _online = Color(0xFF12A150);
+  static const Color _offline = Color(0xFFE5484D);
 
   @override
   Widget build(BuildContext context) {
+    final profile = profileController.profileInfo;
+
+    if (profile == null || profile.firstName == null) {
+      return const SizedBox.shrink();
+    }
+
+    final bool isOnline = profileController.isOnline == '1';
+    final config = Get.find<SplashController>().config;
+    final String imageBaseUrl = config?.imageBaseUrl?.profileImage ?? '';
+    final String profileImage = profile.profileImage ?? '';
+
     return Padding(
-      padding:
-          const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeDefault),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).primaryColor,
-          borderRadius: BorderRadius.circular(Dimensions.paddingSizeDefault),
-          border: Border.all(
-              width: .5, color: Theme.of(context).colorScheme.secondary),
-        ),
-        child: profileController.profileInfo != null &&
-                profileController.profileInfo!.firstName != null
-            ? Padding(
-                padding: const EdgeInsets.all(Dimensions.paddingSize),
-                child: Row(children: [
-                  SizedBox(
-                    width: 40,
-                    height: 40,
-                    child: Container(
-                        padding: const EdgeInsets.all(2),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color:
-                                Theme.of(context).colorScheme.tertiaryContainer,
-                            width: 2,
-                          ),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(50),
-                          child: ImageWidget(
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                            height: double.infinity,
-                            image:
-                                '${Get.find<SplashController>().config!.imageBaseUrl!.profileImage}/${profileController.profileInfo!.profileImage}',
-                          ),
-                        )),
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
+      child: Material(
+        color: Colors.white,
+        elevation: 0,
+        borderRadius: BorderRadius.circular(22),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(22),
+          onTap: null,
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(14, 13, 12, 13),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(
+                color: const Color(0xFFE7E9EE),
+              ),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x0D101828),
+                  blurRadius: 18,
+                  offset: Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isOnline ? _online : _offline,
+                      width: 2,
+                    ),
                   ),
-                  const SizedBox(width: Dimensions.paddingSizeDefault),
-                  Expanded(
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                        Text(
-                          '${capitalize(profileController.profileInfo?.firstName ?? '')} '
-                          '${capitalize(profileController.profileInfo?.lastName ?? '')}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: textBold.copyWith(
-                            color: Theme.of(context)
-                                .textTheme
-                                .headlineLarge!
-                                .color,
-                            fontSize: Dimensions.fontSizeLarge,
-                          ),
-                        ),
-                        const SizedBox(
-                            height: Dimensions.paddingSizeExtraSmall),
-                        if (Get.find<SplashController>().config!.levelStatus!)
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .error
-                                  .withValues(alpha: .10),
-                              borderRadius: BorderRadius.circular(
-                                  Dimensions.paddingSizeExtraSmall),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 2.0,
-                                horizontal: Dimensions.paddingSizeExtraSmall,
-                              ),
-                              child: Text(
-                                profileController.profileInfo!.level != null
-                                    ? profileController
-                                        .profileInfo!.level!.name!
-                                    : '',
-                                style: textRegular.copyWith(
-                                    color: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall!
-                                        .color),
-                              ),
-                            ),
-                          ),
-                      ])),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
+                  child: ClipOval(
+                    child: ImageWidget(
+                      fit: BoxFit.cover,
+                      width: 44,
+                      height: 44,
+                      image: '$imageBaseUrl/$profileImage',
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        profileController.isOnline == "1"
-                            ? "Online"
-                            : "Offline",
-                        style: textSemiBold.copyWith(
-                            fontSize: 14,
-                            color: Theme.of(context).colorScheme.onPrimary),
-                      ),
-                      const SizedBox(width: 8),
-                      SizedBox(
-                        width: 52,
-                        height: 42,
-                        child: FittedBox(
-                          fit: BoxFit.fill,
-                          child: Switch(
-                            value: profileController.isOnline == "1",
-                            activeColor:
-                                Theme.of(context).colorScheme.surfaceTint,
-                            inactiveThumbColor:
-                                Theme.of(context).colorScheme.error,
-                            activeTrackColor: Theme.of(context).primaryColor,
-                            inactiveTrackColor: Theme.of(context).primaryColor,
-                            thumbIcon: WidgetStateProperty.resolveWith<Icon?>(
-                              (states) => const Icon(
-                                Icons.circle,
-                                size: 0,
-                                color: Colors.transparent,
-                              ),
-                            ),
-                            trackOutlineColor:
-                                WidgetStateProperty.resolveWith<Color>(
-                              (states) {
-                                if (states.contains(WidgetState.selected)) {
-                                  return Theme.of(context)
-                                      .colorScheme
-                                      .surfaceTint;
-                                }
-                                return Theme.of(context).colorScheme.error;
-                              },
-                            ),
-                            onChanged: (val) async {
-                              if (GetPlatform.isIOS) {
-                                Get.dialog(
-                                  const LoaderWidget(),
-                                  barrierDismissible: false,
-                                );
-
-                                await profileController
-                                    .profileOnlineOffline(val)
-                                    .then((value) {
-                                  if (value.statusCode == 200) {
-                                    Get.back();
-                                  }
-                                });
-                              } else {
-                                Get.find<LocationController>()
-                                    .checkPermission(() async {
-                                  Get.dialog(
-                                    const LoaderWidget(),
-                                    barrierDismissible: false,
-                                  );
-
-                                  await profileController
-                                      .profileOnlineOffline(val)
-                                      .then((value) {
-                                    if (value.statusCode == 200) {
-                                      Get.back();
-                                    }
-                                  });
-                                });
-                              }
-                            },
-                          ),
+                        '${capitalize(profile.firstName ?? '')} '
+                        '${capitalize(profile.lastName ?? '')}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: _ink,
+                          fontSize: 16.5,
+                          height: 1.15,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.2,
                         ),
                       ),
+                      const SizedBox(height: 5),
+                      Row(
+                        children: [
+                          Container(
+                            width: 7,
+                            height: 7,
+                            decoration: BoxDecoration(
+                              color: isOnline ? _online : _offline,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            isOnline ? 'Ready for rides' : 'You are offline',
+                            style: const TextStyle(
+                              color: _muted,
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
-                  )
-                ]),
-              )
-            : const SizedBox(),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      isOnline ? 'Online' : 'Offline',
+                      style: TextStyle(
+                        color: isOnline ? _online : _offline,
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Transform.scale(
+                      scale: 0.88,
+                      child: Switch(
+                        value: isOnline,
+                        activeColor: Colors.white,
+                        activeTrackColor: _online,
+                        inactiveThumbColor: Colors.white,
+                        inactiveTrackColor: _offline.withValues(alpha: 0.82),
+                        trackOutlineColor:
+                            WidgetStateProperty.all(Colors.transparent),
+                        onChanged: (val) async {
+                          if (GetPlatform.isIOS) {
+                            Get.dialog(
+                              const LoaderWidget(),
+                              barrierDismissible: false,
+                            );
+
+                            await profileController
+                                .profileOnlineOffline(val)
+                                .then((value) {
+                              if (value.statusCode == 200 &&
+                                  (Get.isDialogOpen ?? false)) {
+                                Get.back();
+                              }
+                            });
+                          } else {
+                            Get.find<LocationController>()
+                                .checkPermission(() async {
+                              Get.dialog(
+                                const LoaderWidget(),
+                                barrierDismissible: false,
+                              );
+
+                              await profileController
+                                  .profileOnlineOffline(val)
+                                  .then((value) {
+                                if (value.statusCode == 200 &&
+                                    (Get.isDialogOpen ?? false)) {
+                                  Get.back();
+                                }
+                              });
+                            });
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

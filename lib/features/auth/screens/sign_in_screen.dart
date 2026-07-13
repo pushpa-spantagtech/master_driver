@@ -48,10 +48,12 @@ class _SignInScreenState extends State<SignInScreen> {
     if (Get.find<AuthController>().getLoginCountryCode().isNotEmpty) {
       Get.find<AuthController>().countryDialCode =
           Get.find<AuthController>().getLoginCountryCode();
-    } else if (Get.find<SplashController>().config!.countryCode != null) {
-      Get.find<AuthController>().countryDialCode = CountryCode.fromCountryCode(
-        Get.find<SplashController>().config!.countryCode!,
-      ).dialCode!;
+    } else {
+      final countryCode = Get.find<SplashController>().config?.countryCode;
+      if (countryCode != null && countryCode.isNotEmpty) {
+        Get.find<AuthController>().countryDialCode =
+            CountryCode.fromCountryCode(countryCode).dialCode ?? '+91';
+      }
     }
   }
 
@@ -370,8 +372,9 @@ class _SignInScreenState extends State<SignInScreen> {
                                                   ),
                                                 ),
                                           if (Get.find<SplashController>()
-                                              .config!
-                                              .selfRegistration!)
+                                                  .config
+                                                  ?.selfRegistration ==
+                                              true)
                                             Padding(
                                               padding:
                                                   const EdgeInsets.symmetric(

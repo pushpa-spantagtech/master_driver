@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -55,16 +56,31 @@ Future<void> main() async {
 
   Map<String, Map<String, String>> languages = await di.init();
 
-  await NotificationHelper.initialize(flutterLocalNotificationsPlugin);
-  await FirebaseMessaging.instance.requestPermission();
-  await FirebaseMessaging.instance
-      .subscribeToTopic('driver_maintenance_mode_on');
-  await FirebaseMessaging.instance
-      .subscribeToTopic('driver_maintenance_mode_off');
   FirebaseMessaging.onBackgroundMessage(myBackgroundMessageHandler);
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
   runApp(MyApp(languages: languages));
+
+  // Notification setup must never block the first Flutter frame.
+  unawaited(_initializeNotificationsSafely());
+}
+
+Future<void> _initializeNotificationsSafely() async {
+  try {
+    await NotificationHelper.initialize(flutterLocalNotificationsPlugin)
+        .timeout(const Duration(seconds: 10));
+    await FirebaseMessaging.instance
+        .requestPermission()
+        .timeout(const Duration(seconds: 10));
+    await FirebaseMessaging.instance
+        .subscribeToTopic('driver_maintenance_mode_on')
+        .timeout(const Duration(seconds: 10));
+    await FirebaseMessaging.instance
+        .subscribeToTopic('driver_maintenance_mode_off')
+        .timeout(const Duration(seconds: 10));
+  } catch (e) {
+    debugPrint('Notification initialization skipped: $e');
+  }
 }
 
 class MyApp extends StatelessWidget {

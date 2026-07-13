@@ -80,10 +80,10 @@ class _ChartWidgetState extends State<ChartWidget> {
 
     if (chartValue.toLowerCase().contains('k')) {
       chartValue =
-      '${PriceConverter.convertPrice(context, double.parse(chartValue.toLowerCase().replaceAll('k', '')))}K';
+          '${PriceConverter.convertPrice(context, double.parse(chartValue.toLowerCase().replaceAll('k', '')))}K';
     } else if (chartValue.toLowerCase().contains('m')) {
       chartValue =
-      '${PriceConverter.convertPrice(context, double.parse(chartValue.toLowerCase().replaceAll('m', '')))}M';
+          '${PriceConverter.convertPrice(context, double.parse(chartValue.toLowerCase().replaceAll('m', '')))}M';
     } else {
       chartValue = PriceConverter.convertPrice(
         context,
@@ -105,7 +105,8 @@ class _ChartWidgetState extends State<ChartWidget> {
 
   LineChartData mainData(List<FlSpot>? spots, double maxValue) {
     final Color primaryColor = Theme.of(context).colorScheme.primary;
-    final Color softGridColor = Theme.of(context).dividerColor.withValues(alpha: 0.075);
+    final Color softGridColor =
+        Theme.of(context).dividerColor.withValues(alpha: 0.075);
     final double safeMaxValue = maxValue <= 0 ? 1 : maxValue;
     final List<FlSpot> chartSpots = spots ?? [];
 
@@ -114,7 +115,8 @@ class _ChartWidgetState extends State<ChartWidget> {
         handleBuiltInTouches: true,
         touchTooltipData: LineTouchTooltipData(
           tooltipRoundedRadius: 14,
-          tooltipPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          tooltipPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           tooltipMargin: 14,
           fitInsideHorizontally: true,
           fitInsideVertically: true,
@@ -147,7 +149,8 @@ class _ChartWidgetState extends State<ChartWidget> {
       ),
       titlesData: FlTitlesData(
         show: true,
-        rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        rightTitles:
+            const AxisTitles(sideTitles: SideTitles(showTitles: false)),
         topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
         bottomTitles: AxisTitles(
           sideTitles: SideTitles(

@@ -15,15 +15,14 @@ class TripsWidget extends StatefulWidget {
 
   const TripsWidget(
       {super.key,
-        required this.tripController,
-        required this.scrollController});
+      required this.tripController,
+      required this.scrollController});
 
   @override
   State<TripsWidget> createState() => _TripsWidgetState();
 }
 
 class _TripsWidgetState extends State<TripsWidget> {
-
   void _showFilterSheet(BuildContext context, TripController tripController) {
     showModalBottomSheet(
       context: context,
@@ -53,9 +52,8 @@ class _TripsWidgetState extends State<TripsWidget> {
                   height: 4,
                   margin: const EdgeInsets.only(bottom: 14),
                   decoration: BoxDecoration(
-                    color: Theme.of(context)
-                        .dividerColor
-                        .withValues(alpha: 0.55),
+                    color:
+                        Theme.of(context).dividerColor.withValues(alpha: 0.55),
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),
@@ -98,13 +96,13 @@ class _TripsWidgetState extends State<TripsWidget> {
                     child: Material(
                       color: selected
                           ? Theme.of(context)
-                          .colorScheme
-                          .primary
-                          .withValues(alpha: 0.10)
+                              .colorScheme
+                              .primary
+                              .withValues(alpha: 0.10)
                           : Theme.of(context)
-                          .colorScheme
-                          .surfaceContainerHighest
-                          .withValues(alpha: 0.35),
+                              .colorScheme
+                              .surfaceContainerHighest
+                              .withValues(alpha: 0.35),
                       borderRadius: BorderRadius.circular(16),
                       child: InkWell(
                         borderRadius: BorderRadius.circular(16),
@@ -137,9 +135,9 @@ class _TripsWidgetState extends State<TripsWidget> {
                                     color: selected
                                         ? Theme.of(context).colorScheme.primary
                                         : Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium!
-                                        .color,
+                                            .textTheme
+                                            .bodyMedium!
+                                            .color,
                                   ),
                                 ),
                               ),
@@ -270,60 +268,60 @@ class _TripsWidgetState extends State<TripsWidget> {
               ),
               widget.tripController.tripModel != null
                   ? widget.tripController.tripModel!.data != null
-                  ? widget.tripController.tripModel!.data!.isNotEmpty
-                  ? Padding(
-                padding: const EdgeInsets.only(
-                    bottom: 70.0,
-                    top: Dimensions.paddingSizeExtraSmall),
-                child: PaginatedListViewWidget(
-                  scrollController: widget.scrollController,
-                  totalSize:
-                  widget.tripController.tripModel!.totalSize,
-                  offset:
-                  (widget.tripController.tripModel != null &&
-                      widget.tripController.tripModel!
-                          .offset !=
-                          null)
-                      ? int.parse(widget
-                      .tripController.tripModel!.offset
-                      .toString())
-                      : 1,
-                  onPaginate: (int? offset) async {
-                    if (kDebugMode) {
-                      print('==========offset========>$offset');
-                    }
-                    await widget.tripController.getTripList(
-                        offset!,
-                        '',
-                        '',
-                        'ride_request',
-                        tripController.selectedFilterTypeName);
-                  },
-                  itemView: ListView.builder(
-                    itemCount: widget
-                        .tripController.tripModel!.data!.length,
-                    padding: const EdgeInsets.all(0),
-                    physics: const NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    itemBuilder:
-                        (BuildContext context, int index) {
-                      return TripCard(
-                          tripModel: widget.tripController
-                              .tripModel!.data![index]);
-                    },
-                  ),
-                ),
-              )
-                  : Padding(
-                padding: EdgeInsets.only(top: Get.height / 5),
-                child: const NoDataWidget(title: 'no_trip_found'),
-              )
+                      ? widget.tripController.tripModel!.data!.isNotEmpty
+                          ? Padding(
+                              padding: const EdgeInsets.only(
+                                  bottom: 70.0,
+                                  top: Dimensions.paddingSizeExtraSmall),
+                              child: PaginatedListViewWidget(
+                                scrollController: widget.scrollController,
+                                totalSize:
+                                    widget.tripController.tripModel!.totalSize,
+                                offset:
+                                    (widget.tripController.tripModel != null &&
+                                            widget.tripController.tripModel!
+                                                    .offset !=
+                                                null)
+                                        ? int.parse(widget
+                                            .tripController.tripModel!.offset
+                                            .toString())
+                                        : 1,
+                                onPaginate: (int? offset) async {
+                                  if (kDebugMode) {
+                                    print('==========offset========>$offset');
+                                  }
+                                  await widget.tripController.getTripList(
+                                      offset!,
+                                      '',
+                                      '',
+                                      'ride_request',
+                                      tripController.selectedFilterTypeName);
+                                },
+                                itemView: ListView.builder(
+                                  itemCount: widget
+                                      .tripController.tripModel!.data!.length,
+                                  padding: const EdgeInsets.all(0),
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  shrinkWrap: true,
+                                  itemBuilder:
+                                      (BuildContext context, int index) {
+                                    return TripCard(
+                                        tripModel: widget.tripController
+                                            .tripModel!.data![index]);
+                                  },
+                                ),
+                              ),
+                            )
+                          : Padding(
+                              padding: EdgeInsets.only(top: Get.height / 5),
+                              child: const NoDataWidget(title: 'no_trip_found'),
+                            )
+                      : SizedBox(
+                          height: Get.height,
+                          child: const NotificationShimmerWidget())
                   : SizedBox(
-                  height: Get.height,
-                  child: const NotificationShimmerWidget())
-                  : SizedBox(
-                  height: Get.height,
-                  child: const NotificationShimmerWidget()),
+                      height: Get.height,
+                      child: const NotificationShimmerWidget()),
             ],
           ),
         );

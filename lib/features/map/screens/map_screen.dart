@@ -37,16 +37,19 @@ class _MapScreenState extends State<MapScreen> {
   void initState() {
     super.initState();
 
+    // Change the route state without notifying while the widget tree is
+    // still being created. Notifying here causes:
+    // setState() or markNeedsBuild() called during build.
+    Get.find<RideController>().updateRoute(false, notify: false);
+
     _driverMarkerFuture = getMarker();
 
+    // Notify only after the first frame is complete.
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       Get.find<RideController>().updateRoute(false, notify: true);
     });
-    Get.find<RiderMapController>().setSheetHeight(
-        Get.find<RiderMapController>().currentRideState == RideState.initial
-            ? 300
-            : 270,
-        false);
+    Get.find<RiderMapController>().setSheetHeight(50, false);
     Get.find<RideController>().getPendingRideRequestList(1).then((_) {
       // Add pending trip request markers to map after fetching
       if (Get.find<RideController>().pendingRideRequestModel?.data != null) {
@@ -75,6 +78,16 @@ class _MapScreenState extends State<MapScreen> {
   void dispose() {
     _locationSubscription?.cancel();
     _mapController?.dispose();
+
+    // Update the global shortcut after the current frame. Calling update()
+    // directly during dispose can rebuild a GetBuilder while Flutter is
+    // already building/removing widgets.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (Get.isRegistered<RideController>()) {
+        Get.find<RideController>().updateRoute(true, notify: true);
+      }
+    });
+
     super.dispose();
   }
 
@@ -205,16 +218,20 @@ class _MapScreenState extends State<MapScreen> {
     return PopScope(
       canPop: Navigator.canPop(context),
       onPopInvokedWithResult: (didPop, result) {
-        if (Navigator.canPop(context)) {
-          Get.find<RideController>().getOngoingParcelList();
-          Get.find<RideController>().getLastTrip();
-          Get.find<RideController>().updateRoute(true, notify: true);
-        } else {
-          Get.offAll(() => const DashboardScreen());
+        // When back is pressed but this route is not popped, keep the global
+        // right-side map tab hidden. This prevents it appearing over MapScreen.
+        if (!didPop) {
+          if (!Navigator.canPop(context)) {
+            Get.offAll(() => const DashboardScreen());
+          }
+          return;
         }
+
+        Get.find<RideController>().getOngoingParcelList();
+        Get.find<RideController>().getLastTrip();
       },
       child: Scaffold(
-        resizeToAvoidBottomInset: false,
+        resizeToAvoidBottomInset: true,
         body: GetBuilder<RiderMapController>(builder: (riderMapController) {
           return GetBuilder<RideController>(builder: (rideController) {
             return ExpandableBottomSheet(
@@ -224,11 +241,13 @@ class _MapScreenState extends State<MapScreen> {
                 return Stack(children: [
                   Padding(
                     padding: EdgeInsets.only(
-                      bottom: riderMapController.sheetHeight -
-                          (Get.find<RiderMapController>().currentRideState ==
-                                  RideState.initial
-                              ? 80
-                              : 20),
+                      bottom: (riderMapController.sheetHeight -
+                              (riderMapController.currentRideState ==
+                                      RideState.initial
+                                  ? 80
+                                  : 20))
+                          .clamp(0.0, double.infinity)
+                          .toDouble(),
                     ),
                     child: GoogleMap(
                       myLocationEnabled: false,
@@ -379,43 +398,52 @@ class _MapScreenState extends State<MapScreen> {
                           );
                         }),
                       )),
-                  Positioned(
+                  // Hide the left Home/menu tab after the ride is accepted.
+                  // It remains visible only on the normal initial map.
+                  if (riderMapController.currentRideState == RideState.initial)
+                    Positioned(
                       child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: GestureDetector(
-                      onTap: () {
-                        Get.find<RideController>()
-                            .updateRoute(true, notify: true);
-                        Get.off(() => const DashboardScreen());
-                      },
-                      onHorizontalDragEnd: (DragEndDetails details) {
-                        _onHorizontalDrag(details);
-                        Get.find<RideController>()
-                            .updateRoute(true, notify: true);
-                        Get.off(() => const DashboardScreen());
-                      },
-                      child: Stack(children: [
-                        SizedBox(
-                            width: Dimensions.iconSizeExtraLarge,
-                            child: Image.asset(
-                              Images.mapToHomeIcon,
-                              color: Theme.of(context).hintColor,
-                            )),
-                        Positioned(
-                          top: 0,
-                          bottom: 0,
-                          left: 5,
-                          right: 5,
-                          child: SizedBox(
-                              width: 15,
-                              child: Image.asset(
-                                Images.homeSmallIcon,
-                                color: Theme.of(context).colorScheme.primary,
-                              )),
-                        )
-                      ]),
+                        alignment: Alignment.centerLeft,
+                        child: GestureDetector(
+                          onTap: () {
+                            Get.find<RideController>()
+                                .updateRoute(true, notify: true);
+                            Get.off(() => const DashboardScreen());
+                          },
+                          onHorizontalDragEnd: (DragEndDetails details) {
+                            _onHorizontalDrag(details);
+                            Get.find<RideController>()
+                                .updateRoute(true, notify: true);
+                            Get.off(() => const DashboardScreen());
+                          },
+                          child: Stack(
+                            children: [
+                              SizedBox(
+                                width: Dimensions.iconSizeExtraLarge,
+                                child: Image.asset(
+                                  Images.mapToHomeIcon,
+                                  color: Theme.of(context).hintColor,
+                                ),
+                              ),
+                              Positioned(
+                                top: 0,
+                                bottom: 0,
+                                left: 5,
+                                right: 5,
+                                child: SizedBox(
+                                  width: 15,
+                                  child: Image.asset(
+                                    Images.homeSmallIcon,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
-                  )),
                 ]);
               }),
               persistentHeader: SizedBox(
@@ -429,7 +457,12 @@ class _MapScreenState extends State<MapScreen> {
                         return InkWell(
                           overlayColor:
                               WidgetStateProperty.all(Colors.transparent),
-                          onTap: () => Get.to(() => const RideRequestScreen()),
+                          onTap: () {
+                            if (!(Get.currentRoute
+                                .contains('RideRequestScreen'))) {
+                              Get.to(() => const RideRequestScreen());
+                            }
+                          },
                           child: Container(
                             decoration: BoxDecoration(
                               color:
@@ -485,11 +518,23 @@ class _MapScreenState extends State<MapScreen> {
                       })),
                     ],
                   )),
-              expandableContent: Builder(builder: (context) {
-                return RiderBottomSheetWidget(
-                  expandableKey: key,
-                );
-              }),
+              expandableContent: Builder(
+                builder: (context) {
+                  return SafeArea(
+                    top: false,
+                    child: AnimatedPadding(
+                      duration: const Duration(milliseconds: 180),
+                      curve: Curves.easeOut,
+                      padding: EdgeInsets.only(
+                        bottom: MediaQuery.of(context).viewInsets.bottom,
+                      ),
+                      child: RiderBottomSheetWidget(
+                        expandableKey: key,
+                      ),
+                    ),
+                  );
+                },
+              ),
             );
           });
         }),

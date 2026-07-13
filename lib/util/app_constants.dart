@@ -41,7 +41,8 @@ class AppConstants {
   static const String bidding = '/api/driver/ride/bid';
   static const String ongoingTrip = '/api/driver/last-ride-details';
   static const String finalFare = '/api/driver/ride/final-fare';
-  static const String currentRideStatus = '/api/driver/ride/ride-resume-status';
+  static const String currentRideStatus =
+      '/api/driver/ride/current-ride-status';
   static const String submitReview = '/api/driver/review/store';
   static const String tripList = '/api/driver/ride/list';
   static const String tripOverView = '/api/driver/ride/overview';

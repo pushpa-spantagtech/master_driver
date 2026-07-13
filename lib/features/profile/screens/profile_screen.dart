@@ -189,18 +189,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     '${profileController.levelModel?.data?.currentLevel?.name}',
                                 isLevel: true,
                               ),
-                            if (profileController
-                                    .profileInfo?.details?.services !=
-                                null)
+                            if (profileController.profileInfo?.details?.services
+                                    ?.isNotEmpty ??
+                                false)
                               ProfileItemWidget(
                                 title: 'service',
                                 icon: Icons.local_taxi_outlined,
                                 value: profileController.profileInfo!.details!
                                             .services!.length ==
                                         1
-                                    ? profileController
-                                        .profileInfo!.details!.services![0].tr
-                                    : '${profileController.profileInfo!.details!.services![0].tr} & ${profileController.profileInfo!.details!.services![1].tr}',
+                                    ? profileController.profileInfo!.details!
+                                        .services!.first.tr
+                                    : '${profileController.profileInfo!.details!.services!.first.tr} & '
+                                        '${profileController.profileInfo!.details!.services![1].tr}',
                               ),
                             ProfileItemWidget(
                               icon: Icons.phone_outlined,

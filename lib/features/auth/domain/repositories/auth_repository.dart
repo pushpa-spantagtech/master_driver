@@ -1,5 +1,4 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:ride_sharing_user_app/data/api_client.dart';
@@ -106,7 +105,6 @@ class AuthRepository implements AuthRepositoryInterface {
       FirebaseMessaging.instance.subscribeToTopic(AppConstants.topic);
     }
 
-    print("FCM BEFORE API => $deviceToken");
     return await apiClient.postData(AppConstants.fcmTokenUpdate,
         {"_method": "put", "fcm_token": deviceToken});
   }
@@ -115,15 +113,10 @@ class AuthRepository implements AuthRepositoryInterface {
     String? deviceToken = '@';
     try {
       deviceToken = await FirebaseMessaging.instance.getToken();
-      print("DRIVER FCM TOKEN => $deviceToken");
     } catch (e) {
-      debugPrint('');
+      // Ignore token retrieval failure.
     }
-    if (deviceToken != null) {
-      if (kDebugMode) {
-        print('--------Device Token---------- $deviceToken');
-      }
-    }
+    if (deviceToken != null) {}
     return deviceToken;
   }
 

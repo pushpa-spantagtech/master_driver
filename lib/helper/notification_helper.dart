@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'dart:io';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
@@ -28,8 +27,59 @@ import 'package:ride_sharing_user_app/features/ride/controllers/ride_controller.
 import 'package:ride_sharing_user_app/features/splash/controllers/splash_controller.dart';
 import 'package:ride_sharing_user_app/features/trip/screens/payment_received_screen.dart';
 import 'package:ride_sharing_user_app/features/trip/screens/review_this_customer_screen.dart';
+import 'package:ride_sharing_user_app/features/ride/screens/ride_request_list_screen.dart';
 
 class NotificationHelper {
+  static bool _isHandlingNotification = false;
+  static String? _lastHandledRideId;
+  static DateTime? _lastHandledAt;
+  static Future<void> handleNotificationNavigation(
+    RemoteMessage message,
+  ) async {
+    final String action = message.data['action']?.toString() ?? '';
+
+    final String rideId = message.data['ride_request_id']?.toString() ?? '';
+
+    final DateTime now = DateTime.now();
+
+    final bool recentlyHandled = _lastHandledRideId == rideId &&
+        _lastHandledAt != null &&
+        now.difference(_lastHandledAt!).inSeconds < 3;
+
+    if (_isHandlingNotification || recentlyHandled) {
+      return;
+    }
+
+    _isHandlingNotification = true;
+    _lastHandledRideId = rideId;
+    _lastHandledAt = now;
+
+    try {
+      // Allow GetX/controllers and the first app route to initialize.
+      await Future.delayed(const Duration(milliseconds: 700));
+
+      if (action == 'new_ride_request_notification') {
+        final RideController rideController = Get.find<RideController>();
+
+        await rideController.getPendingRideRequestList(1);
+
+        final bool alreadyOnRequestScreen =
+            Get.currentRoute.contains('RideRequestScreen');
+
+        if (!alreadyOnRequestScreen) {
+          Get.to(() => const RideRequestScreen());
+        }
+
+        return;
+      }
+
+      await NotificationHelper.handleNotificationNavigation(message);
+    } finally {
+      await Future.delayed(const Duration(milliseconds: 500));
+      _isHandlingNotification = false;
+    }
+  }
+
   static Future<void> initialize(
       FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin) async {
     AndroidInitializationSettings androidInitialize =
@@ -40,42 +90,28 @@ class NotificationHelper {
     flutterLocalNotificationsPlugin.initialize(
       initializationsSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) async {
-        if (kDebugMode) {
-          print('Notification response ==> ${response.payload.toString()}');
+        final String rideId = response.payload ?? '';
+
+        if (rideId.isEmpty) {
+          return;
         }
-        // TODO: Route
-        try {
-          if (response.payload != null && response.payload!.isNotEmpty) {
-            if (kDebugMode) {
-              print('Notification response ==> ${response.payload.toString()}');
-            }
-          }
-        } catch (e) {
-          if (kDebugMode) {
-            print('Notification response ==> ${response.payload.toString()}');
-          }
+
+        await Future.delayed(
+          const Duration(milliseconds: 500),
+        );
+
+        final RideController rideController = Get.find<RideController>();
+
+        await rideController.getPendingRideRequestList(1);
+
+        if (!Get.currentRoute.contains('RideRequestScreen')) {
+          Get.to(() => const RideRequestScreen());
         }
-        return;
       },
       onDidReceiveBackgroundNotificationResponse: myBackgroundMessageReceiver,
     );
 
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      AndroidInitializationSettings androidInitialize =
-          const AndroidInitializationSettings('notification_icon');
-      var iOSInitialize = const DarwinInitializationSettings();
-      var initializationsSettings = InitializationSettings(
-          android: androidInitialize, iOS: iOSInitialize);
-      flutterLocalNotificationsPlugin.initialize(
-        initializationsSettings,
-        onDidReceiveNotificationResponse:
-            (NotificationResponse response) async {
-          notificationToRoute(message);
-          return;
-        },
-        onDidReceiveBackgroundNotificationResponse: myBackgroundMessageReceiver,
-      );
-
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
       log('onMessage: ${message.data}');
 
       if (!(Get.find<SplashController>().config!.maintenanceMode != null &&
@@ -95,22 +131,23 @@ class NotificationHelper {
             Get.find<SplashController>().pusherConnectionStatus ==
                 'Disconnected') {
           if (message.data['action'] == "new_ride_request_notification") {
-            Get.find<RideController>().getPendingRideRequestList(1);
-            AudioPlayer audio = AudioPlayer();
-            audio.play(AssetSource('notification.wav'));
-            Get.find<RideController>()
-                .setRideId(message.data['ride_request_id']);
-            Get.find<RideController>()
-                .getRideDetailBeforeAccept(message.data['ride_request_id'])
-                .then((value) {
-              if (value.statusCode == 200) {
-                Get.find<RiderMapController>().getPickupToDestinationPolyline();
-                Get.find<RiderMapController>()
-                    .setRideCurrentState(RideState.pending);
-                Get.find<RideController>().updateRoute(false, notify: true);
-                Get.to(() => const MapScreen());
-              }
-            });
+            final RideController rideController = Get.find<RideController>();
+
+            // Refresh the complete pending ride list. Do not select the latest
+            // ride here, otherwise a newer request replaces the previous one.
+            await rideController.getPendingRideRequestList(1);
+
+            final AudioPlayer audio = AudioPlayer();
+            await audio.play(AssetSource('notification.wav'));
+
+            // Open the request list only once. Further requests refresh the
+            // same screen and appear as additional cards.
+            final bool isOnRideRequestScreen =
+                Get.currentRoute.contains('RideRequestScreen');
+
+            if (!isOnRideRequestScreen) {
+              Get.to(() => const RideRequestScreen());
+            }
           } else if (message.data['action'] == "new_message_arrived") {
             Get.find<ChatController>().getConversation(message.data['type'], 1);
           } else if (message.data['action'] == "ride_completed") {
@@ -280,31 +317,83 @@ class NotificationHelper {
       }
     });
 
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
       customPrint('onOpenApp: ${message.data}');
-      notificationToRoute(message);
+      await notificationToRoute(message);
     });
+
+    final RemoteMessage? initialMessage =
+        await FirebaseMessaging.instance.getInitialMessage();
+
+    if (initialMessage != null) {
+      customPrint(
+        'initialNotification: ${initialMessage.data}',
+      );
+
+      await NotificationHelper.handleNotificationNavigation(
+        initialMessage,
+      );
+    }
   }
 
-  static Future<void> showNotification(RemoteMessage message,
-      FlutterLocalNotificationsPlugin fln, bool data) async {
-    String title = message.data['title'];
-    String body = message.data['body'];
-    String? orderID = message.data['order_id'];
-    String? image = (message.data['image'] != null &&
-            message.data['image'].isNotEmpty)
-        ? message.data['image'].startsWith('http')
-            ? message.data['image']
+  static Future<void> showNotification(
+    RemoteMessage message,
+    FlutterLocalNotificationsPlugin fln,
+    bool data,
+  ) async {
+    final bool isRideRequest =
+        message.data['action'] == 'new_ride_request_notification';
+
+    final String pickupAddress =
+        message.data['pickup_address']?.toString().trim() ?? '';
+
+    final String notificationDescription =
+        message.data['description']?.toString().trim() ??
+            message.data['body']?.toString().trim() ??
+            '';
+
+    final String title = isRideRequest
+        ? '🚖 New Ride Request'
+        : message.data['title']?.toString() ?? 'Seven Taxi';
+
+    final String body = isRideRequest
+        ? pickupAddress.isNotEmpty
+            ? 'Pickup: $pickupAddress'
+            : notificationDescription.isNotEmpty
+                ? notificationDescription
+                : 'Pickup location available'
+        : notificationDescription;
+
+    final String? orderID =
+        message.data['ride_request_id'] ?? message.data['order_id'];
+
+    final String? image = message.data['image'] != null &&
+            message.data['image'].toString().isNotEmpty
+        ? message.data['image'].toString().startsWith('http')
+            ? message.data['image'].toString()
             : '${AppConstants.baseUrl}/storage/app/public/notification/${message.data['image']}'
         : null;
 
     try {
       await showBigPictureNotificationHiddenLargeIcon(
-          title, body, orderID, image, fln);
+        title,
+        body,
+        orderID,
+        image,
+        fln,
+      );
     } catch (e) {
       await showBigPictureNotificationHiddenLargeIcon(
-          title, body, orderID, null, fln);
-      customPrint('Failed to show notification: ${e.toString()}');
+        title,
+        body,
+        orderID,
+        null,
+        fln,
+      );
+
+      customPrint(
+        'Failed to show notification: ${e.toString()}',
+      );
     }
   }
 
@@ -421,7 +510,17 @@ class NotificationHelper {
     );
     final NotificationDetails platformChannelSpecifics =
         NotificationDetails(android: androidPlatformChannelSpecifics);
-    await fln.show(0, title, body, platformChannelSpecifics, payload: orderID);
+    final int notificationId = orderID != null && orderID.isNotEmpty
+        ? orderID.hashCode & 0x7fffffff
+        : DateTime.now().millisecondsSinceEpoch.remainder(2147483647);
+
+    await fln.show(
+      notificationId,
+      title,
+      body,
+      platformChannelSpecifics,
+      payload: orderID,
+    );
   }
 
   static Future<String> _downloadAndSaveFile(
@@ -435,7 +534,8 @@ class NotificationHelper {
   }
 }
 
-Future<dynamic> myBackgroundMessageHandler(RemoteMessage remoteMessage) async {
+@pragma('vm:entry-point')
+Future<void> myBackgroundMessageHandler(RemoteMessage remoteMessage) async {
   customPrint('onBackground: ${remoteMessage.data}');
   // var androidInitialize = new AndroidInitializationSettings('notification_icon');
   // var iOSInitialize = new IOSInitializationSettings();
@@ -445,12 +545,12 @@ Future<dynamic> myBackgroundMessageHandler(RemoteMessage remoteMessage) async {
   // NotificationHelper.showNotification(message, flutterLocalNotificationsPlugin, true);
 }
 
-Future<dynamic> myBackgroundMessageReceiver(
-    NotificationResponse response) async {
+@pragma('vm:entry-point')
+Future<void> myBackgroundMessageReceiver(NotificationResponse response) async {
   customPrint('onBackgroundClicked: ${response.payload}');
 }
 
-void notificationToRoute(RemoteMessage message) {
+Future<void> notificationToRoute(RemoteMessage message) async {
   if (message.data['action'] == "new_message_arrived") {
     Get.find<ChatController>().getConversation(message.data['type'], 1);
     Get.to(() => MessageScreen(
@@ -458,18 +558,18 @@ void notificationToRoute(RemoteMessage message) {
         tripId: message.data['ride_request_id'],
         userName: message.data['user_name']));
   } else if (message.data['action'] == "new_ride_request_notification") {
-    Get.find<RideController>().getPendingRideRequestList(1);
-    Get.find<RideController>().setRideId(message.data['ride_request_id']);
-    Get.find<RideController>()
-        .getRideDetailBeforeAccept(message.data['ride_request_id'])
-        .then((value) {
-      if (value.statusCode == 200) {
-        Get.find<RiderMapController>().getPickupToDestinationPolyline();
-        Get.find<RiderMapController>().setRideCurrentState(RideState.pending);
-        Get.find<RideController>().updateRoute(false, notify: true);
-        Get.to(() => const MapScreen());
-      }
-    });
+    final RideController rideController = Get.find<RideController>();
+
+    // A notification tap opens the full pending-request list rather than
+    // selecting one request and replacing the currently displayed request.
+    await rideController.getPendingRideRequestList(1);
+
+    final bool isOnRideRequestScreen =
+        Get.currentRoute.contains('RideRequestScreen');
+
+    if (!isOnRideRequestScreen) {
+      Get.to(() => const RideRequestScreen());
+    }
   } else if (message.data['action'] == "ride_accepted") {
     ///Bid Ride Accepted in this case....
     Get.find<RideController>()

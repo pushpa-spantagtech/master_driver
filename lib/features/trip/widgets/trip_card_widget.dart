@@ -102,18 +102,18 @@ class TripCard extends StatelessWidget {
                     padding: const EdgeInsets.all(8.0),
                     child: tripModel.screenshot != null
                         ? ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: ImageWidget(
-                        image: tripModel.screenshot,
-                        width: Get.width,
-                        height: Get.width / 1.5,
-                        fit: BoxFit.fitWidth,
-                      ),
-                    )
+                            borderRadius: BorderRadius.circular(16),
+                            child: ImageWidget(
+                              image: tripModel.screenshot,
+                              width: Get.width,
+                              height: Get.width / 1.5,
+                              fit: BoxFit.fitWidth,
+                            ),
+                          )
                         : ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: Image.asset(Images.mapSample),
-                    ),
+                            borderRadius: BorderRadius.circular(16),
+                            child: Image.asset(Images.mapSample),
+                          ),
                   ),
                 Padding(
                   padding: const EdgeInsets.all(Dimensions.paddingSizeDefault),
@@ -132,16 +132,16 @@ class TripCard extends StatelessWidget {
                         ),
                         child: Padding(
                           padding:
-                          const EdgeInsets.all(Dimensions.paddingSizeSmall),
+                              const EdgeInsets.all(Dimensions.paddingSizeSmall),
                           child: tripModel.type == 'parcel'
                               ? Image.asset(Images.parcel)
                               : Image.asset(
-                            tripModel.vehicleCategory != null
-                                ? tripModel.vehicleCategory!.type == "car"
-                                ? Images.car
-                                : Images.bike
-                                : Images.car,
-                          ),
+                                  tripModel.vehicleCategory != null
+                                      ? tripModel.vehicleCategory!.type == "car"
+                                          ? Images.car
+                                          : Images.bike
+                                      : Images.car,
+                                ),
                         ),
                       ),
                       const SizedBox(width: Dimensions.paddingSizeDefault),
@@ -184,8 +184,7 @@ class TripCard extends StatelessWidget {
                             const SizedBox(height: Dimensions.paddingSizeSmall),
                             Row(children: [
                               Icon(Icons.calendar_today_outlined,
-                                  size: 14,
-                                  color: Theme.of(context).hintColor),
+                                  size: 14, color: Theme.of(context).hintColor),
                               const SizedBox(width: 7),
                               Expanded(
                                 child: Text(
@@ -209,7 +208,7 @@ class TripCard extends StatelessWidget {
                                   '${'total'.tr} ${PriceConverter.convertPrice(context, paidFare)}',
                                   style: textBold.copyWith(
                                     color:
-                                    Theme.of(context).colorScheme.primary,
+                                        Theme.of(context).colorScheme.primary,
                                     fontSize: Dimensions.fontSizeDefault,
                                   ),
                                   maxLines: 1,

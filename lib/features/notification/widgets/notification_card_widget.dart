@@ -174,7 +174,20 @@ class NotificationCardWidget extends StatelessWidget {
     final RideController rideController = Get.find<RideController>();
 
     await rideController.getPendingRideRequestList(1);
-    await Get.to(() => const RideRequestScreen());
+
+    final requests = rideController.pendingRideRequestModel?.data ?? [];
+
+    if (requests.isEmpty) {
+      showCustomSnackBar(
+        'This ride request is no longer available.',
+        subMessage: 'The ride may have been accepted or cancelled.',
+        isError: false,
+        seconds: 4,
+      );
+      return;
+    }
+
+    Get.to(() => const RideRequestScreen());
   }
 
   bool _isRideRequestNotification(Notifications notification) {

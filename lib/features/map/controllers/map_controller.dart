@@ -3,7 +3,6 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'dart:collection';
 import 'package:custom_map_markers/custom_map_markers.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
@@ -143,10 +142,6 @@ class RiderMapController extends GetxController implements GetxService {
     if (Get.find<RideController>().polyline != '') {
       List<PointLatLng> result =
           polylinePoints.decodePolyline(Get.find<RideController>().polyline);
-      if (kDebugMode) {
-        print(
-            'here is latlng initial==> ${result.length},${result[0].latitude}-/${result[result.length - 1].latitude},/${result[result.length - 1].longitude}');
-      }
       if (result.isNotEmpty) {
         for (var point in result) {
           polylineCoordinates.add(LatLng(point.latitude, point.longitude));
@@ -174,10 +169,6 @@ class RiderMapController extends GetxController implements GetxService {
     List<LatLng> polylineCoordinates = [];
     if (lines != '') {
       List<PointLatLng> result = polylinePoints.decodePolyline(lines);
-      if (kDebugMode) {
-        print(
-            'here is latlng ==> ${result.length},${result[0].latitude}-/${result[result.length - 1].latitude},/${result[result.length - 1].longitude}');
-      }
       if (result.isNotEmpty) {
         for (var point in result) {
           polylineCoordinates.add(LatLng(point.latitude, point.longitude));
@@ -553,9 +544,7 @@ class RiderMapController extends GetxController implements GetxService {
         CameraUpdate.newLatLngBounds(bounds, 250),
       );
     } catch (e) {
-      if (kDebugMode) {
-        print("BOUND ERROR => $e");
-      }
+      // Ignore map bounds adjustment failure.
     }
   }
 
@@ -597,17 +586,7 @@ class RiderMapController extends GetxController implements GetxService {
       double lngCenter, double radius) {
     double distance = distanceBetween(lat, lng, latCenter, lngCenter);
 
-    print('======================');
-    print('Driver Lat : $lat');
-    print('Driver Lng : $lng');
-
-    print('Drop Lat   : $latCenter');
-    print('Drop Lng   : $lngCenter');
-    print('Distance   : $distance');
-    print('Radius     : $radius');
     _isInside = distance <= radius;
-    print('Inside Radius : $_isInside');
-    print('======================');
 
     update();
   }

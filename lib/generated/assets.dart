@@ -2,6 +2,9 @@
 // ignore_for_file: dangling_library_doc_comments, implementation_imports
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:lottie/lottie.dart';
+import 'package:lottie/src/lottie_builder.dart';
+import 'package:lottie/src/composition.dart';
 
 class Assets {
   Assets._();
@@ -264,8 +267,6 @@ class $AssetsImageGen {
       const AssetGenImage('assets/image/setting_icon.png');
   final AssetGenImage sevenTaxi =
       const AssetGenImage('assets/image/seven_taxi.png');
-  final AssetGenImage signUpLogo =
-      const AssetGenImage('assets/image/sign_up_logo.png');
   final AssetGenImage splashLogo =
       const AssetGenImage('assets/image/splash_logo.png');
   final AssetGenImage splashOne =
@@ -450,6 +451,9 @@ class SvgGenImage {
     bool excludeFromSemantics = false,
     SvgTheme? theme,
     Clip clipBehavior = Clip.hardEdge,
+    Color? color,
+    BlendMode colorBlendMode = BlendMode.srcIn,
+    bool cacheColorFilter = false,
   }) {
     return SvgPicture.asset(
       _assetName,
@@ -466,7 +470,10 @@ class SvgGenImage {
       semanticsLabel: semanticsLabel,
       excludeFromSemantics: excludeFromSemantics,
       theme: theme,
+      color: color,
+      colorBlendMode: colorBlendMode,
       clipBehavior: clipBehavior,
+      cacheColorFilter: cacheColorFilter,
     );
   }
 

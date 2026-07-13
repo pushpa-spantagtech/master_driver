@@ -159,43 +159,93 @@ class TripController extends GetxController implements GetxService {
     update();
   }
 
-  Future<Response> paymentSubmit(String tripId, String paymentMethod,
-      {fromSenderPayment = false}) async {
+  bool _isPaymentSubmitting = false;
+
+  Future<Response> paymentSubmit(
+    String tripId,
+    String paymentMethod, {
+    bool fromSenderPayment = false,
+  }) async {
+    if (_isPaymentSubmitting) {
+      return Response(
+        statusCode: 409,
+        statusText: 'Payment submission already in progress',
+      );
+    }
+
+    _isPaymentSubmitting = true;
     isLoading = true;
     update();
-    Response response =
-        await tripServiceInterface.paymentSubmit(tripId, paymentMethod);
-    if (response.statusCode == 200) {
-      showCustomSnackBar('payment_successful'.tr, isError: false);
-      if (Get.find<SplashController>().config!.reviewStatus! &&
-          !Get.find<RideController>().tripDetail!.isReviewed!) {
-        Get.offAll(() => ReviewThisCustomerScreen(tripId: tripId));
+
+    try {
+      final Response response =
+          await tripServiceInterface.paymentSubmit(tripId, paymentMethod);
+
+      if (response.statusCode == 200) {
+        final RideController rideController = Get.find<RideController>();
+
+        rideController.tripDetail?.paymentStatus = 'paid';
+        rideController.currentRideStatus = 'fresh';
+        rideController.stopLiveTracking();
+        rideController.update();
+
+        if (Get.isDialogOpen == true) {
+          Get.back();
+        }
+
+        showCustomSnackBar(
+          'payment_successful'.tr,
+          isError: false,
+        );
+
+        if (Get.find<SplashController>().config?.reviewStatus == true &&
+            !(rideController.tripDetail?.isReviewed ?? false)) {
+          Get.offAll(
+            () => ReviewThisCustomerScreen(tripId: tripId),
+          );
+        } else {
+          Get.offAll(
+            () => const DashboardScreen(),
+          );
+        }
       } else {
-        Get.offAll(() => const DashboardScreen());
+        ApiChecker.checkApi(response);
       }
 
+      return response;
+    } finally {
       isLoading = false;
-    } else {
-      isLoading = false;
-      ApiChecker.checkApi(response);
+      _isPaymentSubmitting = false;
+      update();
     }
-    update();
-    return response;
   }
 
   TripCancellationCauseList? tripCancellationCauseList;
 
   int tripCancellationCauseCurrentIndex = 0;
 
-  void getOngoingAndAcceptedCancellationCauseList() async {
-    Response response = await tripServiceInterface
-        .getTripOngoingAndAcceptedCancellationCauseList();
+  Future<void> getOngoingAndAcceptedCancellationCauseList() async {
+    try {
+      final Response response = await tripServiceInterface
+          .getTripOngoingAndAcceptedCancellationCauseList();
 
-    if (response.statusCode == 200) {
-      tripCancellationCauseList =
-          TripCancellationCauseList.fromJson(response.body);
-    } else {
-      ApiChecker.checkApi(response);
+      if (response.statusCode == 200 && response.body is Map) {
+        tripCancellationCauseList = TripCancellationCauseList.fromJson(
+          Map<String, dynamic>.from(response.body),
+        );
+      } else {
+        ApiChecker.checkApi(response);
+      }
+    } catch (error) {
+      tripCancellationCauseList = TripCancellationCauseList(
+        data: <Data>[
+          Data(
+            ongoingRide: <String>[],
+            acceptedRide: <String>[],
+          ),
+        ],
+        errors: <String>[],
+      );
     }
 
     update();

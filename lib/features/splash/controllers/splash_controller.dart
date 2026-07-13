@@ -16,7 +16,10 @@ class SplashController extends GetxController implements GetxService {
 
   bool loading = false;
 
-  Future<bool> getConfigData({bool reload = true}) async {
+  Future<bool> getConfigData({
+    bool reload = true,
+    bool showError = true,
+  }) async {
     loading = true;
 
     print('STEP 1 - Calling config API');
@@ -31,7 +34,9 @@ class SplashController extends GetxController implements GetxService {
       _config = ConfigModel.fromJson(response.body);
     } else {
       loading = false;
-      ApiChecker.checkApi(response);
+      if (showError) {
+        ApiChecker.checkApi(response);
+      }
     }
     if (reload) {
       update();

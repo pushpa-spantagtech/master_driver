@@ -56,7 +56,10 @@ class ReviewCardWidget extends StatelessWidget {
                       vertical: 7,
                     ),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(30),
                     ),
                     child: Text(
@@ -71,7 +74,8 @@ class ReviewCardWidget extends StatelessWidget {
                   ),
                   const Spacer(),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFFF7E6),
                       borderRadius: BorderRadius.circular(30),
@@ -100,9 +104,7 @@ class ReviewCardWidget extends StatelessWidget {
                   ),
                 ],
               ),
-
               const SizedBox(height: Dimensions.paddingSizeDefault),
-
               Row(
                 children: [
                   Container(
@@ -111,13 +113,14 @@ class ReviewCardWidget extends StatelessWidget {
                       color: const Color(0xFFF4F6FA),
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: Theme.of(context).hintColor.withValues(alpha: 0.12),
+                        color:
+                            Theme.of(context).hintColor.withValues(alpha: 0.12),
                       ),
                     ),
                     child: ClipOval(
                       child: ImageWidget(
                         image:
-                        '${Get.find<SplashController>().config!.imageBaseUrl!.profileImageCustomer!}/${review.givenUser!.profileImage ?? ''}',
+                            '${Get.find<SplashController>().config!.imageBaseUrl!.profileImageCustomer!}/${review.givenUser!.profileImage ?? ''}',
                         height: 42,
                         width: 42,
                       ),
@@ -151,7 +154,8 @@ class ReviewCardWidget extends StatelessWidget {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFFF7E6),
                       borderRadius: BorderRadius.circular(30),
@@ -177,7 +181,6 @@ class ReviewCardWidget extends StatelessWidget {
                   ),
                 ],
               ),
-
               if (review.feedback != null && review.feedback!.isNotEmpty) ...[
                 const SizedBox(height: Dimensions.paddingSizeSmall),
                 Container(
@@ -210,9 +213,7 @@ class ReviewCardWidget extends StatelessWidget {
                   ),
                 ),
               ],
-
               const SizedBox(height: Dimensions.paddingSizeSmall),
-
               Row(
                 children: [
                   Container(
@@ -234,33 +235,39 @@ class ReviewCardWidget extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: review.isSaved!
                             ? const Color(0xFFFFF3D8)
-                            : Theme.of(context).hintColor.withValues(alpha: 0.06),
+                            : Theme.of(context)
+                                .hintColor
+                                .withValues(alpha: 0.06),
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: review.isSaved!
                               ? const Color(0xFFFFD27A)
-                              : Theme.of(context).hintColor.withValues(alpha: 0.10),
+                              : Theme.of(context)
+                                  .hintColor
+                                  .withValues(alpha: 0.10),
                         ),
                       ),
                       child: review.isLoading!
                           ? Padding(
-                        padding: const EdgeInsets.all(9),
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Get.isDarkMode
-                              ? Theme.of(context).hintColor.withValues(alpha: .5)
-                              : const Color(0xFFFFA000),
-                        ),
-                      )
+                              padding: const EdgeInsets.all(9),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Get.isDarkMode
+                                    ? Theme.of(context)
+                                        .hintColor
+                                        .withValues(alpha: .5)
+                                    : const Color(0xFFFFA000),
+                              ),
+                            )
                           : Icon(
-                        review.isSaved!
-                            ? Icons.bookmark_rounded
-                            : Icons.bookmark_border_rounded,
-                        size: 21,
-                        color: review.isSaved!
-                            ? const Color(0xFFFFA000)
-                            : Theme.of(context).hintColor,
-                      ),
+                              review.isSaved!
+                                  ? Icons.bookmark_rounded
+                                  : Icons.bookmark_border_rounded,
+                              size: 21,
+                              color: review.isSaved!
+                                  ? const Color(0xFFFFA000)
+                                  : Theme.of(context).hintColor,
+                            ),
                     ),
                   ),
                 ],

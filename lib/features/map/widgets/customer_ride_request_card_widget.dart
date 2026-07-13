@@ -331,17 +331,27 @@ class CustomerRideRequestCardWidget extends StatelessWidget {
                                             .then((value) async {
                                           rideController
                                               .getFinalFare(rideRequest.id!)
-                                              .then((value) {
+                                              .then((value) async {
                                             if (value.statusCode == 200) {
-                                              if (Get.find<SplashController>()
-                                                  .config!
-                                                  .reviewStatus!) {
-                                                Get.offAll(() =>
-                                                    ReviewThisCustomerScreen(
-                                                      tripId: rideController
-                                                          .tripDetail!.id!,
-                                                    ));
-                                              } else {
+                                              final RideController
+                                                  rideController =
+                                                  Get.find<RideController>();
+
+                                              await rideController
+                                                  .getPendingRideRequestList(1);
+
+                                              final bool hasPendingRides =
+                                                  rideController
+                                                          .pendingRideRequestModel
+                                                          ?.data
+                                                          ?.isNotEmpty ??
+                                                      false;
+
+                                              Get.find<RiderMapController>()
+                                                  .setRideCurrentState(
+                                                      RideState.initial);
+
+                                              if (!hasPendingRides) {
                                                 Get.offAll(() =>
                                                     const DashboardScreen());
                                               }
@@ -431,16 +441,34 @@ class CustomerRideRequestCardWidget extends StatelessWidget {
                                                       rideRequest: rideRequest),
                                             );
                                           } else {
-                                            rideController
+                                            Get.find<RideController>()
                                                 .tripAcceptOrRejected(
-                                                    rideRequest.id!, 'rejected')
+                                              rideRequest.id!,
+                                              'rejected',
+                                              fromList: false,
+                                            )
                                                 .then((value) async {
                                               if (value.statusCode == 200) {
-                                                Get.offAll(() =>
-                                                    const DashboardScreen());
-                                                Get.find<RiderMapController>()
-                                                    .setRideCurrentState(
-                                                        RideState.initial);
+                                                await Get.find<RideController>()
+                                                    .getPendingRideRequestList(
+                                                        1);
+
+                                                final bool hasPendingRides = Get
+                                                            .find<
+                                                                RideController>()
+                                                        .pendingRideRequestModel
+                                                        ?.data
+                                                        ?.isNotEmpty ??
+                                                    false;
+
+                                                if (!hasPendingRides) {
+                                                  Get.find<RiderMapController>()
+                                                      .setRideCurrentState(
+                                                          RideState.initial);
+
+                                                  Get.offAll(() =>
+                                                      const DashboardScreen());
+                                                }
                                               }
                                             });
                                           }
@@ -490,7 +518,7 @@ class CustomerRideRequestCardWidget extends StatelessWidget {
             );
           })
         : Slidable(
-            key: const ValueKey(0),
+            key: ValueKey(rideRequest.id),
             endActionPane: ActionPane(
               motion: const ScrollMotion(),
               dragDismissible: false,
@@ -498,13 +526,27 @@ class CustomerRideRequestCardWidget extends StatelessWidget {
                 SlidableAction(
                   onPressed: (value) {
                     Get.find<RideController>()
-                        .tripAcceptOrRejected(rideRequest.id!, 'rejected')
-                        .then((value) {
+                        .tripAcceptOrRejected(
+                      rideRequest.id!,
+                      'rejected',
+                      index: index ?? 0,
+                    )
+                        .then((value) async {
                       if (value.statusCode == 200) {
-                        Get.find<RideController>().getPendingRideRequestList(1);
-                        if (fromList) {
-                          Get.find<RiderMapController>()
-                              .setRideCurrentState(RideState.initial);
+                        final RideController rideController =
+                            Get.find<RideController>();
+
+                        await rideController.getPendingRideRequestList(1);
+
+                        final bool hasPendingRides = rideController
+                                .pendingRideRequestModel?.data?.isNotEmpty ??
+                            false;
+
+                        Get.find<RiderMapController>()
+                            .setRideCurrentState(RideState.initial);
+
+                        if (!hasPendingRides) {
+                          Get.offAll(() => const DashboardScreen());
                         }
                       }
                     });
@@ -637,16 +679,32 @@ class CustomerRideRequestCardWidget extends StatelessWidget {
                                   } else {
                                     Get.find<RideController>()
                                         .tripAcceptOrRejected(
-                                            rideRequest.id!, 'rejected',
-                                            index: index ?? 0)
-                                        .then((value) {
+                                      rideRequest.id!,
+                                      'rejected',
+                                      index: index ?? 0,
+                                    )
+                                        .then((value) async {
                                       if (value.statusCode == 200) {
-                                        Get.find<RideController>()
+                                        final RideController rideController =
+                                            Get.find<RideController>();
+
+                                        await rideController
                                             .getPendingRideRequestList(1);
-                                        if (fromList) {
-                                          Get.find<RiderMapController>()
-                                              .setRideCurrentState(
-                                                  RideState.initial);
+
+                                        final bool hasPendingRides =
+                                            rideController
+                                                    .pendingRideRequestModel
+                                                    ?.data
+                                                    ?.isNotEmpty ??
+                                                false;
+
+                                        Get.find<RiderMapController>()
+                                            .setRideCurrentState(
+                                                RideState.initial);
+
+                                        if (!hasPendingRides) {
+                                          Get.offAll(
+                                              () => const DashboardScreen());
                                         }
                                       }
                                     });

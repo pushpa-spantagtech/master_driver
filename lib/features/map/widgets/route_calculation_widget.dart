@@ -25,19 +25,26 @@ class RouteCalculationWidget extends StatelessWidget {
         sec = duration % 60;
         distanceText = rideController.matchedMode?.distanceText ?? '--';
 
-        final estimatedDistance = rideController.tripDetail?.estimatedDistance ?? 0;
+        final estimatedDistance =
+            rideController.tripDetail?.estimatedDistance ?? 0;
         if (estimatedDistance > 0) {
-          remainingPercent = ((double.tryParse(rideController.matchedMode!.distance.toString()) ?? 0) / 1000) / estimatedDistance;
+          remainingPercent = ((double.tryParse(
+                          rideController.matchedMode!.distance.toString()) ??
+                      0) /
+                  1000) /
+              estimatedDistance;
         }
       }
 
       return Container(
-        margin: const EdgeInsets.fromLTRB(0, Dimensions.paddingSizeDefault, 0, Dimensions.paddingSizeSmall),
+        margin: const EdgeInsets.fromLTRB(
+            0, Dimensions.paddingSizeDefault, 0, Dimensions.paddingSizeSmall),
         padding: const EdgeInsets.all(Dimensions.paddingSizeDefault),
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: Theme.of(context).hintColor.withValues(alpha: 0.14)),
+          border: Border.all(
+              color: Theme.of(context).hintColor.withValues(alpha: 0.14)),
           boxShadow: [
             BoxShadow(
               color: Theme.of(context).shadowColor.withValues(alpha: 0.08),
@@ -52,7 +59,8 @@ class RouteCalculationWidget extends StatelessWidget {
               child: _InfoTile(
                 icon: Icons.timer_rounded,
                 title: 'Trip time',
-                value: '${hour.toString().padLeft(2, '0')}:${min.toString().padLeft(2, '0')}:${sec.toString().padLeft(2, '0')}',
+                value:
+                    '${hour.toString().padLeft(2, '0')}:${min.toString().padLeft(2, '0')}:${sec.toString().padLeft(2, '0')}',
               ),
             ),
             const SizedBox(width: Dimensions.paddingSizeSmall),
@@ -68,7 +76,8 @@ class RouteCalculationWidget extends StatelessWidget {
               radius: 34,
               lineWidth: 5,
               percent: remainingPercent.clamp(0, 1),
-              backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.10),
+              backgroundColor:
+                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.10),
               progressColor: Theme.of(context).colorScheme.primary,
               center: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -82,12 +91,16 @@ class RouteCalculationWidget extends StatelessWidget {
                       fontSize: Dimensions.fontSizeSmall,
                     ),
                   ),
-                  Text('km', style: textRegular.copyWith(fontSize: 10, color: Theme.of(context).colorScheme.secondary)),
+                  Text('km',
+                      style: textRegular.copyWith(
+                          fontSize: 10,
+                          color: Theme.of(context).colorScheme.secondary)),
                 ],
               ),
             ),
           ]),
-          if (rideController.tripDetail!.type == 'ride_request' && !fromEnd) ...[
+          if (rideController.tripDetail!.type == 'ride_request' &&
+              !fromEnd) ...[
             const SizedBox(height: Dimensions.paddingSizeDefault),
             ButtonWidget(
               buttonText: rideController.tripDetail!.isPaused!
@@ -106,12 +119,15 @@ class RouteCalculationWidget extends StatelessWidget {
               radius: 14,
               borderColor: Theme.of(context).hintColor.withValues(alpha: 0.20),
               onPressed: () {
-                rideController.waitingForCustomer(
+                rideController
+                    .waitingForCustomer(
                   rideController.tripDetail!.id!,
                   rideController.tripDetail!.isPaused! ? 'resume' : 'pause',
-                ).then((value) {
+                )
+                    .then((value) {
                   if (value.statusCode == 200) {
-                    rideController.getRideDetails(rideController.tripDetail!.id!);
+                    rideController
+                        .getRideDetails(rideController.tripDetail!.id!);
                   }
                 });
               },
@@ -128,7 +144,8 @@ class _InfoTile extends StatelessWidget {
   final String title;
   final String value;
 
-  const _InfoTile({required this.icon, required this.title, required this.value});
+  const _InfoTile(
+      {required this.icon, required this.title, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -143,17 +160,30 @@ class _InfoTile extends StatelessWidget {
           width: 32,
           height: 32,
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
+            color:
+                Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
             shape: BoxShape.circle,
           ),
-          child: Icon(icon, size: 17, color: Theme.of(context).colorScheme.primary),
+          child: Icon(icon,
+              size: 17, color: Theme.of(context).colorScheme.primary),
         ),
         const SizedBox(width: 8),
         Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: textRegular.copyWith(fontSize: 11, color: Theme.of(context).colorScheme.secondary)),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: textRegular.copyWith(
+                    fontSize: 11,
+                    color: Theme.of(context).colorScheme.secondary)),
             const SizedBox(height: 2),
-            Text(value, maxLines: 1, overflow: TextOverflow.ellipsis, style: textBold.copyWith(fontSize: 13, color: Theme.of(context).colorScheme.onPrimary)),
+            Text(value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: textBold.copyWith(
+                    fontSize: 13,
+                    color: Theme.of(context).colorScheme.onPrimary)),
           ]),
         ),
       ]),

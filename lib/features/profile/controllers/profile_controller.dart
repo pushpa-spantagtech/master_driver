@@ -503,7 +503,11 @@ class ProfileController extends GetxController implements GetxService {
   final Location _location = Location();
 
   void startLocationRecord() {
-    _location.enableBackgroundMode(enable: true);
+    try {
+      _location.enableBackgroundMode(enable: true);
+    } catch (e) {
+      // Cache file
+    }
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 10), (timer) {
       List<String> status = ['accepted', 'ongoing'];
@@ -519,7 +523,11 @@ class ProfileController extends GetxController implements GetxService {
   }
 
   void stopLocationRecord() {
-    _location.enableBackgroundMode(enable: false);
+    try {
+      _location.enableBackgroundMode(enable: false);
+    } catch (e) {
+      // Cache file
+    }
     _timer?.cancel();
   }
 

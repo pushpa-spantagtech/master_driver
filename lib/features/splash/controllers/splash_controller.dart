@@ -1,7 +1,6 @@
-import 'dart:async';
 import 'package:get/get.dart';
-import 'package:ride_sharing_user_app/features/splash/domain/models/config_model.dart';
 import 'package:ride_sharing_user_app/data/api_checker.dart';
+import 'package:ride_sharing_user_app/features/splash/domain/models/config_model.dart';
 import 'package:ride_sharing_user_app/features/splash/domain/services/splash_service_interface.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -11,37 +10,66 @@ class SplashController extends GetxController implements GetxService {
   SplashController({required this.splashServiceInterface});
 
   ConfigModel? _config;
-
   ConfigModel? get config => _config;
 
   bool loading = false;
 
+  // Keeps all callers on the same in-flight config request and prevents
+  // duplicate API calls from splash, main, notifications, and helpers.
+  Future<bool>? _configRequest;
+
   Future<bool> getConfigData({
     bool reload = true,
     bool showError = true,
+  }) {
+    final Future<bool>? activeRequest = _configRequest;
+    if (activeRequest != null) {
+      return activeRequest;
+    }
+
+    final Future<bool> request = _loadConfigData(
+      reload: reload,
+      showError: showError,
+    );
+
+    _configRequest = request;
+    return request;
+  }
+
+  Future<bool> _loadConfigData({
+    required bool reload,
+    required bool showError,
   }) async {
     loading = true;
 
-    print('STEP 1 - Calling config API');
-    Response response = await splashServiceInterface.getConfigData();
-
-    print('STEP 2 - Status: ${response.statusCode}');
-    print('STEP 3 - Body: ${response.body}');
-    bool isSuccess = false;
-    if (response.statusCode == 200) {
-      isSuccess = true;
-      loading = false;
-      _config = ConfigModel.fromJson(response.body);
-    } else {
-      loading = false;
-      if (showError) {
-        ApiChecker.checkApi(response);
-      }
-    }
     if (reload) {
       update();
     }
-    return isSuccess;
+
+    try {
+      final Response response =
+      await splashServiceInterface.getConfigData();
+
+      if (response.statusCode == 200) {
+        _config = ConfigModel.fromJson(response.body);
+        return true;
+      }
+
+      if (showError) {
+        ApiChecker.checkApi(response);
+      }
+
+      return false;
+    } catch (_) {
+      return false;
+    } finally {
+      loading = false;
+      _configRequest = null;
+
+      if (reload) {
+        update();
+      }
+    }
   }
 
   Future<bool> initSharedData() {
@@ -58,10 +86,18 @@ class SplashController extends GetxController implements GetxService {
     query: 'subject=support Feedback&body=',
   );
 
-  String capitalize(String s) => s[0].toUpperCase() + s.substring(1);
+  String capitalize(String s) {
+    if (s.isEmpty) {
+      return s;
+    }
+
+    return s[0].toUpperCase() + s.substring(1);
+  }
 
   Future<void> sendMailOrCall(String url, bool isMail) async {
-    if (!await launchUrl(Uri.parse(isMail ? params.toString() : url))) {
+    final Uri uri = Uri.parse(isMail ? params.toString() : url);
+
+    if (!await launchUrl(uri)) {
       throw 'Could not launch $url';
     }
   }
@@ -79,6 +115,6 @@ class SplashController extends GetxController implements GetxService {
   }
 
   void saveOngoingRides(bool value) {
-    return splashServiceInterface.saveOngoingRides(value);
+    splashServiceInterface.saveOngoingRides(value);
   }
 }

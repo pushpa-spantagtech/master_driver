@@ -221,26 +221,26 @@ class _MapScreenState extends State<MapScreen> {
       }
 
       // Start listening to location updates
-      _locationSubscription = Geolocator.getPositionStream(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-          distanceFilter: 5,
-          timeLimit: Duration(seconds: 5),
-        ),
-      ).listen(
-        (Position newLocalData) {
-          if (_mapController != null && mounted) {
-            try {
-              updateMarkerAndCircle(newLocalData, imageData);
-            } catch (e) {
-              debugPrint("Error updating camera: $e");
-            }
-          }
-        },
-        onError: (error) {
-          debugPrint("Location stream error: $error");
-        },
-      );
+      // _locationSubscription = Geolocator.getPositionStream(
+      //   locationSettings: const LocationSettings(
+      //     accuracy: LocationAccuracy.high,
+      //     distanceFilter: 5,
+      //     timeLimit: Duration(seconds: 5),
+      //   ),
+      // ).listen(
+      //   (Position newLocalData) {
+      //     if (_mapController != null && mounted) {
+      //       try {
+      //         updateMarkerAndCircle(newLocalData, imageData);
+      //       } catch (e) {
+      //         debugPrint("Error updating camera: $e");
+      //       }
+      //     }
+      //   },
+      //   onError: (error) {
+      //     debugPrint("Location stream error: $error");
+      //   },
+      // );
     } on PlatformException catch (e) {
       if (e.code == 'PERMISSION_DENIED') {
         debugPrint("Permission Denied: ${e.message}");

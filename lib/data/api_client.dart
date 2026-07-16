@@ -12,7 +12,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 
 class ApiClient extends GetxService {
@@ -64,8 +64,22 @@ class ApiClient extends GetxService {
           )
           .timeout(Duration(seconds: timeoutInSeconds));
       return handleResponse(response, uri);
-    } catch (e) {
-      return Response(statusCode: 1, statusText: noInternetMessage);
+    } catch (e, stackTrace) {
+      debugPrint('GET API ERROR');
+      debugPrint('URI: $uri');
+      debugPrint('FULL URL: $appBaseUrl$uri');
+      debugPrint('ERROR TYPE: ${e.runtimeType}');
+      debugPrint('ERROR: $e');
+      debugPrintStack(stackTrace: stackTrace);
+
+      return Response(
+        statusCode: 1,
+        statusText: e.toString(),
+        body: {
+          'message': e.toString(),
+          'uri': uri,
+        },
+      );
     }
   }
 
@@ -84,8 +98,16 @@ class ApiClient extends GetxService {
           )
           .timeout(Duration(seconds: timeoutInSeconds));
       return handleResponse(response, uri);
-    } catch (e) {
-      return Response(statusCode: 1, statusText: noInternetMessage);
+    } catch (e, stackTrace) {
+      print('=========== API EXCEPTION ===========');
+      print('Base URL : $appBaseUrl');
+      print('URI      : $uri');
+      print('Full URL : ${appBaseUrl + uri}');
+      print('Exception: $e');
+      print('StackTrace: $stackTrace');
+      print('====================================');
+
+      rethrow;
     }
   }
 

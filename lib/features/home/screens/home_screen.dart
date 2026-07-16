@@ -54,35 +54,57 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void initState() {
-    loadData();
     super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      loadData();
+    });
   }
 
   Future<void> loadData() async {
-    Get.find<ProfileController>().getCategoryList(1);
-    Get.find<ProfileController>().getDailyLog();
-    Get.find<RideController>().getOngoingParcelList();
-    Get.find<ProfileController>().getProfileLevelInfo();
-    await Get.find<RideController>().getLastTrip();
-    if (Get.find<RideController>().ongoingTripDetails != null) {
-      HomeScreenHelper().pendingLastRidePusherImplementation();
-    }
+    final profileController = Get.find<ProfileController>();
+    final rideController = Get.find<RideController>();
 
-    await Get.find<RideController>().getPendingRideRequestList(1, limit: 100);
-    if (Get.find<RideController>().getPendingRideRequestModel != null) {
-      HomeScreenHelper().pendingParcelListPusherImplementation();
-    }
-    if (Get.find<ProfileController>().profileInfo?.vehicle == null &&
-        Get.find<ProfileController>().profileInfo?.vehicleStatus == 0 &&
-        Get.find<ProfileController>().isFirstTimeShowBottomSheet) {
-      Get.find<ProfileController>().updateFirstTimeShowBottomSheet(false);
-      showModalBottomSheet(
-        backgroundColor: Colors.transparent,
-        isScrollControlled: true,
-        context: Get.context!,
-        isDismissible: false,
-        builder: (_) => const HomeBottomSheetWidget(),
-      );
+    // Start dashboard data calls without blocking first screen render.
+    profileController.getCategoryList(1);
+    profileController.getDailyLog();
+    rideController.getOngoingParcelList();
+    profileController.getProfileLevelInfo();
+
+    rideController.getLastTrip().then((_) {
+      if (rideController.ongoingTripDetails != null) {
+        HomeScreenHelper().pendingLastRidePusherImplementation();
+      }
+    }).catchError((error) {
+      debugPrint('getLastTrip error: $error');
+    });
+
+    rideController
+        .getPendingRideRequestList(1, limit: 100)
+        .then((_) {
+      if (rideController.getPendingRideRequestModel != null) {
+        HomeScreenHelper().pendingParcelListPusherImplementation();
+      }
+    }).catchError((error) {
+      debugPrint('getPendingRideRequestList error: $error');
+    });
+
+    if (profileController.profileInfo?.vehicle == null &&
+        profileController.profileInfo?.vehicleStatus == 0 &&
+        profileController.isFirstTimeShowBottomSheet) {
+      profileController.updateFirstTimeShowBottomSheet(false);
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+
+        showModalBottomSheet(
+          backgroundColor: Colors.transparent,
+          isScrollControlled: true,
+          context: context,
+          isDismissible: false,
+          builder: (_) => const HomeBottomSheetWidget(),
+        );
+      });
     }
 
     HomeScreenHelper().checkMaintanenceMode();

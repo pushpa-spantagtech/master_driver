@@ -57,29 +57,34 @@ Future<void> main() async {
   Map<String, Map<String, String>> languages = await di.init();
 
   FirebaseMessaging.onBackgroundMessage(myBackgroundMessageHandler);
-  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
+  // Register local/FCM notification callbacks before the first frame.
+  await NotificationHelper.initialize(flutterLocalNotificationsPlugin);
+
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   runApp(MyApp(languages: languages));
 
-  // Notification setup must never block the first Flutter frame.
-  unawaited(_initializeNotificationsSafely());
+  // Process a notification that launched the terminated driver app only
+  // after GetMaterialApp and dependency bindings are ready.
+  unawaited(
+    NotificationHelper.handleInitialNotification(
+      flutterLocalNotificationsPlugin,
+    ),
+  );
+
+  // Permission and topic subscriptions must not delay opening the app.
+  unawaited(_configureFirebaseMessaging());
 }
 
-Future<void> _initializeNotificationsSafely() async {
+Future<void> _configureFirebaseMessaging() async {
   try {
-    await NotificationHelper.initialize(flutterLocalNotificationsPlugin)
-        .timeout(const Duration(seconds: 10));
+    await FirebaseMessaging.instance.requestPermission();
     await FirebaseMessaging.instance
-        .requestPermission()
-        .timeout(const Duration(seconds: 10));
+        .subscribeToTopic('driver_maintenance_mode_on');
     await FirebaseMessaging.instance
-        .subscribeToTopic('driver_maintenance_mode_on')
-        .timeout(const Duration(seconds: 10));
-    await FirebaseMessaging.instance
-        .subscribeToTopic('driver_maintenance_mode_off')
-        .timeout(const Duration(seconds: 10));
+        .subscribeToTopic('driver_maintenance_mode_off');
   } catch (e) {
-    debugPrint('Notification initialization skipped: $e');
+    debugPrint('FCM setup failed: $e');
   }
 }
 

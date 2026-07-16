@@ -61,9 +61,8 @@ class LocationController extends GetxController implements GetxService {
         Get.find<RiderMapController>().updateMarkerAndCircle(
             LatLng(location.latitude, location.longitude));
 
-        if (_locationSubscription != null) {
-          _locationSubscription!.cancel();
-        }
+        await _locationSubscription?.cancel();
+        _locationSubscription = null;
         Position newLocalData = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high,
           timeLimit: const Duration(seconds: 5),

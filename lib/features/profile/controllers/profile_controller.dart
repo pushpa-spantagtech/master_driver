@@ -502,33 +502,73 @@ class ProfileController extends GetxController implements GetxService {
   Timer? _timer;
   final Location _location = Location();
 
-  void startLocationRecord() {
+  Future<void> startLocationRecord() async {
     try {
-      _location.enableBackgroundMode(enable: true);
-    } catch (e) {
-      // Cache file
-    }
-    _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 10), (timer) {
-      List<String> status = ['accepted', 'ongoing'];
-      if (Get.find<RideController>().tripDetail != null &&
-          status
-              .contains(Get.find<RiderMapController>().currentRideState.name) &&
-          Get.find<AuthController>().getUserToken() != '') {
-        Get.find<RideController>()
-            .remainingDistance(Get.find<RideController>().tripDetail!.id!);
+      final backgroundPermission = await Permission.locationAlways.status;
+
+      if (backgroundPermission.isGranted) {
+        try {
+          await _location.enableBackgroundMode(enable: true);
+        } catch (e) {
+          debugPrint('Unable to enable background location: $e');
+        }
+      } else {
+        debugPrint(
+          'Background location permission is not granted. '
+          'Continuing with foreground location updates.',
+        );
       }
-      Get.find<LocationController>().getCurrentLocation(callZone: false);
-    });
+    } catch (e) {
+      debugPrint('Background location permission check failed: $e');
+    }
+
+    _timer?.cancel();
+
+    _timer = Timer.periodic(
+      const Duration(seconds: 10),
+      (timer) {
+        try {
+          final RideController rideController = Get.find<RideController>();
+          final RiderMapController mapController =
+              Get.find<RiderMapController>();
+
+          const List<String> activeStatuses = <String>[
+            'accepted',
+            'ongoing',
+          ];
+
+          final String? tripId = rideController.tripDetail?.id;
+
+          final bool hasActiveTrip = tripId != null &&
+              tripId.isNotEmpty &&
+              activeStatuses.contains(
+                mapController.currentRideState.name,
+              );
+
+          if (hasActiveTrip &&
+              Get.find<AuthController>().getUserToken().isNotEmpty) {
+            rideController.remainingDistance(tripId);
+          }
+
+          Get.find<LocationController>().getCurrentLocation(
+            callZone: false,
+          );
+        } catch (e) {
+          debugPrint('Location timer update failed: $e');
+        }
+      },
+    );
   }
 
-  void stopLocationRecord() {
-    try {
-      _location.enableBackgroundMode(enable: false);
-    } catch (e) {
-      // Cache file
-    }
+  Future<void> stopLocationRecord() async {
     _timer?.cancel();
+    _timer = null;
+
+    try {
+      await _location.enableBackgroundMode(enable: false);
+    } catch (e) {
+      debugPrint('Unable to disable background location: $e');
+    }
   }
 
   void _checkPermission(Function callback) async {

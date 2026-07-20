@@ -481,6 +481,14 @@ class CustomerRideRequestCardWidget extends StatelessWidget {
                                         text: 'accept'.tr,
                                         isPrimary: true,
                                         onPressed: () async {
+                                          rideController.tripDetail =
+                                              rideRequest;
+                                          rideController.currentRideStatus =
+                                              'accepted';
+                                          rideRequest.currentStatus =
+                                              'accepted';
+                                          rideController.update();
+
                                           rideController
                                               .tripAcceptOrRejected(
                                             rideRequest.id!,
@@ -494,14 +502,13 @@ class CustomerRideRequestCardWidget extends StatelessWidget {
                                               Get.find<RiderMapController>()
                                                   .setRideCurrentState(
                                                       RideState.accepted);
-                                              Get.find<RideController>()
-                                                  .updateRoute(false,
-                                                      notify: true);
-                                              Get.find<RideController>()
-                                                  .remainingDistance(
-                                                      rideRequest.id!,
-                                                      mapBound: true);
-                                              Get.to(() => const MapScreen());
+                                              rideController.updateRoute(
+                                                false,
+                                                notify: true,
+                                              );
+                                              Get.off(
+                                                () => const MapScreen(),
+                                              );
                                               PusherHelper()
                                                   .customerCouponAppliedOrRemoved(
                                                       rideRequest.id!);
@@ -718,42 +725,42 @@ class CustomerRideRequestCardWidget extends StatelessWidget {
                                 buttonText: 'accept'.tr,
                                 radius: Dimensions.paddingSizeSmall,
                                 onPressed: () async {
-                                  Get.find<RideController>()
-                                      .tripAcceptOrRejected(
-                                          rideRequest.id!, 'accepted',
-                                          index: index ?? 0)
-                                      .then((value) async {
-                                    if (value.statusCode == 200) {
-                                      Get.find<AuthController>()
-                                          .saveRideCreatedTime();
-                                      if (fromList) {
-                                        Get.find<RideController>()
-                                            .getRideDetails(rideRequest.id!)
-                                            .then((value) async {
-                                          if (value.statusCode == 200) {
-                                            Get.find<RiderMapController>()
-                                                .setRideCurrentState(
-                                                    RideState.accepted);
-                                            Get.find<RideController>()
-                                                .updateRoute(false,
-                                                    notify: true);
-                                            Get.to(() => const MapScreen());
-                                          }
-                                        });
-                                      } else {
-                                        Get.dialog(
-                                            const BidAcceptingDialogueWidget(),
-                                            barrierDismissible: false);
-                                        await Future.delayed(
-                                            const Duration(seconds: 5));
-                                        Get.back();
-                                        Get.find<RiderMapController>()
-                                            .setRideCurrentState(
-                                                RideState.accepted);
-                                        Get.to(() => const MapScreen());
-                                      }
-                                    }
-                                  });
+                                  final RideController rideController =
+                                      Get.find<RideController>();
+
+                                  // Keep the selected request available so the
+                                  // accepted map can render immediately.
+                                  rideController.tripDetail = rideRequest;
+                                  rideController.currentRideStatus = 'accepted';
+                                  rideRequest.currentStatus = 'accepted';
+                                  rideController.update();
+
+                                  final value =
+                                      await rideController.tripAcceptOrRejected(
+                                    rideRequest.id!,
+                                    'accepted',
+                                    index: index ?? 0,
+                                  );
+
+                                  if (value.statusCode == 200) {
+                                    Get.find<AuthController>()
+                                        .saveRideCreatedTime();
+
+                                    Get.find<RiderMapController>()
+                                        .setRideCurrentState(
+                                      RideState.accepted,
+                                    );
+
+                                    rideController.updateRoute(
+                                      false,
+                                      notify: true,
+                                    );
+
+                                    // Open the accepted ride screen immediately.
+                                    Get.off(
+                                      () => const MapScreen(),
+                                    );
+                                  }
                                 },
                               )),
                             ]),

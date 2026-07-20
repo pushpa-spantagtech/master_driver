@@ -147,14 +147,32 @@ class _DashboardScreenState extends State<DashboardScreen>
                         'ongoing',
                       };
 
+                      const closedStatuses = <String>{
+                        'cancelled',
+                        'canceled',
+                        'completed',
+                        'rejected',
+                        'failed',
+                      };
+
+                      // The API/controller status is treated as the latest
+                      // status. This prevents a stale accepted tripDetail from
+                      // keeping the active-ride card visible after cancellation.
+                      final bool controllerRideClosed =
+                          closedStatuses.contains(controllerStatus);
+                      final bool tripRideClosed =
+                          closedStatuses.contains(tripStatus);
+
                       final String effectiveStatus =
-                          activeStatuses.contains(tripStatus)
-                              ? tripStatus
-                              : controllerStatus;
+                          activeStatuses.contains(controllerStatus)
+                              ? controllerStatus
+                              : tripStatus;
 
                       final bool hasActiveRide =
-                          activeStatuses.contains(effectiveStatus) &&
-                              rideController.tripDetail != null;
+                          rideController.tripDetail != null &&
+                              !controllerRideClosed &&
+                              !tripRideClosed &&
+                              activeStatuses.contains(effectiveStatus);
 
                       if (!hasActiveRide) {
                         return const SizedBox.shrink();

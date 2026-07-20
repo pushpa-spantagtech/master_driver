@@ -5,7 +5,6 @@ import 'package:just_the_tooltip/just_the_tooltip.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:ride_sharing_user_app/common_widgets/button_widget.dart';
 import 'package:ride_sharing_user_app/common_widgets/image_widget.dart';
-import 'package:ride_sharing_user_app/common_widgets/swipable_button/slider_buttion_widget.dar.dart';
 import 'package:ride_sharing_user_app/features/chat/controllers/chat_controller.dart';
 import 'package:ride_sharing_user_app/features/dashboard/screens/dashboard_screen.dart';
 import 'package:ride_sharing_user_app/features/map/controllers/map_controller.dart';
@@ -22,6 +21,7 @@ import 'package:ride_sharing_user_app/localization/localization_controller.dart'
 import 'package:ride_sharing_user_app/util/dimensions.dart';
 import 'package:ride_sharing_user_app/util/images.dart';
 import 'package:ride_sharing_user_app/util/styles.dart';
+import 'dart:math' as math;
 
 class RideAcceptedWidget extends StatefulWidget {
   final GlobalKey<ExpandableBottomSheetState> expandableKey;
@@ -90,6 +90,11 @@ class _RideAcceptedWidgetState extends State<RideAcceptedWidget>
             (riderController.currentRideState == RideState.accepted &&
                 riderController.isInside);
 
+        final double buttonHeight = math.min(
+          44,
+          math.max(38, MediaQuery.of(context).size.height * 0.048),
+        );
+
         return PopScope(
           canPop: !isOtpVerificationActive,
           onPopInvokedWithResult: (didPop, result) {
@@ -100,8 +105,12 @@ class _RideAcceptedWidgetState extends State<RideAcceptedWidget>
           child: currentState == 0
               ? rideController.tripDetail != null
                   ? Padding(
-                      padding: const EdgeInsets.only(
-                          top: Dimensions.paddingSizeDefault),
+                      padding: const EdgeInsets.fromLTRB(
+                        6,
+                        Dimensions.paddingSizeDefault,
+                        6,
+                        0,
+                      ),
                       child: Column(children: [
                         (riderController.currentRideState ==
                                     RideState.accepted &&
@@ -154,9 +163,7 @@ class _RideAcceptedWidgetState extends State<RideAcceptedWidget>
                         Container(
                           width: Get.width,
                           margin: const EdgeInsets.only(
-                            left: Dimensions.paddingSizeLarge,
-                            right: Dimensions.paddingSizeLarge,
-                            bottom: Dimensions.paddingSizeLarge,
+                            bottom: 10,
                           ),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(
@@ -307,18 +314,13 @@ class _RideAcceptedWidgetState extends State<RideAcceptedWidget>
                                 ]),
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: Dimensions.paddingSizeDefault),
-                          child: RouteWidget(
-                            pickupAddress:
-                                rideController.tripDetail?.pickupAddress ?? '',
-                            destinationAddress:
-                                rideController.tripDetail?.destinationAddress ??
-                                    '',
-                          ),
+                        RouteWidget(
+                          pickupAddress:
+                              rideController.tripDetail?.pickupAddress ?? '',
+                          destinationAddress:
+                              rideController.tripDetail?.destinationAddress ??
+                                  '',
                         ),
-                        const SizedBox(height: Dimensions.paddingSizeDefault),
                         const SizedBox(height: Dimensions.paddingSizeDefault),
                         _buildTripInfoCard(
                           context: context,
@@ -327,73 +329,39 @@ class _RideAcceptedWidgetState extends State<RideAcceptedWidget>
                         ),
                         const SizedBox(height: Dimensions.paddingSizeDefault),
                         (rideController.tripDetail!.type == "ride_request")
-                            ? Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: Dimensions.paddingSizeDefault),
-                                child: SliderButton(
-                                  action: () {
-                                    // await Get.find<TripController>()
-                                    //     .getOngoingAndAcceptedCancellationCauseList();
-
-                                    currentState = 1;
-                                    widget.expandableKey.currentState?.expand();
-                                    setState(() {});
-                                  },
-                                  label: Text(
-                                    'cancel_ride'.tr,
-                                    style: textSemiBold.copyWith(
-                                      fontSize: 14,
-                                      color: const Color(0xFFFFA000),
+                            ? SafeArea(
+                                top: false,
+                                child: SizedBox(
+                                  width: double.infinity,
+                                  height: buttonHeight,
+                                  child: FilledButton(
+                                    onPressed: () {
+                                      currentState = 1;
+                                      widget.expandableKey.currentState
+                                          ?.expand();
+                                      setState(() {});
+                                    },
+                                    style: FilledButton.styleFrom(
+                                      backgroundColor: const Color(0xFFE71921),
+                                      foregroundColor: Colors.white,
+                                      elevation: 0,
+                                      padding: EdgeInsets.zero,
+                                      minimumSize: Size.zero,
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      'cancel_ride'.tr,
+                                      style: textSemiBold.copyWith(
+                                        color: Colors.white,
+                                        fontSize: 13.5,
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
                                   ),
-                                  dismissThresholds: 0.5,
-                                  dismissible: false,
-                                  shimmer: false,
-                                  width: Get.width -
-                                      (Dimensions.paddingSizeDefault * 2),
-                                  height: 54,
-                                  buttonSize: 48,
-                                  radius: 28,
-                                  icon: Center(
-                                      child: Container(
-                                    width: 42,
-                                    height: 42,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Theme.of(context).cardColor,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black
-                                              .withValues(alpha: 0.08),
-                                          blurRadius: 10,
-                                          offset: const Offset(0, 4),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Center(
-                                        child: Icon(
-                                      Get.find<LocalizationController>().isLtr
-                                          ? Icons.arrow_forward_ios_rounded
-                                          : Icons.keyboard_arrow_left,
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
-                                      size: Dimensions.paddingSizeSixteen,
-                                    )),
-                                  )),
-                                  isLtr:
-                                      Get.find<LocalizationController>().isLtr,
-                                  boxShadow: BoxShadow(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .primary
-                                        .withValues(alpha: 0.10),
-                                    blurRadius: 14,
-                                    offset: const Offset(0, 6),
-                                  ),
-                                  buttonColor: Colors.transparent,
-                                  backgroundColor: const Color(0xFFFFF3D6),
-                                  baseColor:
-                                      Theme.of(context).colorScheme.primary,
                                 ),
                               )
                             : const SizedBox(),
@@ -401,8 +369,7 @@ class _RideAcceptedWidgetState extends State<RideAcceptedWidget>
                     )
                   : const SizedBox()
               : Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: Dimensions.paddingSizeDefault),
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -518,15 +485,13 @@ class _RideAcceptedWidgetState extends State<RideAcceptedWidget>
         : '${double.parse(rideController.tripDetail!.estimatedDistance.toString()).toStringAsFixed(2)} km';
 
     return Container(
-      margin:
-          const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeDefault),
       padding: const EdgeInsets.symmetric(
-        horizontal: Dimensions.paddingSizeDefault,
-        vertical: Dimensions.paddingSizeSmall,
+        horizontal: 12,
+        vertical: 10,
       ),
       decoration: BoxDecoration(
         color: cardColor,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: Theme.of(context).hintColor.withValues(alpha: 0.14),
           width: 1,

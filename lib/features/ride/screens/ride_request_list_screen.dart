@@ -17,8 +17,17 @@ class RideRequestScreen extends StatefulWidget {
 class _RideRequestScreenState extends State<RideRequestScreen> {
   @override
   void initState() {
-    Get.find<RideController>().getPendingRideRequestList(1);
     super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final RideController rideController = Get.find<RideController>();
+
+      // Fetch only once after the screen is mounted. Notification navigation
+      // no longer waits for this API before opening the screen.
+      if (!rideController.isLoading) {
+        rideController.getPendingRideRequestList(1);
+      }
+    });
   }
 
   final ScrollController scrollController = ScrollController();
@@ -32,56 +41,58 @@ class _RideRequestScreenState extends State<RideRequestScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          Get.find<RideController>().getPendingRideRequestList(1);
+          await Get.find<RideController>().getPendingRideRequestList(1);
         },
-        child: GetBuilder<RideController>(builder: (rideController) {
-          return !rideController.isLoading
-              ? (rideController.pendingRideRequestModel != null &&
-                      rideController.pendingRideRequestModel!.data != null &&
-                      rideController.pendingRideRequestModel!.data!.isNotEmpty)
-                  ? SingleChildScrollView(
-                      controller: scrollController,
-                      child: PaginatedListViewWidget(
-                        scrollController: scrollController,
-                        totalSize:
-                            rideController.pendingRideRequestModel!.totalSize,
-                        offset:
-                            rideController.pendingRideRequestModel != null &&
-                                    rideController
-                                            .pendingRideRequestModel!.offset !=
-                                        null
-                                ? int.parse(rideController
-                                    .pendingRideRequestModel!.offset
-                                    .toString())
-                                : 1,
-                        onPaginate: (int? offset) async {
-                          await rideController
-                              .getPendingRideRequestList(offset!);
-                        },
-                        itemView: ListView.builder(
-                          itemCount: rideController
-                              .pendingRideRequestModel!.data!.length,
-                          padding: const EdgeInsets.all(0),
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemBuilder: (BuildContext context, int index) {
-                            return CustomerRideRequestCardWidget(
-                              rideRequest: rideController
-                                  .pendingRideRequestModel!.data![index],
-                              fromList: true,
-                              index: index,
-                            );
-                          },
-                        ),
-                      ),
-                    )
-                  : const NoDataWidget()
-              : Center(
-                  child: SpinKitCircle(
+        child: GetBuilder<RideController>(
+          builder: (rideController) {
+            final requests = rideController.pendingRideRequestModel?.data ?? [];
+
+            // Keep already-loaded cards visible while refreshing. Show the
+            // full-screen loader only when there is no cached request data.
+            if (requests.isNotEmpty) {
+              return SingleChildScrollView(
+                controller: scrollController,
+                child: PaginatedListViewWidget(
+                  scrollController: scrollController,
+                  totalSize: rideController.pendingRideRequestModel?.totalSize,
+                  offset: rideController.pendingRideRequestModel?.offset != null
+                      ? int.parse(
+                          rideController.pendingRideRequestModel!.offset
+                              .toString(),
+                        )
+                      : 1,
+                  onPaginate: (int? offset) async {
+                    await rideController.getPendingRideRequestList(offset!);
+                  },
+                  itemView: ListView.builder(
+                    itemCount: requests.length,
+                    padding: EdgeInsets.zero,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemBuilder: (BuildContext context, int index) {
+                      return CustomerRideRequestCardWidget(
+                        rideRequest: requests[index],
+                        fromList: true,
+                        index: index,
+                      );
+                    },
+                  ),
+                ),
+              );
+            }
+
+            if (rideController.isLoading) {
+              return Center(
+                child: SpinKitCircle(
                   color: Theme.of(context).colorScheme.primary,
-                  size: 40.0,
-                ));
-        }),
+                  size: 40,
+                ),
+              );
+            }
+
+            return const NoDataWidget();
+          },
+        ),
       ),
     );
   }

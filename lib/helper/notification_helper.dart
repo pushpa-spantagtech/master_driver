@@ -111,19 +111,17 @@ class NotificationHelper {
           if (message.data['action'] == "new_ride_request_notification") {
             final RideController rideController = Get.find<RideController>();
 
-            // Refresh the complete pending ride list. Do not select the latest
-            // ride here, otherwise a newer request replaces the previous one.
-            await rideController.getPendingRideRequestList(1);
-
             final AudioPlayer audio = AudioPlayer();
             await audio.play(AssetSource('notification.wav'));
 
-            // Open the request list only once. Further requests refresh the
-            // same screen and appear as additional cards.
             final bool isOnRideRequestScreen =
             Get.currentRoute.contains('RideRequestScreen');
 
-            if (!isOnRideRequestScreen) {
+            if (isOnRideRequestScreen) {
+              // The screen is already visible, so refresh it in place.
+              await rideController.getPendingRideRequestList(1);
+            } else {
+              // Open immediately. RideRequestScreen performs the single fetch.
               Get.to(() => const RideRequestScreen());
             }
           } else if (message.data['action'] == "new_message_arrived") {
@@ -305,13 +303,13 @@ class NotificationHelper {
 
 
   static Future<void> handleInitialNotification(
-    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin,
-  ) async {
+      FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin,
+      ) async {
     // Wait until GetMaterialApp, bindings, and the splash route are mounted.
     await Future.delayed(const Duration(milliseconds: 1400));
 
     final RemoteMessage? initialMessage =
-        await FirebaseMessaging.instance.getInitialMessage();
+    await FirebaseMessaging.instance.getInitialMessage();
 
     if (initialMessage != null) {
       customPrint('initialNotification: ${initialMessage.data}');
@@ -320,8 +318,8 @@ class NotificationHelper {
     }
 
     final NotificationAppLaunchDetails? launchDetails =
-        await flutterLocalNotificationsPlugin
-            .getNotificationAppLaunchDetails();
+    await flutterLocalNotificationsPlugin
+        .getNotificationAppLaunchDetails();
 
     if (launchDetails?.didNotificationLaunchApp == true) {
       await _handleLocalNotificationPayload(
@@ -331,8 +329,8 @@ class NotificationHelper {
   }
 
   static Future<void> _handleLocalNotificationPayload(
-    String? payload,
-  ) async {
+      String? payload,
+      ) async {
     if (payload == null || payload.trim().isEmpty) {
       return;
     }
@@ -357,8 +355,8 @@ class NotificationHelper {
   }
 
   static Future<void> _openRideRequestFromData(
-    Map<String, dynamic> data,
-  ) async {
+      Map<String, dynamic> data,
+      ) async {
     if (data['action']?.toString() !=
         'new_ride_request_notification') {
       return;
@@ -378,9 +376,14 @@ class NotificationHelper {
     }
 
     final RideController rideController = Get.find<RideController>();
-    await rideController.getPendingRideRequestList(1);
+    final bool isOnRideRequestScreen =
+    Get.currentRoute.contains('RideRequestScreen');
 
-    if (!Get.currentRoute.contains('RideRequestScreen')) {
+    if (isOnRideRequestScreen) {
+      await rideController.getPendingRideRequestList(1);
+    } else {
+      // Navigate first instead of waiting on the network. The screen fetches
+      // the pending list once from initState.
       Get.to(() => const RideRequestScreen());
     }
   }
@@ -411,11 +414,11 @@ class NotificationHelper {
 
     final String body = isRideRequest
         ? (pickupAddress.isNotEmpty
-            ? 'Pickup: $pickupAddress'
-            : 'Pickup location available')
+        ? 'Pickup: $pickupAddress'
+        : 'Pickup location available')
         : message.data['body']?.toString() ??
-            message.data['description']?.toString() ??
-            '';
+        message.data['description']?.toString() ??
+        '';
     String? orderID = message.data['ride_request_id'] ?? message.data['order_id'];
     String? image = (message.data['image'] != null &&
         message.data['image'].isNotEmpty)
@@ -608,14 +611,13 @@ Future<void> notificationToRoute(RemoteMessage message) async {
   } else if (message.data['action'] == "new_ride_request_notification") {
     final RideController rideController = Get.find<RideController>();
 
-    // A notification tap opens the full pending-request list rather than
-    // selecting one request and replacing the currently displayed request.
-    await rideController.getPendingRideRequestList(1);
-
     final bool isOnRideRequestScreen =
     Get.currentRoute.contains('RideRequestScreen');
 
-    if (!isOnRideRequestScreen) {
+    if (isOnRideRequestScreen) {
+      await rideController.getPendingRideRequestList(1);
+    } else {
+      // Open the page immediately. It will make one API call after mounting.
       Get.to(() => const RideRequestScreen());
     }
   } else if (message.data['action'] == "ride_accepted") {

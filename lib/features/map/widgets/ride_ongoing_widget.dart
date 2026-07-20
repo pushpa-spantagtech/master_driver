@@ -64,7 +64,7 @@ class _RideOngoingWidgetState extends State<RideOngoingWidget> {
               ? GetBuilder<RiderMapController>(builder: (riderMapController) {
                   return Padding(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: Dimensions.paddingSizeDefault),
+                        horizontal: Dimensions.paddingSizeSix),
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [

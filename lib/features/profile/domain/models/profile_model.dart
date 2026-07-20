@@ -46,31 +46,31 @@ class ProfileInfo {
 
   ProfileInfo(
       {this.id,
-      this.firstName,
-      this.lastName,
-      this.level,
-      this.vehicle,
-      this.email,
-      this.phone,
-      this.identificationNumber,
-      this.identificationType,
-      this.profileImage,
-      this.phoneVerifiedAt,
-      this.userType,
-      this.details,
-      this.vehicleStatus,
-      this.wallet,
-      this.loyaltyPoint,
-      this.timeTrack,
-      this.avgRatting,
-      this.identificationImage,
-      this.isOldIdentificationImage,
-      this.tripIncome,
-      this.totalTips,
-      this.totalEarning,
-      this.totalCommission,
-      this.paidAmount,
-      this.levelUpRewardAmount});
+        this.firstName,
+        this.lastName,
+        this.level,
+        this.vehicle,
+        this.email,
+        this.phone,
+        this.identificationNumber,
+        this.identificationType,
+        this.profileImage,
+        this.phoneVerifiedAt,
+        this.userType,
+        this.details,
+        this.vehicleStatus,
+        this.wallet,
+        this.loyaltyPoint,
+        this.timeTrack,
+        this.avgRatting,
+        this.identificationImage,
+        this.isOldIdentificationImage,
+        this.tripIncome,
+        this.totalTips,
+        this.totalEarning,
+        this.totalCommission,
+        this.paidAmount,
+        this.levelUpRewardAmount});
 
   ProfileInfo.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -78,7 +78,7 @@ class ProfileInfo {
     lastName = json['last_name'];
     level = json['level'] != null ? Level.fromJson(json['level']) : null;
     vehicle =
-        json['vehicle'] != null ? Vehicle.fromJson(json['vehicle']) : null;
+    json['vehicle'] != null ? Vehicle.fromJson(json['vehicle']) : null;
     email = json['email'];
     phone = json['phone'];
     identificationNumber = json['identification_number'];
@@ -87,7 +87,7 @@ class ProfileInfo {
     phoneVerifiedAt = json['phone_verified_at'];
     userType = json['user_type'];
     details =
-        json['details'] != null ? Details.fromJson(json['details']) : null;
+    json['details'] != null ? Details.fromJson(json['details']) : null;
     vehicleStatus = json['vehicle_status'];
     wallet = json['wallet'] != null ? Wallet.fromJson(json['wallet']) : null;
     loyaltyPoint = json['loyalty_points'];
@@ -134,21 +134,21 @@ class Level {
 
   Level(
       {this.id,
-      this.sequence,
-      this.name,
-      this.rewardType,
-      this.rewardAmount,
-      this.image,
-      this.minRide,
-      this.minRidePoint,
-      this.minEarn,
-      this.minEarnPoint,
-      this.maxCancel,
-      this.maxCancelPoint,
-      this.reviewReceived,
-      this.reviewReceivedPoint,
-      this.userType,
-      this.isActive});
+        this.sequence,
+        this.name,
+        this.rewardType,
+        this.rewardAmount,
+        this.image,
+        this.minRide,
+        this.minRidePoint,
+        this.minEarn,
+        this.minEarnPoint,
+        this.maxCancel,
+        this.maxCancelPoint,
+        this.reviewReceived,
+        this.reviewReceivedPoint,
+        this.userType,
+        this.isActive});
 
   Level.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -209,26 +209,26 @@ class Vehicle {
 
   Vehicle(
       {this.id,
-      this.brand,
-      this.model,
-      this.category,
-      this.licencePlateNumber,
-      this.licenceExpireDate,
-      this.vinNumber,
-      this.transmission,
-      this.fuelType,
-      this.ownership,
-      this.documents,
-      this.isActive,
-      this.createdAt,
-      this.parcelWeightCapacity});
+        this.brand,
+        this.model,
+        this.category,
+        this.licencePlateNumber,
+        this.licenceExpireDate,
+        this.vinNumber,
+        this.transmission,
+        this.fuelType,
+        this.ownership,
+        this.documents,
+        this.isActive,
+        this.createdAt,
+        this.parcelWeightCapacity});
 
   Vehicle.fromJson(Map<String, dynamic> json) {
     brand = json['brand'] != null ? Brand.fromJson(json['brand']) : null;
     model =
-        json['model'] != null ? VehicleModels.fromJson(json['model']) : null;
+    json['model'] != null ? VehicleModels.fromJson(json['model']) : null;
     category =
-        json['category'] != null ? Category.fromJson(json['category']) : null;
+    json['category'] != null ? Category.fromJson(json['category']) : null;
     licencePlateNumber = json['licence_plate_number'];
     licenceExpireDate = json['licence_expire_date'];
     vinNumber = json['vin_number'];
@@ -281,16 +281,16 @@ class Details {
 
   Details(
       {this.id,
-      this.userId,
-      this.isOnline,
-      this.availabilityStatus,
-      this.updatedAt,
-      this.online,
-      this.offline,
-      this.onlineTime,
-      this.onDrivingTime,
-      this.idleTime,
-      this.services});
+        this.userId,
+        this.isOnline,
+        this.availabilityStatus,
+        this.updatedAt,
+        this.online,
+        this.offline,
+        this.onlineTime,
+        this.onDrivingTime,
+        this.idleTime,
+        this.services});
 
   Details.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -300,17 +300,41 @@ class Details {
     updatedAt = json['updated_at'];
     online = json['online'];
     offline = json['offline'];
-    onlineTime =
-        json['online_time'] != null ? json['online_time'].toDouble() : 0;
-    onDrivingTime = json['on_driving_time'] != null
-        ? json['on_driving_time'].toDouble()
+
+    onlineTime = json['online_time'] != null
+        ? double.tryParse(json['online_time'].toString()) ?? 0
         : 0;
-    idleTime = json['idle_time'] != null ? json['idle_time'].toDouble() : 0;
-    if (json['service'] != null) {
-      services = [];
-      for (String value in json['service']) {
-        services!.add(value);
-      }
+
+    onDrivingTime = json['on_driving_time'] != null
+        ? double.tryParse(json['on_driving_time'].toString()) ?? 0
+        : 0;
+
+    idleTime = json['idle_time'] != null
+        ? double.tryParse(json['idle_time'].toString()) ?? 0
+        : 0;
+
+    final dynamic serviceData = json['service'];
+    services = <String>[];
+
+    if (serviceData is List) {
+      services!.addAll(
+        serviceData
+            .where((item) => item != null)
+            .map((item) => item.toString()),
+      );
+    } else if (serviceData is Map) {
+      serviceData.forEach((dynamic key, dynamic value) {
+        final bool isEnabled = value == true ||
+            value == 1 ||
+            value?.toString().toLowerCase() == 'true' ||
+            value?.toString() == '1';
+
+        if (isEnabled) {
+          services!.add(key.toString());
+        }
+      });
+    } else if (serviceData is String && serviceData.trim().isNotEmpty) {
+      services!.add(serviceData);
     }
   }
 }
@@ -363,11 +387,11 @@ class TimeTrack {
 
   TimeTrack(
       {this.id,
-      this.date,
-      this.totalOnline,
-      this.totalOffline,
-      this.totalIdle,
-      this.totalDriving});
+        this.date,
+        this.totalOnline,
+        this.totalOffline,
+        this.totalIdle,
+        this.totalDriving});
 
   TimeTrack.fromJson(Map<String, dynamic> json) {
     id = json['id'];

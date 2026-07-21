@@ -64,25 +64,30 @@ class RideCompletationDialogWidget extends StatelessWidget {
                                   .hintColor
                                   .withValues(alpha: 0.45))),
                       padding:
-                          const EdgeInsets.all(Dimensions.paddingSizeSmall),
+                      const EdgeInsets.all(Dimensions.paddingSizeSmall),
                       width: Get.width * 0.3,
                       child: Center(
                           child: Text(
-                        'continue'.tr,
-                        style: textRegular.copyWith(
-                            color: Theme.of(context).colorScheme.secondary),
-                      )),
+                            'continue'.tr,
+                            style: textRegular.copyWith(
+                                color: Theme.of(context).colorScheme.secondary),
+                          )),
                     ),
                   ),
                   InkWell(
                     overlayColor: WidgetStateProperty.all(Colors.transparent),
                     onTap: () {
-                      Get.back();
                       Get.find<RideController>().remainingDistance(
                           Get.find<RideController>().tripDetail!.id!,
                           mapBound: true);
                       Get.find<RiderMapController>()
                           .setRideCurrentState(RideState.end);
+
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (Get.isDialogOpen ?? false) {
+                          Get.back();
+                        }
+                      });
                     },
                     child: Container(
                       decoration: BoxDecoration(
@@ -92,14 +97,14 @@ class RideCompletationDialogWidget extends StatelessWidget {
                           border: Border.all(
                               color: Theme.of(context).primaryColor)),
                       padding:
-                          const EdgeInsets.all(Dimensions.paddingSizeSmall),
+                      const EdgeInsets.all(Dimensions.paddingSizeSmall),
                       width: Get.width * 0.3,
                       child: Center(
                           child: Text(
-                        'complete'.tr,
-                        style: textRegular.copyWith(
-                            color: Theme.of(context).cardColor),
-                      )),
+                            'complete'.tr,
+                            style: textRegular.copyWith(
+                                color: Theme.of(context).cardColor),
+                          )),
                     ),
                   )
                 ],

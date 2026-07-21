@@ -31,7 +31,7 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   GoogleMapController? _mapController;
   GlobalKey<ExpandableBottomSheetState> key =
-      GlobalKey<ExpandableBottomSheetState>();
+  GlobalKey<ExpandableBottomSheetState>();
 
   @override
   void initState() {
@@ -69,11 +69,11 @@ class _MapScreenState extends State<MapScreen> {
     if (Get.find<RideController>().ongoingTrip != null &&
         Get.find<RideController>().ongoingTrip!.isNotEmpty &&
         (Get.find<RideController>().ongoingTrip![0].currentStatus ==
-                'ongoing' ||
+            'ongoing' ||
             Get.find<RideController>().ongoingTrip![0].currentStatus ==
                 'accepted' ||
             (Get.find<RideController>().ongoingTrip![0].currentStatus ==
-                    'completed' &&
+                'completed' &&
                 Get.find<RideController>().ongoingTrip![0].paymentStatus ==
                     'unpaid'))) {
       // Get.find<RideController>()
@@ -154,7 +154,7 @@ class _MapScreenState extends State<MapScreen> {
     if (Get.find<RiderMapController>().currentRideState == RideState.initial) {
       Get.find<RiderMapController>().markers.removeWhere(
             (m) => m.markerId.value == "driver_marker",
-          );
+      );
 
       Get.find<RiderMapController>().update();
       return;
@@ -181,7 +181,7 @@ class _MapScreenState extends State<MapScreen> {
     }
     Get.find<RiderMapController>().markers.removeWhere(
           (m) => m.markerId.value == "driver_marker",
-        );
+    );
     Get.find<RiderMapController>().markers.add(updatedMarker);
     Get.find<RiderMapController>().update();
   }
@@ -192,7 +192,7 @@ class _MapScreenState extends State<MapScreen> {
 
       // Check permissions first using LocationController
       bool hasPermission =
-          await Get.find<LocationController>().checkPermission(() {});
+      await Get.find<LocationController>().checkPermission(() {});
 
       if (!hasPermission) {
         debugPrint("Location permission denied");
@@ -210,7 +210,11 @@ class _MapScreenState extends State<MapScreen> {
         _locationSubscription!.cancel();
       }
 
-      if (_mapController != null && mounted && !_didMoveToInitialLocation) {
+      if (_mapController != null &&
+          mounted &&
+          !_didMoveToInitialLocation &&
+          Get.find<RiderMapController>().currentRideState ==
+              RideState.initial) {
         _didMoveToInitialLocation = true;
         _mapController!.animateCamera(CameraUpdate.newCameraPosition(
           CameraPosition(
@@ -270,7 +274,7 @@ class _MapScreenState extends State<MapScreen> {
         Get.find<RideController>().getLastTrip();
       },
       child: Scaffold(
-        resizeToAvoidBottomInset: true,
+        resizeToAvoidBottomInset: false,
         body: GetBuilder<RiderMapController>(builder: (riderMapController) {
           return GetBuilder<RideController>(builder: (rideController) {
             final double safeBottom = MediaQuery.of(context).padding.bottom;
@@ -296,10 +300,10 @@ class _MapScreenState extends State<MapScreen> {
                   Padding(
                     padding: EdgeInsets.only(
                       bottom: (riderMapController.sheetHeight -
-                              (riderMapController.currentRideState ==
-                                      RideState.initial
-                                  ? 80
-                                  : 20))
+                          (riderMapController.currentRideState ==
+                              RideState.initial
+                              ? 80
+                              : 20))
                           .clamp(0.0, double.infinity)
                           .toDouble(),
                     ),
@@ -312,14 +316,14 @@ class _MapScreenState extends State<MapScreen> {
                       //     : Get.find<ThemeController>().lightMap,
                       initialCameraPosition: CameraPosition(
                         target: (rideController.tripDetail != null &&
-                                rideController.tripDetail!.pickupCoordinates !=
-                                    null)
+                            rideController.tripDetail!.pickupCoordinates !=
+                                null)
                             ? LatLng(
-                                rideController.tripDetail!.pickupCoordinates!
-                                    .coordinates![1],
-                                rideController.tripDetail!.pickupCoordinates!
-                                    .coordinates![0],
-                              )
+                          rideController.tripDetail!.pickupCoordinates!
+                              .coordinates![1],
+                          rideController.tripDetail!.pickupCoordinates!
+                              .coordinates![0],
+                        )
                             : Get.find<LocationController>().initialPosition,
                         zoom: 16,
                       ),
@@ -332,7 +336,7 @@ class _MapScreenState extends State<MapScreen> {
                         if (riderMapController.currentRideState.name !=
                             'initial') {
                           if (riderMapController.currentRideState.name ==
-                                  'accepted' ||
+                              'accepted' ||
                               riderMapController.currentRideState.name ==
                                   'ongoing') {
                             Get.find<RideController>().remainingDistance(
@@ -346,7 +350,7 @@ class _MapScreenState extends State<MapScreen> {
                       onCameraMove: (CameraPosition cameraPosition) {},
                       onCameraIdle: () {},
                       minMaxZoomPreference:
-                          const MinMaxZoomPreference(0, AppConstants.mapZoom),
+                      const MinMaxZoomPreference(0, AppConstants.mapZoom),
                       markers: Set<Marker>.of(riderMapController.markers),
                       polylines: riderMapController.polylines,
                       zoomControlsEnabled: false,
@@ -396,7 +400,7 @@ class _MapScreenState extends State<MapScreen> {
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
                                       color:
-                                          Theme.of(context).colorScheme.primary,
+                                      Theme.of(context).colorScheme.primary,
                                     ),
                                   ),
                                   const SizedBox(width: 10),
@@ -419,18 +423,18 @@ class _MapScreenState extends State<MapScreen> {
                         alignment: Alignment.bottomRight,
                         child: GetBuilder<LocationController>(
                             builder: (locationController) {
-                          return CustomIconCardWidget(
-                            title: '',
-                            index: 5,
-                            icon: riderMapController.isTrafficEnable
-                                ? Images.trafficOnlineIcon
-                                : Images.trafficOfflineIcon,
-                            iconColor: riderMapController.isTrafficEnable
-                                ? Theme.of(context).colorScheme.error
-                                : Theme.of(context).hintColor,
-                            onTap: () => riderMapController.toggleTrafficView(),
-                          );
-                        }),
+                              return CustomIconCardWidget(
+                                title: '',
+                                index: 5,
+                                icon: riderMapController.isTrafficEnable
+                                    ? Images.trafficOnlineIcon
+                                    : Images.trafficOfflineIcon,
+                                iconColor: riderMapController.isTrafficEnable
+                                    ? Theme.of(context).colorScheme.error
+                                    : Theme.of(context).hintColor,
+                                onTap: () => riderMapController.toggleTrafficView(),
+                              );
+                            }),
                       )),
                   Positioned(
                       bottom: mapActionBottom,
@@ -439,14 +443,14 @@ class _MapScreenState extends State<MapScreen> {
                         alignment: Alignment.bottomRight,
                         child: GetBuilder<LocationController>(
                             builder: (locationController) {
-                          return CustomIconCardWidget(
-                            iconColor: Theme.of(context).colorScheme.primary,
-                            title: '',
-                            index: 5,
-                            icon: Images.currentLocation,
-                            onTap: _moveToCurrentLocation,
-                          );
-                        }),
+                              return CustomIconCardWidget(
+                                iconColor: Theme.of(context).colorScheme.primary,
+                                title: '',
+                                index: 5,
+                                icon: Images.currentLocation,
+                                onTap: _moveToCurrentLocation,
+                              );
+                            }),
                       )),
                   // Hide the left Home/menu tab after the ride is accepted.
                   // It remains visible only on the normal initial map.
@@ -485,7 +489,7 @@ class _MapScreenState extends State<MapScreen> {
                                   child: Image.asset(
                                     Images.homeSmallIcon,
                                     color:
-                                        Theme.of(context).colorScheme.primary,
+                                    Theme.of(context).colorScheme.primary,
                                   ),
                                 ),
                               ),
@@ -503,10 +507,10 @@ class _MapScreenState extends State<MapScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Center(child:
-                          GetBuilder<RideController>(builder: (rideController) {
+                      GetBuilder<RideController>(builder: (rideController) {
                         return InkWell(
                           overlayColor:
-                              WidgetStateProperty.all(Colors.transparent),
+                          WidgetStateProperty.all(Colors.transparent),
                           onTap: () {
                             if (!(Get.currentRoute
                                 .contains('RideRequestScreen'))) {
@@ -516,7 +520,7 @@ class _MapScreenState extends State<MapScreen> {
                           child: Container(
                             decoration: BoxDecoration(
                               color:
-                                  Theme.of(context).cardColor.withOpacity(0.94),
+                              Theme.of(context).cardColor.withOpacity(0.94),
                               borderRadius: BorderRadius.circular(
                                   Dimensions.paddingSizeExtraLarge),
                               border: Border.all(

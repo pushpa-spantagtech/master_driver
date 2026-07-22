@@ -47,7 +47,7 @@ class DefaultFirebaseOptions {
     apiKey: 'AIzaSyCyCDHWC6oqPCLDn5p96JbMA5ZA-ft5Xrw',
     appId: '1:872292664673:web:eb22cf188ad67999817120',
     messagingSenderId: '872292664673',
-    projectId: '"stephen-cab-e0192',
+    projectId: 'stephen-cab-e0192',
     authDomain: 'stephen-cab-e0192.firebaseapp.com',
     databaseURL: 'https://stephen-cab-e0192-default-rtdb.firebaseio.com',
     storageBucket: 'stephen-cab-e0192.firebasestorage.app',

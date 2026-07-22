@@ -112,44 +112,47 @@ class EndTripWidget extends StatelessWidget {
                               return;
                             }
 
-                            Get.dialog(GetBuilder<RideController>(
+                            Get.bottomSheet(
+                              GetBuilder<RideController>(
                                 builder: (rideController) {
-                              return ConfirmationDialogWidget(
-                                loading: rideController.isLoading,
-                                icon: Images.location,
-                                description:
-                                    "${'are_you_sure_you_want_to_complete_this_trip'.tr} ${rideController.tripDetail?.type?.tr}?",
-                                onYesPressed: () {
-                                  if (rideController.tripDetail!.type ==
-                                      "ride_request") {
-                                    rideController
-                                        .tripStatusUpdate(
-                                            'completed',
-                                            rideController.tripDetail!.id!,
-                                            "trip_completed_successfully",
-                                            '')
-                                        .then((value) async {
-                                      if (value.statusCode == 200) {
-                                        if (rideController.tripDetail!.type ==
-                                            "ride_request") {
-                                          rideController.getRideDetails(
-                                              rideController.tripDetail!.id!);
-                                          rideController
-                                              .getFinalFare(rideController
-                                                  .tripDetail!.id!)
-                                              .then((value) {
-                                            if (value.statusCode == 200) {
-                                              Get.find<RiderMapController>()
-                                                  .setRideCurrentState(
-                                                      RideState.initial);
-                                              Get.off(() =>
-                                                  const PaymentReceivedScreen());
+                                  return ConfirmationDialogWidget(
+                                    loading: rideController.isLoading,
+                                    icon: Images.location,
+                                    description:
+                                        "${'are_you_sure_you_want_to_complete_this_trip'.tr} ${rideController.tripDetail?.type?.tr}?",
+                                    onYesPressed: () {
+                                      if (rideController.tripDetail!.type ==
+                                          "ride_request") {
+                                        rideController
+                                            .tripStatusUpdate(
+                                                'completed',
+                                                rideController.tripDetail!.id!,
+                                                "trip_completed_successfully",
+                                                '')
+                                            .then((value) async {
+                                          if (value.statusCode == 200) {
+                                            if (rideController
+                                                    .tripDetail!.type ==
+                                                "ride_request") {
+                                              rideController.getRideDetails(
+                                                  rideController
+                                                      .tripDetail!.id!);
+                                              rideController
+                                                  .getFinalFare(rideController
+                                                      .tripDetail!.id!)
+                                                  .then((value) {
+                                                if (value.statusCode == 200) {
+                                                  Get.find<RiderMapController>()
+                                                      .setRideCurrentState(
+                                                          RideState.initial);
+                                                  Get.off(() =>
+                                                      const PaymentReceivedScreen());
+                                                }
+                                              });
                                             }
-                                          });
-                                        }
+                                          }
+                                        });
                                       }
-                                    });
-                                  }
 /*                              else if(!rideController.tripDetail!.isReachedDestination! && rideController.tripDetail!.type == "ride_request"){
                                 rideController.tripStatusUpdate('cancelled', rideController.tripDetail!.id!, "trip_cancelled_successfully", Get.find<TripController>().tripCancellationCauseList!.data![0].ongoingRide![Get.find<TripController>().tripCancellationCauseCurrentIndex]).then((value) async {
                                   if(value.statusCode == 200){
@@ -157,65 +160,76 @@ class EndTripWidget extends StatelessWidget {
                                     Get.offAll(()=> const DashboardScreen());
                                   }});
                               }*/
-                                  else {
-                                    if (Get.find<RideController>()
-                                                .matchedMode !=
-                                            null &&
-                                        Get.find<RiderMapController>()
-                                            .isInside) {
-                                      rideController
-                                          .tripStatusUpdate(
-                                              'completed',
-                                              rideController.tripDetail!.id!,
-                                              "trip_completed_successfully",
-                                              '')
-                                          .then((value) async {
-                                        Get.find<RiderMapController>()
-                                            .setRideCurrentState(
-                                                RideState.initial);
+                                      else {
+                                        if (Get.find<RideController>()
+                                                    .matchedMode !=
+                                                null &&
+                                            Get.find<RiderMapController>()
+                                                .isInside) {
+                                          rideController
+                                              .tripStatusUpdate(
+                                                  'completed',
+                                                  rideController
+                                                      .tripDetail!.id!,
+                                                  "trip_completed_successfully",
+                                                  '')
+                                              .then((value) async {
+                                            Get.find<RiderMapController>()
+                                                .setRideCurrentState(
+                                                    RideState.initial);
 
-                                        Get.find<RideController>()
-                                            .getOngoingParcelList()
-                                            .then((value) {
-                                          if (rideController.tripDetail!
-                                                  .parcelInformation!.payer ==
-                                              "sender") {
-                                            !rideController
-                                                    .tripDetail!.isReviewed!
-                                                ? Get.offAll(() =>
-                                                    ReviewThisCustomerScreen(
-                                                        tripId: rideController
-                                                                .tripDetail!
-                                                                .id ??
-                                                            ''))
-                                                : Get.offAll(() =>
-                                                    const DashboardScreen());
-                                          } else {
-                                            rideController
-                                                .getFinalFare(rideController
-                                                    .tripDetail!.id!)
+                                            Get.find<RideController>()
+                                                .getOngoingParcelList()
                                                 .then((value) {
-                                              if (value.statusCode == 200) {
-                                                Get.find<RiderMapController>()
-                                                    .setRideCurrentState(
-                                                        RideState.initial);
-                                                Get.off(() =>
-                                                    const PaymentReceivedScreen(
-                                                        fromParcel: true));
+                                              if (rideController
+                                                      .tripDetail!
+                                                      .parcelInformation!
+                                                      .payer ==
+                                                  "sender") {
+                                                !rideController
+                                                        .tripDetail!.isReviewed!
+                                                    ? Get.offAll(() =>
+                                                        ReviewThisCustomerScreen(
+                                                            tripId: rideController
+                                                                    .tripDetail!
+                                                                    .id ??
+                                                                ''))
+                                                    : Get.offAll(() =>
+                                                        const DashboardScreen());
+                                              } else {
+                                                rideController
+                                                    .getFinalFare(rideController
+                                                        .tripDetail!.id!)
+                                                    .then((value) {
+                                                  if (value.statusCode == 200) {
+                                                    Get.find<
+                                                            RiderMapController>()
+                                                        .setRideCurrentState(
+                                                            RideState.initial);
+                                                    Get.off(() =>
+                                                        const PaymentReceivedScreen(
+                                                            fromParcel: true));
+                                                  }
+                                                });
                                               }
                                             });
-                                          }
-                                        });
-                                      });
-                                    } else {
-                                      showCustomSnackBar(
-                                        "you_are_not_reached_destination".tr,
-                                      );
-                                    }
-                                  }
+                                          });
+                                        } else {
+                                          showCustomSnackBar(
+                                            "you_are_not_reached_destination"
+                                                .tr,
+                                          );
+                                        }
+                                      }
+                                    },
+                                  );
                                 },
-                              );
-                            }), barrierDismissible: false);
+                              ),
+                              isScrollControlled: true,
+                              isDismissible: false,
+                              enableDrag: false,
+                              backgroundColor: Colors.transparent,
+                            );
                           })),
                 ],
               ),

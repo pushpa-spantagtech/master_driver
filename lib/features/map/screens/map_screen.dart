@@ -30,9 +30,9 @@ class MapScreen extends StatefulWidget {
 
 class _MapScreenState extends State<MapScreen> {
   GoogleMapController? _mapController;
+  bool _endSheetPositionScheduled = false;
   GlobalKey<ExpandableBottomSheetState> key =
       GlobalKey<ExpandableBottomSheetState>();
-  bool _endSheetContractScheduled = false;
 
   @override
   void initState() {
@@ -72,7 +72,10 @@ class _MapScreenState extends State<MapScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
 
-      Get.find<RiderMapController>().setSheetHeight(50, false);
+      if (Get.find<RiderMapController>().currentRideState ==
+          RideState.initial) {
+        Get.find<RiderMapController>().setSheetHeight(50, false);
+      }
 
       await Get.find<RideController>().getPendingRideRequestList(1);
     });
@@ -124,6 +127,30 @@ class _MapScreenState extends State<MapScreen> {
   bool _isMapReady = false;
   bool _didMoveToInitialLocation = false;
   bool _isBottomSheetExpanded = false;
+
+  double _resolvedSheetHeight(
+    RiderMapController controller,
+    double screenHeight,
+  ) {
+    switch (controller.currentRideState) {
+      case RideState.end:
+        // Keep only the normal collapsed header height. The End Trip content
+        // is shown by expanding the sheet, so no empty area is reserved below.
+        return 50;
+      case RideState.accepted:
+      case RideState.ongoing:
+        return 310;
+      case RideState.pending:
+        return 300;
+      case RideState.completed:
+      case RideState.fareCalculating:
+        return 250;
+      case RideState.acceptingRider:
+        return 220;
+      case RideState.initial:
+        return controller.sheetHeight > 0 ? controller.sheetHeight : 50;
+    }
+  }
 
   Future<void> _moveToCurrentLocation() async {
     final locationController = Get.find<LocationController>();
@@ -296,23 +323,29 @@ class _MapScreenState extends State<MapScreen> {
         body: GetBuilder<RiderMapController>(builder: (riderMapController) {
           return GetBuilder<RideController>(builder: (rideController) {
             if (riderMapController.currentRideState == RideState.end) {
-              if (!_endSheetContractScheduled) {
-                _endSheetContractScheduled = true;
+              if (!_endSheetPositionScheduled) {
+                _endSheetPositionScheduled = true;
                 WidgetsBinding.instance.addPostFrameCallback((_) {
-                  Future.delayed(const Duration(milliseconds: 80), () {
+                  Future.delayed(const Duration(milliseconds: 120), () {
                     if (!mounted) return;
-                    key.currentState?.contract();
+                    key.currentState?.expand();
+                    if (!_isBottomSheetExpanded) {
+                      setState(() => _isBottomSheetExpanded = true);
+                    }
                   });
                 });
               }
             } else {
-              _endSheetContractScheduled = false;
+              _endSheetPositionScheduled = false;
             }
 
             final double safeBottom = MediaQuery.of(context).padding.bottom;
-            final double mapActionBottom = _isBottomSheetExpanded
-                ? 310 + safeBottom
-                : riderMapController.sheetHeight + 56;
+            final double resolvedSheetHeight = _resolvedSheetHeight(
+              riderMapController,
+              MediaQuery.of(context).size.height,
+            );
+            final double mapActionBottom =
+                resolvedSheetHeight + 56 + safeBottom;
 
             return ExpandableBottomSheet(
               key: key,
@@ -333,18 +366,28 @@ class _MapScreenState extends State<MapScreen> {
                   setState(() => _isBottomSheetExpanded = false);
                 }
               },
-              persistentContentHeight: riderMapController.sheetHeight,
+              persistentContentHeight: resolvedSheetHeight,
               background: GetBuilder<RideController>(builder: (rideController) {
                 return Stack(children: [
                   Padding(
                     padding: EdgeInsets.only(
-                      bottom: (riderMapController.sheetHeight -
-                              (riderMapController.currentRideState ==
-                                      RideState.initial
-                                  ? 80
-                                  : 20))
-                          .clamp(0.0, double.infinity)
-                          .toDouble(),
+                      // The End Trip sheet overlays the map. Reserving the
+                      // complete sheet height here shortens GoogleMap and
+                      // exposes the Scaffold's white background underneath.
+                      bottom: riderMapController.currentRideState ==
+                                  RideState.accepted ||
+                              riderMapController.currentRideState ==
+                                  RideState.ongoing ||
+                              riderMapController.currentRideState ==
+                                  RideState.end
+                          ? 0
+                          : (resolvedSheetHeight -
+                                  (riderMapController.currentRideState ==
+                                          RideState.initial
+                                      ? 80
+                                      : 20))
+                              .clamp(0.0, double.infinity)
+                              .toDouble(),
                     ),
                     child: GoogleMap(
                       myLocationEnabled: true,
@@ -397,7 +440,7 @@ class _MapScreenState extends State<MapScreen> {
                         top: 88,
                         left: 12,
                         right: 12,
-                        bottom: riderMapController.sheetHeight + 34,
+                        bottom: resolvedSheetHeight + 34,
                       ),
                       trafficEnabled: riderMapController.isTrafficEnable,
                       indoorViewEnabled: true,

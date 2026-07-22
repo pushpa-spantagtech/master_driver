@@ -345,21 +345,9 @@ class RiderMapController extends GetxController implements GetxService {
       );
     }
 
-    // Follow the driver's live location while the ride is active.
-    // This keeps the map moving along with the vehicle instead of only updating the marker.
-    if (mapController != null &&
-        (currentRideState == RideState.accepted ||
-            currentRideState == RideState.ongoing)) {
-      mapController!.animateCamera(
-        CameraUpdate.newCameraPosition(
-          CameraPosition(
-            target: latLong,
-            zoom: 17,
-            bearing: bearing,
-          ),
-        ),
-      );
-    }
+    // Do not move the camera on every GPS update.
+    // The driver marker continues to update, but the map camera stays where
+    // the user moved it. The location button can still recenter the camera.
 
     update();
   }

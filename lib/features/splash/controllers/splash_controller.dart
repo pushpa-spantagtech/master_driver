@@ -47,8 +47,7 @@ class SplashController extends GetxController implements GetxService {
     }
 
     try {
-      final Response response =
-      await splashServiceInterface.getConfigData();
+      final Response response = await splashServiceInterface.getConfigData();
 
       if (response.statusCode == 200) {
         _config = ConfigModel.fromJson(response.body);

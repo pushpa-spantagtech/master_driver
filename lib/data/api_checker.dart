@@ -19,8 +19,7 @@ class ApiChecker {
         lowerMessage.contains('token has expired') ||
         lowerMessage.contains('token is expired') ||
         lowerMessage.contains('invalid token') ||
-        lowerMessage.contains('session expired') ||
-        lowerMessage.contains('resource not found')) {
+        lowerMessage.contains('session expired')) {
       _forceLogout();
       return;
     }

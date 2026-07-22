@@ -111,8 +111,13 @@ class RideController extends GetxController implements GetxService {
         update();
       }
     }
+    print("========== CURRENT RIDE STATUS ==========");
 
     final Response response = await rideServiceInterface.currentRideStatus();
+
+    print("Status Code : ${response.statusCode}");
+    print("Body        : ${response.body}");
+    print("=========================================");
 
     if (response.statusCode == 200) {
       getResult = false;
@@ -128,6 +133,8 @@ class RideController extends GetxController implements GetxService {
 
         currentRideStatus =
             (tripDetail?.currentStatus ?? 'fresh').toLowerCase();
+        print("Current Status : $currentRideStatus");
+        print("Payment Status : ${tripDetail?.paymentStatus}");
 
         polyline = tripDetail?.encodedPolyline ?? '';
 
@@ -218,33 +225,6 @@ class RideController extends GetxController implements GetxService {
         } else if (currentRideStatus == 'cancelled') {
           stopLiveTracking();
 
-          tripDetail = null;
-          ongoingTrip = [];
-          _rideid = null;
-          polyline = '';
-
-          remainingDistanceItem?.clear();
-          matchedMode = null;
-
-          arrivalApiCalled = false;
-          destinationApiCalled = false;
-          localDestinationReached = false;
-
-          if (Get.isRegistered<OtpTimeCountController>()) {
-            Get.find<OtpTimeCountController>().initialCounter();
-          }
-
-          if (Get.isRegistered<RiderMapController>()) {
-            final RiderMapController mapController =
-                Get.find<RiderMapController>();
-
-            mapController.initializeData();
-            mapController.setRideCurrentState(RideState.initial);
-          }
-
-          currentRideStatus = 'fresh';
-          updateRoute(true, notify: true);
-
           Get.offAllNamed(RouteHelper.getHomeRoute());
         }
       }
@@ -263,11 +243,16 @@ class RideController extends GetxController implements GetxService {
       getResult = false;
       isLoading = false;
 
+      /*
+   * Never consider a 404 response as payment confirmation.
+   *
+   * Payment navigation must happen only after an API response explicitly
+   * returns payment_status = paid.
+   */
       if (!fromRefresh) {
-        Get.offNamed(RouteHelper.getHomeRoute());
+        Get.offAllNamed(RouteHelper.getHomeRoute());
       }
     }
-
     update();
     return response;
   }
@@ -623,7 +608,7 @@ class RideController extends GetxController implements GetxService {
     return response;
   }
 
-  Future<Response> tripStatusUpdate(String status, String id, String message,
+  Future<Response> tripStatusUpdate(String id, String status, String message,
       String cancellationCause) async {
     isLoading = true;
     update();
@@ -634,41 +619,32 @@ class RideController extends GetxController implements GetxService {
       showCustomSnackBar(message.tr, isError: false);
 
       if (status.toLowerCase() == 'cancelled') {
-        // Apply the same cancellation cleanup to local, rental and
-        // outstation rides so the Dashboard cannot restore a stale trip.
+        // Clear the accepted ride immediately after cancellation so the
+        // Dashboard cannot render the stale "Customer pickup / ACCEPTED" card.
         stopLiveTracking();
 
-        currentRideStatus = 'fresh';
+        currentRideStatus = 'cancelled';
 
         if (tripDetail != null) {
           tripDetail!.currentStatus = 'cancelled';
         }
 
         tripDetail = null;
-        ongoingTrip = [];
         _rideid = null;
         polyline = '';
-
         localDestinationReached = false;
         arrivalApiCalled = false;
         destinationApiCalled = false;
-
-        remainingDistanceItem?.clear();
-        matchedMode = null;
 
         if (Get.isRegistered<OtpTimeCountController>()) {
           Get.find<OtpTimeCountController>().initialCounter();
         }
 
         if (Get.isRegistered<RiderMapController>()) {
-          final RiderMapController mapController =
-              Get.find<RiderMapController>();
-
-          mapController.initializeData();
-          mapController.setRideCurrentState(RideState.initial);
+          Get.find<RiderMapController>().setRideCurrentState(
+            RideState.initial,
+          );
         }
-
-        updateRoute(true, notify: true);
       }
 
       isLoading = false;
@@ -685,17 +661,26 @@ class RideController extends GetxController implements GetxService {
   PendingRideRequestModel? get getPendingRideRequestModel =>
       pendingRideRequestModel;
 
-  Future<Response> getPendingRideRequestList(int offset,
-      {int limit = 10}) async {
+  Future<Response> getPendingRideRequestList(
+    int offset, {
+    int limit = 10,
+  }) async {
     isLoading = true;
-    update();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!isClosed) {
+        update();
+      }
+    });
 
     final Response response = await rideServiceInterface
         .getPendingRideRequestList(offset, limit: limit);
+
     debugPrint('========== RIDE REQUEST API ==========');
     debugPrint('STATUS : ${response.statusCode}');
     debugPrint('BODY   : ${response.body}');
     debugPrint('======================================');
+
     if (response.statusCode == 200) {
       final dynamic responseData = response.body['data'];
 
@@ -704,11 +689,8 @@ class RideController extends GetxController implements GetxService {
             PendingRideRequestModel.fromJson(response.body);
 
         if (offset == 1 || pendingRideRequestModel == null) {
-          // Page one is a fresh snapshot from the backend and contains every
-          // currently pending request for that page.
           pendingRideRequestModel = incomingModel;
         } else {
-          // Keep the already loaded requests and append the next page.
           pendingRideRequestModel!.totalSize = incomingModel.totalSize;
           pendingRideRequestModel!.offset = incomingModel.offset;
           pendingRideRequestModel!.data ??= [];
@@ -721,7 +703,6 @@ class RideController extends GetxController implements GetxService {
 
       final pendingRequests = pendingRideRequestModel?.data ?? [];
 
-      // Display every pending request marker without selecting one request.
       Get.find<RiderMapController>()
           .addPendingTripRequestMarkers(pendingRequests);
 
@@ -731,6 +712,7 @@ class RideController extends GetxController implements GetxService {
         pendingRideRequestModel?.data = [];
         pendingRideRequestModel?.totalSize = 0;
         pendingRideRequestModel?.offset = '1';
+
         Get.find<RiderMapController>().addPendingTripRequestMarkers([]);
       }
 
@@ -738,7 +720,12 @@ class RideController extends GetxController implements GetxService {
       ApiChecker.checkApi(response);
     }
 
-    update();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!isClosed) {
+        update();
+      }
+    });
+
     return response;
   }
 
@@ -893,7 +880,6 @@ class RideController extends GetxController implements GetxService {
   }
 
   ParcelListModel? parcelListModel;
-
 
   Future<Response> getOngoingParcelList() async {
     isLoading = true;

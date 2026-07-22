@@ -36,20 +36,17 @@ class NotificationHelper {
   static String? _lastHandledRideId;
   static DateTime? _lastHandledAt;
   static Future<void> handleNotificationNavigation(
-      RemoteMessage message,
-      ) async {
-    final String action =
-        message.data['action']?.toString() ?? '';
+    RemoteMessage message,
+  ) async {
+    final String action = message.data['action']?.toString() ?? '';
 
-    final String rideId =
-        message.data['ride_request_id']?.toString() ?? '';
+    final String rideId = message.data['ride_request_id']?.toString() ?? '';
 
     final DateTime now = DateTime.now();
 
-    final bool recentlyHandled =
-        _lastHandledRideId == rideId &&
-            _lastHandledAt != null &&
-            now.difference(_lastHandledAt!).inSeconds < 3;
+    final bool recentlyHandled = _lastHandledRideId == rideId &&
+        _lastHandledAt != null &&
+        now.difference(_lastHandledAt!).inSeconds < 3;
 
     if (_isHandlingNotification || recentlyHandled) {
       return;
@@ -74,13 +71,14 @@ class NotificationHelper {
       _isHandlingNotification = false;
     }
   }
+
   static Future<void> initialize(
       FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin) async {
     AndroidInitializationSettings androidInitialize =
-    const AndroidInitializationSettings('notification_icon');
+        const AndroidInitializationSettings('notification_icon');
     var iOSInitialize = const DarwinInitializationSettings();
     var initializationsSettings =
-    InitializationSettings(android: androidInitialize, iOS: iOSInitialize);
+        InitializationSettings(android: androidInitialize, iOS: iOSInitialize);
     flutterLocalNotificationsPlugin.initialize(
       initializationsSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) async {
@@ -93,17 +91,17 @@ class NotificationHelper {
       log('onMessage: ${message.data}');
 
       if (!(Get.find<SplashController>().config!.maintenanceMode != null &&
-          Get.find<SplashController>()
-              .config!
-              .maintenanceMode!
-              .maintenanceStatus ==
-              1 &&
-          Get.find<SplashController>()
-              .config!
-              .maintenanceMode!
-              .selectedMaintenanceSystem!
-              .driverApp ==
-              1) ||
+              Get.find<SplashController>()
+                      .config!
+                      .maintenanceMode!
+                      .maintenanceStatus ==
+                  1 &&
+              Get.find<SplashController>()
+                      .config!
+                      .maintenanceMode!
+                      .selectedMaintenanceSystem!
+                      .driverApp ==
+                  1) ||
           Get.find<SplashController>().haveOngoingRides()) {
         if (Get.find<SplashController>().pusherConnectionStatus == null ||
             Get.find<SplashController>().pusherConnectionStatus ==
@@ -115,7 +113,7 @@ class NotificationHelper {
             await audio.play(AssetSource('notification.wav'));
 
             final bool isOnRideRequestScreen =
-            Get.currentRoute.contains('RideRequestScreen');
+                Get.currentRoute.contains('RideRequestScreen');
 
             if (isOnRideRequestScreen) {
               // The screen is already visible, so refresh it in place.
@@ -297,19 +295,16 @@ class NotificationHelper {
       customPrint('onOpenApp: ${message.data}');
       await notificationToRoute(message);
     });
-
   }
 
-
-
   static Future<void> handleInitialNotification(
-      FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin,
-      ) async {
+    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin,
+  ) async {
     // Wait until GetMaterialApp, bindings, and the splash route are mounted.
     await Future.delayed(const Duration(milliseconds: 1400));
 
     final RemoteMessage? initialMessage =
-    await FirebaseMessaging.instance.getInitialMessage();
+        await FirebaseMessaging.instance.getInitialMessage();
 
     if (initialMessage != null) {
       customPrint('initialNotification: ${initialMessage.data}');
@@ -318,8 +313,7 @@ class NotificationHelper {
     }
 
     final NotificationAppLaunchDetails? launchDetails =
-    await flutterLocalNotificationsPlugin
-        .getNotificationAppLaunchDetails();
+        await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
 
     if (launchDetails?.didNotificationLaunchApp == true) {
       await _handleLocalNotificationPayload(
@@ -329,8 +323,8 @@ class NotificationHelper {
   }
 
   static Future<void> _handleLocalNotificationPayload(
-      String? payload,
-      ) async {
+    String? payload,
+  ) async {
     if (payload == null || payload.trim().isEmpty) {
       return;
     }
@@ -355,16 +349,16 @@ class NotificationHelper {
   }
 
   static Future<void> _openRideRequestFromData(
-      Map<String, dynamic> data,
-      ) async {
-    if (data['action']?.toString() !=
-        'new_ride_request_notification') {
+    Map<String, dynamic> data,
+  ) async {
+    if (data['action']?.toString() != 'new_ride_request_notification') {
       return;
     }
 
     // Cold start may need extra time for dependency injection.
     for (int attempt = 0; attempt < 12; attempt++) {
-      if (Get.isRegistered<RideController>() && Get.key.currentContext != null) {
+      if (Get.isRegistered<RideController>() &&
+          Get.key.currentContext != null) {
         break;
       }
       await Future.delayed(const Duration(milliseconds: 250));
@@ -377,7 +371,7 @@ class NotificationHelper {
 
     final RideController rideController = Get.find<RideController>();
     final bool isOnRideRequestScreen =
-    Get.currentRoute.contains('RideRequestScreen');
+        Get.currentRoute.contains('RideRequestScreen');
 
     if (isOnRideRequestScreen) {
       await rideController.getPendingRideRequestList(1);
@@ -414,17 +408,18 @@ class NotificationHelper {
 
     final String body = isRideRequest
         ? (pickupAddress.isNotEmpty
-        ? 'Pickup: $pickupAddress'
-        : 'Pickup location available')
+            ? 'Pickup: $pickupAddress'
+            : 'Pickup location available')
         : message.data['body']?.toString() ??
-        message.data['description']?.toString() ??
-        '';
-    String? orderID = message.data['ride_request_id'] ?? message.data['order_id'];
+            message.data['description']?.toString() ??
+            '';
+    String? orderID =
+        message.data['ride_request_id'] ?? message.data['order_id'];
     String? image = (message.data['image'] != null &&
-        message.data['image'].isNotEmpty)
+            message.data['image'].isNotEmpty)
         ? message.data['image'].startsWith('http')
-        ? message.data['image']
-        : '${AppConstants.baseUrl}/storage/app/public/notification/${message.data['image']}'
+            ? message.data['image']
+            : '${AppConstants.baseUrl}/storage/app/public/notification/${message.data['image']}'
         : null;
 
     try {
@@ -444,7 +439,7 @@ class NotificationHelper {
       String action,
       FlutterLocalNotificationsPlugin fln) async {
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
-    AndroidNotificationDetails(
+        AndroidNotificationDetails(
       'hexaride',
       'hexaride',
       playSound: true,
@@ -453,7 +448,7 @@ class NotificationHelper {
       sound: RawResourceAndroidNotificationSound('notification'),
     );
     const NotificationDetails platformChannelSpecifics =
-    NotificationDetails(android: androidPlatformChannelSpecifics);
+        NotificationDetails(android: androidPlatformChannelSpecifics);
     await fln.show(0, title, body, platformChannelSpecifics, payload: action);
   }
 
@@ -470,7 +465,7 @@ class NotificationHelper {
       htmlFormatContentTitle: true,
     );
     AndroidNotificationDetails androidPlatformChannelSpecifics =
-    AndroidNotificationDetails(
+        AndroidNotificationDetails(
       'hexaride',
       'hexaride',
       importance: Importance.max,
@@ -480,7 +475,7 @@ class NotificationHelper {
       sound: const RawResourceAndroidNotificationSound('notification'),
     );
     NotificationDetails platformChannelSpecifics =
-    NotificationDetails(android: androidPlatformChannelSpecifics);
+        NotificationDetails(android: androidPlatformChannelSpecifics);
     await fln.show(0, title, body, platformChannelSpecifics, payload: action);
   }
 
@@ -506,12 +501,12 @@ class NotificationHelper {
   //
 
   static Future<void> showBigPictureNotificationHiddenLargeIcon(
-      String title,
-      String body,
-      String? orderID,
-      String? image,
-      FlutterLocalNotificationsPlugin fln,
-      ) async {
+    String title,
+    String body,
+    String? orderID,
+    String? image,
+    FlutterLocalNotificationsPlugin fln,
+  ) async {
     String? largeIconPath;
     String? bigPicturePath;
     BigPictureStyleInformation? bigPictureStyleInformation;
@@ -539,31 +534,27 @@ class NotificationHelper {
     }
 
     final AndroidNotificationDetails androidPlatformChannelSpecifics =
-    AndroidNotificationDetails(
+        AndroidNotificationDetails(
       'hexaride',
       'hexaride',
       priority: Priority.max,
       importance: Importance.max,
       playSound: true,
-      largeIcon: largeIconPath != null
-          ? FilePathAndroidBitmap(largeIconPath)
-          : null,
+      largeIcon:
+          largeIconPath != null ? FilePathAndroidBitmap(largeIconPath) : null,
       styleInformation: largeIconPath != null
           ? bigPictureStyleInformation
           : bigTextStyleInformation,
       sound: const RawResourceAndroidNotificationSound('notification'),
     );
 
-    final NotificationDetails platformChannelSpecifics =
-    NotificationDetails(
+    final NotificationDetails platformChannelSpecifics = NotificationDetails(
       android: androidPlatformChannelSpecifics,
     );
 
     final int notificationId = orderID != null && orderID.isNotEmpty
         ? orderID.hashCode & 0x7fffffff
-        : DateTime.now()
-        .millisecondsSinceEpoch
-        .remainder(2147483647);
+        : DateTime.now().millisecondsSinceEpoch.remainder(2147483647);
 
     await fln.show(
       notificationId,
@@ -612,7 +603,7 @@ Future<void> notificationToRoute(RemoteMessage message) async {
     final RideController rideController = Get.find<RideController>();
 
     final bool isOnRideRequestScreen =
-    Get.currentRoute.contains('RideRequestScreen');
+        Get.currentRoute.contains('RideRequestScreen');
 
     if (isOnRideRequestScreen) {
       await rideController.getPendingRideRequestList(1);
@@ -689,10 +680,10 @@ Future<void> notificationToRoute(RemoteMessage message) async {
   } else if (message.data['action'] == 'privacy_policy_page_updated') {
     Get.find<SplashController>().getConfigData().then((value) {
       Get.to(() => PolicyViewerScreen(
-        isPolicy: true,
-        image:
-        Get.find<SplashController>().config?.privacyPolicy?.image ?? '',
-      ));
+            isPolicy: true,
+            image:
+                Get.find<SplashController>().config?.privacyPolicy?.image ?? '',
+          ));
     });
   } else if (message.data['action'] == 'legal_page_updated') {
     Get.find<SplashController>().getConfigData().then((value) {
@@ -704,8 +695,8 @@ Future<void> notificationToRoute(RemoteMessage message) async {
     Get.find<SplashController>().getConfigData().then((value) {
       Get.to(() => PolicyViewerScreen(
           image:
-          Get.find<SplashController>().config?.termsAndConditions?.image ??
-              ''));
+              Get.find<SplashController>().config?.termsAndConditions?.image ??
+                  ''));
     });
   }
 }

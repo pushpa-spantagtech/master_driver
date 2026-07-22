@@ -136,13 +136,21 @@ class AuthRepository implements AuthRepositoryInterface {
   @override
   Future<bool?> saveUserToken(String token, String zoneId) async {
     apiClient.token = token;
+
+    print('LOGIN TOKEN = $token');
+
     apiClient.updateHeader(
-        token,
-        sharedPreferences.getString(AppConstants.languageCode),
-        "latitude",
-        "longitude",
-        zoneId);
-    return await sharedPreferences.setString(AppConstants.token, token);
+      token,
+      sharedPreferences.getString(AppConstants.languageCode),
+      'latitude',
+      'longitude',
+      zoneId,
+    );
+
+    return await sharedPreferences.setString(
+      AppConstants.token,
+      token,
+    );
   }
 
   @override

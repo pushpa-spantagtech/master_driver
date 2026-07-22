@@ -173,9 +173,9 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   List<Widget> generateBottomNavigationItems(
-      BottomMenuController menuController,
-      List<NavigationModel> item,
-      ) {
+    BottomMenuController menuController,
+    List<NavigationModel> item,
+  ) {
     List<Widget> items = [];
 
     for (int index = 0; index < item.length; index++) {

@@ -12,7 +12,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter/foundation.dart';
+
 import 'package:path/path.dart';
 
 class ApiClient extends GetxService {
@@ -64,32 +64,23 @@ class ApiClient extends GetxService {
           )
           .timeout(Duration(seconds: timeoutInSeconds));
       return handleResponse(response, uri);
-    } catch (e, stackTrace) {
-      debugPrint('GET API ERROR');
-      debugPrint('URI: $uri');
-      debugPrint('FULL URL: $appBaseUrl$uri');
-      debugPrint('ERROR TYPE: ${e.runtimeType}');
-      debugPrint('ERROR: $e');
-      debugPrintStack(stackTrace: stackTrace);
-
-      return Response(
-        statusCode: 1,
-        statusText: e.toString(),
-        body: {
-          'message': e.toString(),
-          'uri': uri,
-        },
-      );
+    } catch (e) {
+      return Response(statusCode: 1, statusText: noInternetMessage);
     }
   }
 
-  Future<Response> postData(String uri, dynamic body,
-      {Map<String, String>? headers}) async {
+  Future<Response> postData(
+    String uri,
+    dynamic body, {
+    Map<String, String>? headers,
+  }) async {
     try {
       if (kDebugMode) {
         log('====> API Call: $uri\nHeader: $_mainHeaders');
         log('====> API Body: $body');
+        print('AUTH HEADER = ${_mainHeaders['Authorization']}');
       }
+
       http.Response response = await http
           .post(
             Uri.parse(appBaseUrl + uri),
@@ -97,17 +88,10 @@ class ApiClient extends GetxService {
             headers: headers ?? _mainHeaders,
           )
           .timeout(Duration(seconds: timeoutInSeconds));
-      return handleResponse(response, uri);
-    } catch (e, stackTrace) {
-      print('=========== API EXCEPTION ===========');
-      print('Base URL : $appBaseUrl');
-      print('URI      : $uri');
-      print('Full URL : ${appBaseUrl + uri}');
-      print('Exception: $e');
-      print('StackTrace: $stackTrace');
-      print('====================================');
 
-      rethrow;
+      return handleResponse(response, uri);
+    } catch (e) {
+      return Response(statusCode: 1, statusText: noInternetMessage);
     }
   }
 
@@ -241,43 +225,63 @@ class ApiClient extends GetxService {
 
   Response handleResponse(http.Response response, String uri) {
     dynamic body;
+
     try {
       body = jsonDecode(response.body);
-      // ignore: empty_catches
-    } catch (e) {}
+    } catch (e) {
+      body = response.body;
+    }
+
     Response localResponse = Response(
-      body: body ?? response.body,
-      bodyString: response.body.toString(),
+      body: body,
+      bodyString: response.body,
       request: Request(
-          headers: response.request!.headers,
-          method: response.request!.method,
-          url: response.request!.url),
+        headers: response.request?.headers ?? {},
+        method: response.request?.method ?? '',
+        url: response.request?.url ?? Uri.parse(appBaseUrl + uri),
+      ),
       headers: response.headers,
       statusCode: response.statusCode,
       statusText: response.reasonPhrase,
     );
+
     if (localResponse.statusCode != 200 &&
         localResponse.body != null &&
         localResponse.body is! String) {
       if (localResponse.body.toString().startsWith('{errors: [{code:')) {
-        ErrorResponse errorResponse =
+        final ErrorResponse errorResponse =
             ErrorResponse.fromJson(localResponse.body);
+
         localResponse = Response(
-            statusCode: localResponse.statusCode,
-            body: localResponse.body,
-            statusText: errorResponse.errors![0].message);
+          statusCode: localResponse.statusCode,
+          body: localResponse.body,
+          statusText: errorResponse.errors?[0].message,
+        );
       } else if (localResponse.body.toString().startsWith('{message')) {
         localResponse = Response(
-            statusCode: localResponse.statusCode,
-            body: localResponse.body,
-            statusText: localResponse.body['message']);
+          statusCode: localResponse.statusCode,
+          body: localResponse.body,
+          statusText: localResponse.body['message'],
+        );
       }
     } else if (localResponse.statusCode != 200 && localResponse.body == null) {
-      localResponse = Response(statusCode: 0, statusText: noInternetMessage);
+      localResponse = Response(
+        statusCode: 0,
+        statusText: noInternetMessage,
+      );
     }
+
     if (kDebugMode) {
-      log('====> API Response: [${localResponse.statusCode}] $uri\n${localResponse.body}');
+      log(
+        '====> API Response: '
+        '[${localResponse.statusCode}] $uri\n'
+        '${localResponse.body}',
+      );
+
+      print('STATUS : ${response.statusCode}');
+      print('BODY   : ${response.body}');
     }
+
     return localResponse;
   }
 }

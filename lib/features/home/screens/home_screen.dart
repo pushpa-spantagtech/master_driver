@@ -79,9 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
       debugPrint('getLastTrip error: $error');
     });
 
-    rideController
-        .getPendingRideRequestList(1, limit: 100)
-        .then((_) {
+    rideController.getPendingRideRequestList(1, limit: 100).then((_) {
       if (rideController.getPendingRideRequestModel != null) {
         HomeScreenHelper().pendingParcelListPusherImplementation();
       }

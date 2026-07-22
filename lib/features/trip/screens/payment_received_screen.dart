@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
@@ -9,6 +9,7 @@ import 'package:ride_sharing_user_app/common_widgets/confirmation_dialog_widget.
 import 'package:ride_sharing_user_app/common_widgets/payment_item_info_widget.dart';
 import 'package:ride_sharing_user_app/features/map/widgets/route_widget.dart';
 import 'package:ride_sharing_user_app/features/ride/controllers/ride_controller.dart';
+import 'package:ride_sharing_user_app/helper/route_helper.dart';
 import 'package:ride_sharing_user_app/features/trip/controllers/trip_controller.dart';
 import 'package:ride_sharing_user_app/helper/price_converter.dart';
 import 'package:ride_sharing_user_app/util/dimensions.dart';
@@ -30,15 +31,56 @@ class PaymentReceivedScreen extends StatefulWidget {
 class _PaymentReceivedScreenState extends State<PaymentReceivedScreen>
     with WidgetsBindingObserver {
   bool get fromParcel => widget.fromParcel;
-
+  Timer? _paymentStatusTimer;
   @override
   void initState() {
     super.initState();
+
     WidgetsBinding.instance.addObserver(this);
+
+    _paymentStatusTimer = Timer.periodic(
+      const Duration(seconds: 5),
+      (_) async {
+        if (!mounted) {
+          return;
+        }
+
+        final RideController rideController = Get.find<RideController>();
+
+        final String tripId = rideController.finalFare?.id?.toString() ??
+            rideController.tripDetail?.id?.toString() ??
+            '';
+
+        if (tripId.isEmpty) {
+          return;
+        }
+
+        final Response response = await rideController.getRideDetails(
+          tripId,
+          fromHomeScreen: true,
+        );
+
+        if (!mounted || response.statusCode != 200) {
+          return;
+        }
+
+        final String paymentStatus =
+            (rideController.tripDetail?.paymentStatus ?? 'unpaid')
+                .toLowerCase();
+
+        if (paymentStatus == 'paid') {
+          _paymentStatusTimer?.cancel();
+          rideController.stopLiveTracking();
+
+          Get.offAllNamed(RouteHelper.getHomeRoute());
+        }
+      },
+    );
   }
 
   @override
   void dispose() {
+    _paymentStatusTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -51,8 +93,8 @@ class _PaymentReceivedScreenState extends State<PaymentReceivedScreen>
         title: const Text('Payment Pending'),
         content: const Text(
           'Have you collected the cash from the customer?\n\n'
-              'If yes, tap the Payment Received button.\n'
-              'If not, please collect the payment before leaving this screen.',
+          'If yes, tap the Payment Received button.\n'
+          'If not, please collect the payment before leaving this screen.',
         ),
         actions: [
           TextButton(
@@ -84,7 +126,7 @@ class _PaymentReceivedScreenState extends State<PaymentReceivedScreen>
 
               if (finalFareController.finalFare != null) {
                 if (finalFareController.finalFare!.intermediateAddresses !=
-                    null &&
+                        null &&
                     finalFareController.finalFare!.intermediateAddresses !=
                         '[[, ]]') {
                   extraRoute = jsonDecode(
@@ -101,396 +143,396 @@ class _PaymentReceivedScreenState extends State<PaymentReceivedScreen>
                 }
               }
 
-              final fare = finalFareController.finalFare;
-              final num fareAmount =
-                  fare?.actualFare ?? fare?.distanceWiseFare ?? 0;
-              final num paidFare = fare?.paidFare ?? 0;
-              final num cancellationFee = fare?.cancellationFee ?? 0;
-              final num idleFee = fare?.idleFee ?? 0;
-              final num delayFee = fare?.delayFee ?? 0;
-              final num couponAmount = fare?.couponAmount ?? 0;
-              final num discountAmount = fare?.discountAmount ?? 0;
-              final num apiVatTax = fare?.vatTax ?? 0;
+              final finalFare = finalFareController.finalFare;
 
-              final num calculatedVatTax =
-                  (paidFare + couponAmount + discountAmount) -
-                      (fareAmount + cancellationFee + idleFee + delayFee);
+              final double vatTaxAmount = finalFare == null
+                  ? 0
+                  : (finalFare.vatTax ?? 0) > 0
+                      ? (finalFare.vatTax ?? 0).toDouble()
+                      : ((finalFare.paidFare ?? 0) -
+                              (finalFare.actualFare ??
+                                  finalFare.distanceWiseFare ??
+                                  0) -
+                              (finalFare.cancellationFee ?? 0) -
+                              (finalFare.idleFee ?? 0) -
+                              (finalFare.delayFee ?? 0) -
+                              (finalFare.tips ?? 0) +
+                              (finalFare.couponAmount ?? 0) +
+                              (finalFare.discountAmount ?? 0))
+                          .clamp(0, double.infinity)
+                          .toDouble();
 
-              final num displayVatTax = apiVatTax > 0
-                  ? apiVatTax
-                  : (calculatedVatTax > 0 ? calculatedVatTax : 0);
-
-              return finalFareController.finalFare != null
+              return finalFare != null
                   ? Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppBarWidget(
-                    title: 'sub_total'.tr,
-                    showBackButton: true,
-                    onBackPressed: () {
-                      _showPaymentPendingDialog(context);
-                    },
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: Dimensions.paddingSizeDefault,
-                    ),
-                    child: Container(
-                      width: Get.width,
-                      transform: Matrix4.translationValues(0, -30, 0),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).cardColor,
-                        borderRadius: BorderRadius.circular(
-                          Dimensions.paddingSizeDefault,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        AppBarWidget(
+                          title: 'sub_total'.tr,
+                          showBackButton: true,
+                          onBackPressed: () {
+                            _showPaymentPendingDialog(context);
+                          },
                         ),
-                        border: Border.all(
-                          color: Theme.of(context)
-                              .hintColor
-                              .withValues(alpha: 0.45),
-                        ),
-                      ),
-                      child: Column(
-                        children: [
-                          if (((finalFareController
-                              .finalFare?.discountAmount ??
-                              0) +
-                              (finalFareController
-                                  .finalFare?.couponAmount ??
-                                  0)) >
-                              0)
-                            Container(
-                              margin: const EdgeInsets.only(
-                                top: Dimensions.paddingSizeSmall,
-                                left: Dimensions.paddingSizeSmall,
-                                right: Dimensions.paddingSizeSmall,
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: Dimensions.paddingSizeDefault,
+                          ),
+                          child: Container(
+                            width: Get.width,
+                            transform: Matrix4.translationValues(0, -30, 0),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).cardColor,
+                              borderRadius: BorderRadius.circular(
+                                Dimensions.paddingSizeDefault,
                               ),
-                              padding: const EdgeInsets.all(
-                                Dimensions.paddingSizeSmall,
-                              ),
-                              decoration: BoxDecoration(
+                              border: Border.all(
                                 color: Theme.of(context)
                                     .hintColor
-                                    .withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(
-                                  Dimensions.radiusDefault,
-                                ),
+                                    .withValues(alpha: 0.45),
                               ),
-                              child: IntrinsicHeight(
-                                child: Row(
-                                  mainAxisAlignment:
-                                  MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    Column(
-                                      crossAxisAlignment:
-                                      CrossAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          'total_trip_cost'.tr,
-                                          style: textRegular,
-                                        ),
-                                        Text(
-                                          PriceConverter.convertPrice(
-                                            context,
-                                            ((finalFareController
-                                                .finalFare
-                                                ?.discountAmount ??
-                                                0) +
-                                                (finalFareController
-                                                    .finalFare
-                                                    ?.couponAmount ??
-                                                    0)) +
-                                                (finalFareController
-                                                    .finalFare
-                                                    ?.paidFare ??
-                                                    0),
-                                          ),
-                                          style: textBold.copyWith(
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .onPrimary,
-                                            fontSize:
-                                            Dimensions.fontSizeLarge,
-                                          ),
-                                        ),
-                                      ],
+                            ),
+                            child: Column(
+                              children: [
+                                if (((finalFareController
+                                                .finalFare?.discountAmount ??
+                                            0) +
+                                        (finalFareController
+                                                .finalFare?.couponAmount ??
+                                            0)) >
+                                    0)
+                                  Container(
+                                    margin: const EdgeInsets.only(
+                                      top: Dimensions.paddingSizeSmall,
+                                      left: Dimensions.paddingSizeSmall,
+                                      right: Dimensions.paddingSizeSmall,
                                     ),
-                                    VerticalDivider(
-                                      thickness: 1,
+                                    padding: const EdgeInsets.all(
+                                      Dimensions.paddingSizeSmall,
+                                    ),
+                                    decoration: BoxDecoration(
                                       color: Theme.of(context)
                                           .hintColor
-                                          .withValues(alpha: 0.5),
+                                          .withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(
+                                        Dimensions.radiusDefault,
+                                      ),
                                     ),
-                                    Column(
-                                      crossAxisAlignment:
-                                      CrossAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          'admin_will_pay'.tr,
-                                          style: textRegular,
-                                        ),
-                                        Text(
-                                          PriceConverter.convertPrice(
-                                            context,
-                                            ((finalFareController
-                                                .finalFare
-                                                ?.discountAmount ??
-                                                0) +
-                                                (finalFareController
-                                                    .finalFare
-                                                    ?.couponAmount ??
-                                                    0)),
+                                    child: IntrinsicHeight(
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceEvenly,
+                                        children: [
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                'total_trip_cost'.tr,
+                                                style: textRegular,
+                                              ),
+                                              Text(
+                                                PriceConverter.convertPrice(
+                                                  context,
+                                                  ((finalFareController
+                                                                  .finalFare
+                                                                  ?.discountAmount ??
+                                                              0) +
+                                                          (finalFareController
+                                                                  .finalFare
+                                                                  ?.couponAmount ??
+                                                              0)) +
+                                                      (finalFareController
+                                                              .finalFare
+                                                              ?.paidFare ??
+                                                          0),
+                                                ),
+                                                style: textBold.copyWith(
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .onPrimary,
+                                                  fontSize:
+                                                      Dimensions.fontSizeLarge,
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                          style: textBold.copyWith(
+                                          VerticalDivider(
+                                            thickness: 1,
                                             color: Theme.of(context)
-                                                .textTheme
-                                                .bodyMedium!
-                                                .color,
-                                            fontSize:
-                                            Dimensions.fontSizeLarge,
+                                                .hintColor
+                                                .withValues(alpha: 0.5),
                                           ),
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                'admin_will_pay'.tr,
+                                                style: textRegular,
+                                              ),
+                                              Text(
+                                                PriceConverter.convertPrice(
+                                                  context,
+                                                  ((finalFareController
+                                                              .finalFare
+                                                              ?.discountAmount ??
+                                                          0) +
+                                                      (finalFareController
+                                                              .finalFare
+                                                              ?.couponAmount ??
+                                                          0)),
+                                                ),
+                                                style: textBold.copyWith(
+                                                  color: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyMedium!
+                                                      .color,
+                                                  fontSize:
+                                                      Dimensions.fontSizeLarge,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal:
+                                            Dimensions.paddingSizeDefault,
+                                        vertical: Dimensions.paddingSizeDefault,
+                                      ),
+                                      child: Text(
+                                        ((finalFareController.finalFare
+                                                            ?.discountAmount ??
+                                                        0) +
+                                                    (finalFareController
+                                                            .finalFare
+                                                            ?.couponAmount ??
+                                                        0)) >
+                                                0
+                                            ? 'customer_will_pay'.tr
+                                            : 'total_trip_cost'.tr,
+                                        style: textBold.copyWith(
+                                          color: Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium!
+                                              .color,
+                                          fontSize: Dimensions.fontSizeLarge,
                                         ),
-                                      ],
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal:
+                                            Dimensions.paddingSizeDefault,
+                                        vertical: Dimensions.paddingSizeDefault,
+                                      ),
+                                      child: Text(
+                                        PriceConverter.convertPrice(
+                                          context,
+                                          finalFareController
+                                                  .finalFare?.paidFare ??
+                                              0,
+                                        ),
+                                        style: textBold.copyWith(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onPrimary,
+                                          fontSize: Dimensions.fontSizeLarge,
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        if (!fromParcel)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: Dimensions.paddingSizeExtraLarge,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                SummeryItem(
+                                  title:
+                                      '${finalFareController.finalFare!.actualTime} ${'minute'.tr}',
+                                  subTitle: 'time'.tr,
+                                ),
+                                SummeryItem(
+                                  title:
+                                      '${finalFareController.finalFare!.actualDistance} km',
+                                  subTitle: 'distance'.tr,
+                                ),
+                              ],
+                            ),
+                          ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: Dimensions.paddingSizeDefault,
+                            vertical: Dimensions.paddingSizeSmall,
+                          ),
+                          child: Text(
+                            'trip_details'.tr,
+                            style: textRegular.copyWith(
+                              color: Theme.of(context).colorScheme.secondary,
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: Dimensions.paddingSizeDefault,
+                          ),
+                          child: RouteWidget(
+                            pickupAddress:
+                                '${finalFareController.finalFare!.pickupAddress}',
+                            destinationAddress:
+                                '${finalFareController.finalFare!.destinationAddress}',
+                            extraOne: firstRoute,
+                            extraTwo: secondRoute,
+                            entrance:
+                                finalFareController.finalFare?.entrance ?? '',
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(
+                            Dimensions.paddingSizeDefault,
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.fromLTRB(
+                              Dimensions.paddingSizeDefault,
+                              Dimensions.paddingSizeDefault,
+                              Dimensions.paddingSizeDefault,
+                              0,
+                            ),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: Theme.of(context)
+                                    .hintColor
+                                    .withValues(alpha: 0.45),
+                              ),
+                              borderRadius: BorderRadius.circular(
+                                Dimensions.paddingSizeSmall,
                               ),
                             ),
-                          Row(
-                            mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal:
-                                  Dimensions.paddingSizeDefault,
-                                  vertical: Dimensions.paddingSizeDefault,
-                                ),
-                                child: Text(
-                                  ((finalFareController.finalFare
-                                      ?.discountAmount ??
-                                      0) +
-                                      (finalFareController
-                                          .finalFare
-                                          ?.couponAmount ??
-                                          0)) >
-                                      0
-                                      ? 'customer_will_pay'.tr
-                                      : 'total_trip_cost'.tr,
-                                  style: textBold.copyWith(
-                                    color: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium!
-                                        .color,
-                                    fontSize: Dimensions.fontSizeLarge,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    bottom: Dimensions.paddingSizeDefault,
+                                  ),
+                                  child: Text(
+                                    'payment_details'.tr,
+                                    style: textSemiBold.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .secondary,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal:
-                                  Dimensions.paddingSizeDefault,
-                                  vertical: Dimensions.paddingSizeDefault,
+                                PaymentItemInfoWidget(
+                                  icon: Images.farePrice,
+                                  title: 'fare_price'.tr,
+                                  amount: finalFareController
+                                          .finalFare?.actualFare ??
+                                      finalFareController
+                                          .finalFare?.distanceWiseFare ??
+                                      0,
                                 ),
-                                child: Text(
-                                  PriceConverter.convertPrice(
-                                    context,
+                                if (!fromParcel &&
                                     finalFareController
-                                        .finalFare?.paidFare ??
+                                            .finalFare!.cancellationFee!
+                                            .toDouble() >
+                                        0)
+                                  PaymentItemInfoWidget(
+                                    icon: Images.idleHourIcon,
+                                    title: 'cancellation_price'.tr,
+                                    amount: finalFareController
+                                            .finalFare?.cancellationFee ??
                                         0,
                                   ),
-                                  style: textBold.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onPrimary,
-                                    fontSize: Dimensions.fontSizeLarge,
+                                if (!fromParcel &&
+                                    finalFareController.finalFare!.idleFee!
+                                            .toDouble() >
+                                        0)
+                                  PaymentItemInfoWidget(
+                                    icon: Images.idleHourIcon,
+                                    title: 'idle_price'.tr,
+                                    amount: finalFareController
+                                            .finalFare?.idleFee ??
+                                        0,
                                   ),
+                                if (!fromParcel &&
+                                    finalFareController.finalFare!.delayFee!
+                                            .toDouble() >
+                                        0)
+                                  PaymentItemInfoWidget(
+                                    icon: Images.waitingPrice,
+                                    title: 'delay_price'.tr,
+                                    amount: finalFareController
+                                            .finalFare?.delayFee ??
+                                        0,
+                                  ),
+                                if (finalFareController.finalFare!.couponAmount!
+                                        .toDouble() >
+                                    0)
+                                  PaymentItemInfoWidget(
+                                    icon: Images.coupon,
+                                    title: 'coupon_amount'.tr,
+                                    amount: finalFareController
+                                            .finalFare?.couponAmount ??
+                                        0,
+                                    discount: true,
+                                    toolTipText:
+                                        'customer_applied_coupon_for_this_ride'
+                                            .tr,
+                                    subTitle:
+                                        'later_admin_will_pay_you_this_amount',
+                                  ),
+                                if (finalFareController
+                                        .finalFare!.discountAmount!
+                                        .toDouble() >
+                                    0)
+                                  PaymentItemInfoWidget(
+                                    icon: Images.discountIcon,
+                                    title: 'discount_applied'.tr,
+                                    amount: finalFareController
+                                            .finalFare?.discountAmount ??
+                                        0,
+                                    discount: true,
+                                    toolTipText:
+                                        'discount_applied_for_this_ride'.tr,
+                                    subTitle:
+                                        'later_admin_will_pay_you_this_amount',
+                                  ),
+                                if (vatTaxAmount > 0)
+                                  PaymentItemInfoWidget(
+                                    icon: Images.farePrice,
+                                    title: 'vat_tax'.tr,
+                                    amount: vatTaxAmount,
+                                  ),
+                                PaymentItemInfoWidget(
+                                  title: 'sub_total'.tr,
+                                  amount:
+                                      finalFareController.finalFare?.paidFare ??
+                                          0,
+                                  isSubTotal: true,
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  if (!fromParcel)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: Dimensions.paddingSizeExtraLarge,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          SummeryItem(
-                            title:
-                            '${finalFareController.finalFare!.actualTime} ${'minute'.tr}',
-                            subTitle: 'time'.tr,
-                          ),
-                          SummeryItem(
-                            title:
-                            '${finalFareController.finalFare!.actualDistance} km',
-                            subTitle: 'distance'.tr,
-                          ),
-                        ],
-                      ),
-                    ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: Dimensions.paddingSizeDefault,
-                      vertical: Dimensions.paddingSizeSmall,
-                    ),
-                    child: Text(
-                      'trip_details'.tr,
-                      style: textRegular.copyWith(
-                        color: Theme.of(context).colorScheme.secondary,
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: Dimensions.paddingSizeDefault,
-                    ),
-                    child: RouteWidget(
-                      pickupAddress:
-                      '${finalFareController.finalFare!.pickupAddress}',
-                      destinationAddress:
-                      '${finalFareController.finalFare!.destinationAddress}',
-                      extraOne: firstRoute,
-                      extraTwo: secondRoute,
-                      entrance:
-                      finalFareController.finalFare?.entrance ?? '',
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(
-                      Dimensions.paddingSizeDefault,
-                    ),
-                    child: Container(
-                      padding: const EdgeInsets.fromLTRB(
-                        Dimensions.paddingSizeDefault,
-                        Dimensions.paddingSizeDefault,
-                        Dimensions.paddingSizeDefault,
-                        0,
-                      ),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Theme.of(context)
-                              .hintColor
-                              .withValues(alpha: 0.45),
                         ),
-                        borderRadius: BorderRadius.circular(
-                          Dimensions.paddingSizeSmall,
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(
-                              bottom: Dimensions.paddingSizeDefault,
-                            ),
-                            child: Text(
-                              'payment_details'.tr,
-                              style: textSemiBold.copyWith(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .secondary,
-                              ),
-                            ),
-                          ),
-                          PaymentItemInfoWidget(
-                            icon: Images.farePrice,
-                            title: 'fare_price'.tr,
-                            amount: finalFareController
-                                .finalFare?.actualFare ??
-                                finalFareController
-                                    .finalFare?.distanceWiseFare ??
-                                0,
-                          ),
-                          if (!fromParcel &&
-                              finalFareController
-                                  .finalFare!.cancellationFee!
-                                  .toDouble() >
-                                  0)
-                            PaymentItemInfoWidget(
-                              icon: Images.idleHourIcon,
-                              title: 'cancellation_price'.tr,
-                              amount: finalFareController
-                                  .finalFare?.cancellationFee ??
-                                  0,
-                            ),
-                          if (!fromParcel &&
-                              finalFareController.finalFare!.idleFee!
-                                  .toDouble() >
-                                  0)
-                            PaymentItemInfoWidget(
-                              icon: Images.idleHourIcon,
-                              title: 'idle_price'.tr,
-                              amount: finalFareController
-                                  .finalFare?.idleFee ??
-                                  0,
-                            ),
-                          if (!fromParcel &&
-                              finalFareController.finalFare!.delayFee!
-                                  .toDouble() >
-                                  0)
-                            PaymentItemInfoWidget(
-                              icon: Images.waitingPrice,
-                              title: 'delay_price'.tr,
-                              amount: finalFareController
-                                  .finalFare?.delayFee ??
-                                  0,
-                            ),
-                          if (finalFareController.finalFare!.couponAmount!
-                              .toDouble() >
-                              0)
-                            PaymentItemInfoWidget(
-                              icon: Images.coupon,
-                              title: 'coupon_amount'.tr,
-                              amount: finalFareController
-                                  .finalFare?.couponAmount ??
-                                  0,
-                              discount: true,
-                              toolTipText:
-                              'customer_applied_coupon_for_this_ride'
-                                  .tr,
-                              subTitle:
-                              'later_admin_will_pay_you_this_amount',
-                            ),
-                          if (finalFareController
-                              .finalFare!.discountAmount!
-                              .toDouble() >
-                              0)
-                            PaymentItemInfoWidget(
-                              icon: Images.discountIcon,
-                              title: 'discount_applied'.tr,
-                              amount: finalFareController
-                                  .finalFare?.discountAmount ??
-                                  0,
-                              discount: true,
-                              toolTipText:
-                              'discount_applied_for_this_ride'.tr,
-                              subTitle:
-                              'later_admin_will_pay_you_this_amount',
-                            ),
-                          if (displayVatTax > 0)
-                            PaymentItemInfoWidget(
-                              icon: Images.farePrice,
-                              title: 'vat_tax'.tr,
-                              amount: displayVatTax.toDouble(),
-                            ),
-                          PaymentItemInfoWidget(
-                            title: 'sub_total'.tr,
-                            amount:
-                            finalFareController.finalFare?.paidFare ??
-                                0,
-                            isSubTotal: true,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              )
+                      ],
+                    )
                   : const SizedBox();
             },
           ),
@@ -509,33 +551,33 @@ class _PaymentReceivedScreenState extends State<PaymentReceivedScreen>
                   ),
                   child: tripController.isLoading
                       ? Center(
-                    child: SpinKitCircle(
-                      color: Theme.of(context).colorScheme.primary,
-                      size: 40.0,
-                    ),
-                  )
+                          child: SpinKitCircle(
+                            color: Theme.of(context).colorScheme.primary,
+                            size: 40.0,
+                          ),
+                        )
                       : ButtonWidget(
-                    buttonText: 'payment_received'.tr,
-                    onPressed: () {
-                      Get.dialog(
-                        ConfirmationDialogWidget(
-                          icon: Images.paymentIcon,
-                          description:
-                          'are_you_sure_you_got_cash_payment_from_customer'
-                              .tr,
-                          onYesPressed: () async {
-                            if (tripController.isLoading) return;
+                          buttonText: 'payment_received'.tr,
+                          onPressed: () {
+                            Get.dialog(
+                              ConfirmationDialogWidget(
+                                icon: Images.paymentIcon,
+                                description:
+                                    'are_you_sure_you_got_cash_payment_from_customer'
+                                        .tr,
+                                onYesPressed: () async {
+                                  if (tripController.isLoading) return;
 
-                            await tripController.paymentSubmit(
-                              finalFareController.finalFare!.id!,
-                              'cash',
-                              fromSenderPayment: fromParcel,
+                                  await tripController.paymentSubmit(
+                                    finalFareController.finalFare!.id!,
+                                    'cash',
+                                    fromSenderPayment: fromParcel,
+                                  );
+                                },
+                              ),
                             );
                           },
                         ),
-                      );
-                    },
-                  ),
                 );
               },
             );

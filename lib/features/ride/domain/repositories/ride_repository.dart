@@ -62,13 +62,31 @@ class RideRepository implements RideRepositoryInterface {
 
   @override
   Future<Response> tripStatusUpdate(
-      String status, String id, String cancellationCause) async {
-    return await apiClient.postData(AppConstants.tripStatusUpdate, {
-      "status": status,
-      "cancel_reason": cancellationCause,
-      "trip_request_id": id,
-      "_method": 'put'
-    });
+    String id,
+    String status,
+    String cancellationCause,
+  ) async {
+    print('===== TRIP STATUS UPDATE =====');
+    print('URL: ${AppConstants.tripStatusUpdate}');
+    print('TRIP ID: $id');
+    print('STATUS VALUE: $status');
+    print('CANCEL REASON: $cancellationCause');
+
+    final Response response = await apiClient.postData(
+      AppConstants.tripStatusUpdate,
+      {
+        'trip_request_id': id,
+        'status': status,
+        'cancel_reason': cancellationCause,
+        '_method': 'put',
+      },
+    );
+
+    print('UPDATE RESPONSE CODE: ${response.statusCode}');
+    print('UPDATE RESPONSE BODY: ${response.body}');
+    print('UPDATE RESPONSE TEXT: ${response.statusText}');
+
+    return response;
   }
 
   @override

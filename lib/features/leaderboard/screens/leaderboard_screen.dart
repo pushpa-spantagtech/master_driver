@@ -142,13 +142,13 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                             totalSize: leaderboardController
                                 .leaderBoardModel!.totalSize,
                             offset: leaderboardController
-                                .leaderBoardModel!.offset !=
-                                null
+                                        .leaderBoardModel!.offset !=
+                                    null
                                 ? int.tryParse(
-                              leaderboardController
-                                  .leaderBoardModel!.offset
-                                  .toString(),
-                            )
+                                    leaderboardController
+                                        .leaderBoardModel!.offset
+                                        .toString(),
+                                  )
                                 : null,
                             onPaginate: (int? offset) async {
                               // Existing pagination functionality unchanged.
@@ -158,11 +158,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                               padding: const EdgeInsets.symmetric(
                                 horizontal: Dimensions.paddingSizeDefault,
                               ),
-                              physics:
-                              const NeverScrollableScrollPhysics(),
+                              physics: const NeverScrollableScrollPhysics(),
                               shrinkWrap: true,
                               separatorBuilder: (_, __) =>
-                              const SizedBox(height: 10),
+                                  const SizedBox(height: 10),
                               itemBuilder: (context, index) {
                                 return LeaderBoardCardWidget(
                                   index: index,
@@ -344,7 +343,7 @@ class _TopDriverCard extends StatelessWidget {
             child: ClipOval(
               child: ImageWidget(
                 image:
-                '${Get.find<SplashController>().config!.imageBaseUrl!.profileImage!}/${leader.driver?.profileImage ?? ''}',
+                    '${Get.find<SplashController>().config!.imageBaseUrl!.profileImage!}/${leader.driver?.profileImage ?? ''}',
                 fit: BoxFit.cover,
               ),
             ),

@@ -141,7 +141,7 @@ class RiderMapController extends GetxController implements GetxService {
     List<LatLng> polylineCoordinates = [];
     if (Get.find<RideController>().polyline != '') {
       List<PointLatLng> result =
-          polylinePoints.decodePolyline(Get.find<RideController>().polyline);
+      polylinePoints.decodePolyline(Get.find<RideController>().polyline);
       if (result.isNotEmpty) {
         for (var point in result) {
           polylineCoordinates.add(LatLng(point.latitude, point.longitude));
@@ -218,11 +218,17 @@ class RiderMapController extends GetxController implements GetxService {
 
   void setFromToMarker(LatLng from, LatLng to,
       {bool updateLiveLocation = false}) async {
-    markers = HashSet();
+    // Keep the live driver/car marker while refreshing route markers.
+    // Clearing the entire set here caused the car icon to disappear when the
+    // accept response, location stream and route API completed in a different
+    // order. Only replace the route markers.
+    markers.removeWhere((marker) =>
+    marker.markerId.value == 'pickup' ||
+        marker.markerId.value == 'destination');
     Uint8List fromMarker =
-        await convertAssetToUnit8List(Images.mapIcon, width: 25);
+    await convertAssetToUnit8List(Images.mapIcon, width: 25);
     Uint8List toMarker =
-        await convertAssetToUnit8List(Images.mapLocationIcon, width: 25);
+    await convertAssetToUnit8List(Images.mapLocationIcon, width: 25);
 
     markers.add(Marker(
       markerId: const MarkerId('pickup'),
@@ -242,7 +248,7 @@ class RiderMapController extends GetxController implements GetxService {
       infoWindow: InfoWindow(
         title: 'Destination',
         snippet:
-            Get.find<RideController>().tripDetail?.destinationAddress ?? '',
+        Get.find<RideController>().tripDetail?.destinationAddress ?? '',
       ),
       icon: BitmapDescriptor.bytes(toMarker),
     ));
@@ -365,7 +371,7 @@ class RiderMapController extends GetxController implements GetxService {
     }
 
     final Uint8List requestMarker =
-        await convertAssetToUnit8List(Images.mapIcon, width: 34);
+    await convertAssetToUnit8List(Images.mapIcon, width: 34);
     final List<LatLng> requestPositions = [];
 
     for (int i = 0; i < pendingTrips.length; i++) {
@@ -469,9 +475,9 @@ class RiderMapController extends GetxController implements GetxService {
         targetWidth: width);
     ui.FrameInfo fi = await codec.getNextFrame();
     final Uint8List markerBytes =
-        (await fi.image.toByteData(format: ui.ImageByteFormat.png))!
-            .buffer
-            .asUint8List();
+    (await fi.image.toByteData(format: ui.ImageByteFormat.png))!
+        .buffer
+        .asUint8List();
     _markerIconCache[cacheKey] = markerBytes;
     return markerBytes;
   }
@@ -598,7 +604,7 @@ class RiderMapController extends GetxController implements GetxService {
   void setMarkersInitialPosition() {
     if (Get.find<RideController>().polyline != '') {
       List<PointLatLng> result =
-          polylinePoints.decodePolyline(Get.find<RideController>().polyline);
+      polylinePoints.decodePolyline(Get.find<RideController>().polyline);
 
       _initialPosition = LatLng(result[0].latitude, result[0].longitude);
       _destinationPosition = LatLng(result[result.length - 1].latitude,

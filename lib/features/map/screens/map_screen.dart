@@ -77,7 +77,13 @@ class _MapScreenState extends State<MapScreen> {
         Get.find<RiderMapController>().setSheetHeight(50, false);
       }
 
-      await Get.find<RideController>().getPendingRideRequestList(1);
+      // Pending requests are needed only on the idle map. Refreshing them on
+      // an accepted/ongoing ride toggles the shared loader and can interfere
+      // with the accepted-route markers.
+      if (Get.find<RiderMapController>().currentRideState ==
+          RideState.initial) {
+        await Get.find<RideController>().getPendingRideRequestList(1);
+      }
     });
 
     // Get.find<RideController>().getPendingRideRequestList(1).then((_) {
@@ -178,6 +184,55 @@ class _MapScreenState extends State<MapScreen> {
       );
     } catch (e) {
       debugPrint('Unable to move to current location: $e');
+    }
+  }
+
+  Future<void> _showAcceptedRideMarkersImmediately() async {
+    final RideController rideController = Get.find<RideController>();
+    final RiderMapController mapController = Get.find<RiderMapController>();
+    final trip = rideController.tripDetail;
+
+    final pickup = trip?.pickupCoordinates?.coordinates;
+    final destination = trip?.destinationCoordinates?.coordinates;
+
+    // Render route endpoint icons from already available trip details instead
+    // of waiting for remainingDistance(). The API can update them afterwards.
+    if (pickup != null &&
+        pickup.length >= 2 &&
+        destination != null &&
+        destination.length >= 2) {
+      mapController.setFromToMarker(
+        LatLng(pickup[1], pickup[0]),
+        LatLng(destination[1], destination[0]),
+      );
+    }
+
+    // Render the car immediately using the last location already held by the
+    // app. A fresh GPS value will replace it when getCurrentLocation finishes.
+    try {
+      final Uint8List imageData = await (_driverMarkerFuture ?? getMarker());
+      if (!mounted || mapController.currentRideState == RideState.initial)
+        return;
+
+      final LatLng cachedLocation =
+          Get.find<LocationController>().initialPosition;
+      final Marker cachedDriverMarker = Marker(
+        markerId: const MarkerId('driver_marker'),
+        position: cachedLocation,
+        draggable: false,
+        zIndexInt: 999,
+        flat: true,
+        anchor: const Offset(0.5, 0.5),
+        icon: BitmapDescriptor.bytes(imageData),
+      );
+
+      mapController.markers.removeWhere(
+        (marker) => marker.markerId.value == 'driver_marker',
+      );
+      mapController.markers.add(cachedDriverMarker);
+      mapController.update();
+    } catch (e) {
+      debugPrint('Unable to render cached driver marker: $e');
     }
   }
 
@@ -421,9 +476,18 @@ class _MapScreenState extends State<MapScreen> {
                                   'accepted' ||
                               riderMapController.currentRideState.name ==
                                   'ongoing') {
-                            Get.find<RideController>().remainingDistance(
-                                Get.find<RideController>().tripDetail!.id!,
-                                mapBound: true);
+                            // Show all available icons immediately from cached
+                            // trip/location data. Do not block marker rendering
+                            // on the route API or a fresh GPS request.
+                            await _showAcceptedRideMarkersImmediately();
+                            getCurrentLocation();
+
+                            // Refresh route/polyline data afterwards. This keeps
+                            // the icons visible while the network call completes.
+                            await Get.find<RideController>().remainingDistance(
+                              Get.find<RideController>().tripDetail!.id!,
+                              mapBound: true,
+                            );
                           } else {
                             riderMapController.getPickupToDestinationPolyline();
                           }

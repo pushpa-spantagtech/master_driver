@@ -46,10 +46,12 @@ class LocationController extends GetxController implements GetxService {
 
   StreamSubscription? _locationSubscription;
 
+  Function? _pendingPermissionCallback;
+
   Future<Position> getCurrentLocation(
       {bool isAnimate = true,
-      GoogleMapController? mapController,
-      bool callZone = true}) async {
+        GoogleMapController? mapController,
+        bool callZone = true}) async {
     bool isSuccess = await checkPermission(() {});
     if (isSuccess) {
       try {
@@ -80,18 +82,18 @@ class LocationController extends GetxController implements GetxService {
         }
         _locationSubscription =
             Geolocator.getPositionStream().listen((newLocalData) {
-          if (mapController != null) {
-            mapController.moveCamera(CameraUpdate.newCameraPosition(
-                CameraPosition(
-                    bearing: 192.8334901395799,
-                    target:
+              if (mapController != null) {
+                mapController.moveCamera(CameraUpdate.newCameraPosition(
+                    CameraPosition(
+                        bearing: 192.8334901395799,
+                        target:
                         LatLng(newLocalData.latitude, newLocalData.longitude),
-                    tilt: 0,
-                    zoom: 16)));
-            Get.find<RiderMapController>().updateMarkerAndCircle(
-                LatLng(newLocalData.latitude, newLocalData.longitude));
-          }
-        });
+                        tilt: 0,
+                        zoom: 16)));
+                Get.find<RiderMapController>().updateMarkerAndCircle(
+                    LatLng(newLocalData.latitude, newLocalData.longitude));
+              }
+            });
         if (isAnimate) {
           _mapController?.moveCamera(CameraUpdate.newCameraPosition(
               CameraPosition(target: _initialPosition, zoom: 16)));
@@ -181,7 +183,7 @@ class LocationController extends GetxController implements GetxService {
 
   Future<String> getAddressFromGeocode(LatLng latLng) async {
     Response response =
-        await locationServiceInterface.getAddressFromGeocode(latLng);
+    await locationServiceInterface.getAddressFromGeocode(latLng);
     if (response.statusCode == 200) {
       _address =
           response.body['data']['results'][0]['formatted_address'].toString();
@@ -191,56 +193,51 @@ class LocationController extends GetxController implements GetxService {
 
   Future<bool> checkPermission(Function onTap) async {
     LocationPermission permission = await Geolocator.checkPermission();
+
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
-      if (permission != LocationPermission.denied &&
-          permission != LocationPermission.deniedForever &&
-          GetPlatform.isIOS) {
-        onTap();
-        return true;
-      } else if (permission == LocationPermission.deniedForever &&
-          GetPlatform.isIOS) {
-        Get.dialog(
-            ConfirmationDialogWidget(
-                description: 'you_have_to_allow'.tr,
-                fromOpenLocation: true,
-                onYesPressed: () async {
-                  await Geolocator.openAppSettings();
-                  Get.back();
-                },
-                icon: Images.logo),
-            barrierDismissible: false);
-      }
-    } else if ((permission == LocationPermission.denied ||
-            permission == LocationPermission.deniedForever) &&
-        GetPlatform.isAndroid) {
-      Get.dialog(
-          ConfirmationDialogWidget(
-              description: 'you_have_to_allow'.tr,
-              fromOpenLocation: true,
-              onYesPressed: () async {
-                Get.back();
-                await Geolocator.openAppSettings();
-              },
-              icon: Images.logo),
-          barrierDismissible: false);
-    } else if ((permission == LocationPermission.denied ||
-            permission == LocationPermission.deniedForever) &&
-        GetPlatform.isIOS) {
-      Get.dialog(
-          ConfirmationDialogWidget(
-              description: 'you_have_to_allow'.tr,
-              fromOpenLocation: true,
-              onYesPressed: () async {
-                await Geolocator.openAppSettings();
-                Get.back();
-              },
-              icon: Images.logo),
-          barrierDismissible: false);
-    } else {
-      onTap();
+    }
+
+    if (permission != LocationPermission.denied &&
+        permission != LocationPermission.deniedForever) {
+      _pendingPermissionCallback = null;
+      await onTap();
       return true;
     }
+
+    _pendingPermissionCallback = onTap;
+
+    if (!(Get.isDialogOpen ?? false)) {
+      Get.dialog(
+        ConfirmationDialogWidget(
+          description: 'you_have_to_allow'.tr,
+          fromOpenLocation: true,
+          onYesPressed: () async {
+            await Geolocator.openAppSettings();
+          },
+          icon: Images.logo,
+        ),
+        barrierDismissible: false,
+      );
+    }
+
     return false;
+  }
+
+  Future<bool> handlePermissionOnResume() async {
+    final Function? callback = _pendingPermissionCallback;
+    if (callback == null) {
+      return false;
+    }
+
+    final LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+      return false;
+    }
+
+    _pendingPermissionCallback = null;
+    await callback();
+    return true;
   }
 }

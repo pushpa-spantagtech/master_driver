@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:ride_sharing_user_app/util/dimensions.dart';
 import 'package:ride_sharing_user_app/util/images.dart';
@@ -6,6 +9,7 @@ import 'package:ride_sharing_user_app/util/styles.dart';
 import 'package:ride_sharing_user_app/features/dashboard/controllers/bottom_menu_controller.dart';
 import 'package:ride_sharing_user_app/features/dashboard/domain/models/navigation_model.dart';
 import 'package:ride_sharing_user_app/features/home/screens/home_screen.dart';
+import 'package:ride_sharing_user_app/features/location/controllers/location_controller.dart';
 import 'package:ride_sharing_user_app/features/map/controllers/map_controller.dart';
 import 'package:ride_sharing_user_app/features/map/screens/map_screen.dart';
 import 'package:ride_sharing_user_app/features/notification/screens/notification_screen.dart';
@@ -26,6 +30,8 @@ class _DashboardScreenState extends State<DashboardScreen>
   final PageStorageBucket bucket = PageStorageBucket();
 
   bool _checkingCurrentRide = false;
+  Timer? _locationPermissionReminderTimer;
+  Timer? _homeLocationInitialDelayTimer;
 
   @override
   void initState() {
@@ -38,15 +44,81 @@ class _DashboardScreenState extends State<DashboardScreen>
       Get.find<ProfileController>().getProfileInfo();
       _checkCurrentRide();
       Get.find<RideController>().getPendingRideRequestList(1);
+      _scheduleHomeLocationPermissionCheck();
     });
+  }
+
+  void _scheduleHomeLocationPermissionCheck() {
+    _homeLocationInitialDelayTimer?.cancel();
+    _locationPermissionReminderTimer?.cancel();
+
+    // Wait 10 seconds after the Home screen becomes active before showing
+    // the first location permission information dialog.
+    _homeLocationInitialDelayTimer = Timer(
+      const Duration(seconds: 10),
+          () async {
+        await _checkOnlineDriverLocationPermission();
+
+        // If permission is still denied, keep reminding every 10 seconds.
+        _locationPermissionReminderTimer = Timer.periodic(
+          const Duration(seconds: 10),
+              (_) => _checkOnlineDriverLocationPermission(),
+        );
+      },
+    );
+  }
+
+  void _handleBottomMenuTap(int index) {
+    Get.find<BottomMenuController>().setTabIndex(index);
+
+    if (index == 0) {
+      _scheduleHomeLocationPermissionCheck();
+    } else {
+      _homeLocationInitialDelayTimer?.cancel();
+      _locationPermissionReminderTimer?.cancel();
+    }
+  }
+
+  Future<void> _checkOnlineDriverLocationPermission() async {
+    if (!mounted ||
+        Get.find<BottomMenuController>().currentTab != 0 ||
+        Get.find<ProfileController>().isOnline != '1' ||
+        (Get.isDialogOpen ?? false)) {
+      return;
+    }
+
+    final LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+      Get.find<ProfileController>().showOnlineLocationPermissionDialog();
+    }
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
+
     if (state == AppLifecycleState.resumed) {
-      _checkCurrentRide();
+      _onAppResumed();
     }
+  }
+
+  Future<void> _onAppResumed() async {
+    final bool profilePermissionHandled =
+    await Get.find<ProfileController>()
+        .handleOnlineLocationPermissionOnResume();
+
+    final bool pendingActionHandled =
+    await Get.find<LocationController>().handlePermissionOnResume();
+
+    if (profilePermissionHandled || pendingActionHandled) {
+      _homeLocationInitialDelayTimer?.cancel();
+      _locationPermissionReminderTimer?.cancel();
+    } else if (Get.find<BottomMenuController>().currentTab == 0) {
+      _scheduleHomeLocationPermissionCheck();
+    }
+
+    _checkCurrentRide();
   }
 
   Future<void> _checkCurrentRide() async {
@@ -67,6 +139,8 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   @override
   void dispose() {
+    _homeLocationInitialDelayTimer?.cancel();
+    _locationPermissionReminderTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -173,9 +247,9 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   List<Widget> generateBottomNavigationItems(
-    BottomMenuController menuController,
-    List<NavigationModel> item,
-  ) {
+      BottomMenuController menuController,
+      List<NavigationModel> item,
+      ) {
     List<Widget> items = [];
 
     for (int index = 0; index < item.length; index++) {
@@ -186,7 +260,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             name: item[index].name,
             activeIcon: item[index].activeIcon,
             inActiveIcon: item[index].inactiveIcon,
-            onTap: () => menuController.setTabIndex(index),
+            onTap: () => _handleBottomMenuTap(index),
           ),
         ),
       );

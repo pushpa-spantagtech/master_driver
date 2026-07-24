@@ -93,22 +93,14 @@ class ProfileController extends GetxController implements GetxService {
       driverImage = profileInfo!.profileImage ?? '';
       isOnline = profileInfo?.details?.isOnline ?? '0';
       if (isOnline == "1") {
-        LocationPermission permission = await Geolocator.checkPermission();
-        if (permission == LocationPermission.denied ||
-            permission == LocationPermission.deniedForever) {
-          Get.dialog(
-              ConfirmationDialogWidget(
-                icon: Images.location,
-                description: 'this_app_collects_location_data'.tr,
-                onYesPressed: () {
-                  Get.back();
-                  _checkPermission(() => startLocationRecord());
-                },
-              ),
-              barrierDismissible: false);
-        } else {
+        final LocationPermission permission =
+            await Geolocator.checkPermission();
+        if (permission != LocationPermission.denied &&
+            permission != LocationPermission.deniedForever) {
           startLocationRecord();
         }
+        // When permission is denied, DashboardScreen shows the information
+        // dialog after the driver has remained on Home for five seconds.
       } else {
         stopLocationRecord();
       }
@@ -571,41 +563,118 @@ class ProfileController extends GetxController implements GetxService {
     }
   }
 
+  bool _openingLocationSettings = false;
+
+  void showOnlineLocationPermissionDialog() {
+    if (isOnline != '1' ||
+        _openingLocationSettings ||
+        (Get.isDialogOpen ?? false)) {
+      return;
+    }
+
+    Get.dialog(
+      ConfirmationDialogWidget(
+        icon: Images.location,
+        description: 'this_app_collects_location_data'.tr,
+        onYesPressed: () {
+          Get.back();
+          _checkPermission(() => startLocationRecord());
+        },
+      ),
+      barrierDismissible: false,
+    );
+  }
+
   void _checkPermission(Function callback) async {
-    LocationPermission permission = await Geolocator.requestPermission();
-    permission = await Geolocator.checkPermission();
+    LocationPermission permission = await Geolocator.checkPermission();
+
     if (permission == LocationPermission.denied) {
-      Get.dialog(
+      permission = await Geolocator.requestPermission();
+    }
+
+    if (permission == LocationPermission.denied) {
+      if (!(Get.isDialogOpen ?? false)) {
+        Get.dialog(
           ConfirmationDialogWidget(
             description: 'you_denied'.tr,
             onYesPressed: () async {
               Get.back();
-              await Geolocator.requestPermission();
-              _checkPermission(callback);
+              final LocationPermission requestedPermission =
+                  await Geolocator.requestPermission();
+              if (requestedPermission != LocationPermission.denied &&
+                  requestedPermission != LocationPermission.deniedForever) {
+                callback();
+              }
             },
             icon: Images.logo,
           ),
-          barrierDismissible: false);
+          barrierDismissible: false,
+        );
+      }
     } else if (permission == LocationPermission.deniedForever) {
-      Get.dialog(
+      if (!(Get.isDialogOpen ?? false)) {
+        Get.dialog(
           ConfirmationDialogWidget(
             description: 'you_denied_forever'.tr,
             onYesPressed: () async {
-              Get.back();
-              await Geolocator.openAppSettings();
-              _checkPermission(callback);
+              // Prevent the reminder timer from reopening this dialog while
+              // Android App Settings is on top of the application.
+              _openingLocationSettings = true;
+
+              if (Get.isDialogOpen ?? false) {
+                Get.back();
+              }
+
+              final bool opened = await Geolocator.openAppSettings();
+              if (!opened) {
+                _openingLocationSettings = false;
+              }
             },
             icon: Images.logo,
           ),
-          barrierDismissible: false);
+          barrierDismissible: false,
+        );
+      }
     } else {
       callback();
     }
+
     await Permission.notification.isDenied.then((value) {
       if (value) {
         Permission.notification.request();
       }
     });
+  }
+
+  Future<bool> handleOnlineLocationPermissionOnResume() async {
+    // Android can return a stale value immediately after closing Settings.
+    await Future.delayed(const Duration(seconds: 1));
+
+    final LocationPermission permission = await Geolocator.checkPermission();
+
+    final bool permissionGranted =
+        permission == LocationPermission.whileInUse ||
+            permission == LocationPermission.always;
+
+    // Settings is no longer on top. Future reminders may run again only when
+    // permission is still denied.
+    _openingLocationSettings = false;
+
+    if (!permissionGranted) {
+      return false;
+    }
+
+    // Close any permission dialog that might have existed before Settings.
+    if (Get.isDialogOpen ?? false) {
+      Get.back();
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
+
+    if (isOnline == '1') {
+      await startLocationRecord();
+    }
+
+    return true;
   }
 
   LevelModel? _levelModel;

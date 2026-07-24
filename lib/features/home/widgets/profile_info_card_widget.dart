@@ -5,6 +5,8 @@ import 'package:ride_sharing_user_app/features/profile/controllers/profile_contr
 import 'package:ride_sharing_user_app/features/splash/controllers/splash_controller.dart';
 import 'package:ride_sharing_user_app/common_widgets/image_widget.dart';
 import 'package:ride_sharing_user_app/common_widgets/loader_widget.dart';
+import 'package:ride_sharing_user_app/common_widgets/confirmation_dialog_widget.dart';
+import 'package:ride_sharing_user_app/util/images.dart';
 
 String capitalize(String text) {
   if (text.isEmpty) return text;
@@ -91,7 +93,7 @@ class ProfileStatusCardWidget extends StatelessWidget {
                     children: [
                       Text(
                         '${capitalize(profile.firstName ?? '')} '
-                        '${capitalize(profile.lastName ?? '')}',
+                            '${capitalize(profile.lastName ?? '')}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -149,9 +151,9 @@ class ProfileStatusCardWidget extends StatelessWidget {
                         inactiveThumbColor: Colors.white,
                         inactiveTrackColor: _offline.withValues(alpha: 0.82),
                         trackOutlineColor:
-                            WidgetStateProperty.all(Colors.transparent),
+                        WidgetStateProperty.all(Colors.transparent),
                         onChanged: (val) async {
-                          if (GetPlatform.isIOS) {
+                          Future<void> changeOnlineStatus() async {
                             Get.dialog(
                               const LoaderWidget(),
                               barrierDismissible: false,
@@ -165,22 +167,35 @@ class ProfileStatusCardWidget extends StatelessWidget {
                                 Get.back();
                               }
                             });
+                          }
+
+                          // ONLINE -> OFFLINE: show the normal confirmation
+                          // popup first. Location permission is not required
+                          // for switching the driver offline.
+                          if (!val) {
+                            Get.dialog(
+                              ConfirmationDialogWidget(
+                                icon: Images.offlineMode,
+                                description: 'are_you_sure'.tr,
+                                onYesPressed: () async {
+                                  Get.back();
+                                  await changeOnlineStatus();
+                                },
+                              ),
+                              barrierDismissible: false,
+                            );
+                            return;
+                          }
+
+                          // OFFLINE -> ONLINE: keep the existing permission
+                          // flow. The pending online action continues after
+                          // location permission is enabled.
+                          if (GetPlatform.isIOS) {
+                            await changeOnlineStatus();
                           } else {
                             Get.find<LocationController>()
                                 .checkPermission(() async {
-                              Get.dialog(
-                                const LoaderWidget(),
-                                barrierDismissible: false,
-                              );
-
-                              await profileController
-                                  .profileOnlineOffline(val)
-                                  .then((value) {
-                                if (value.statusCode == 200 &&
-                                    (Get.isDialogOpen ?? false)) {
-                                  Get.back();
-                                }
-                              });
+                              await changeOnlineStatus();
                             });
                           }
                         },

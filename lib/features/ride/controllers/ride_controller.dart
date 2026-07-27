@@ -536,6 +536,17 @@ class RideController extends GetxController implements GetxService {
     List<String> status = ['accepted', 'ongoing'];
     if (response.statusCode == 200) {
       isLoading = false;
+      debugPrint('========== REMAIN DISTANCE RESPONSE ==========');
+      debugPrint('STATUS: ${response.statusCode}');
+      debugPrint('BODY: ${response.body}');
+
+      if (response.body is List && response.body.isNotEmpty) {
+        debugPrint(
+          'ENCODED POLYLINE: ${response.body[0]['encoded_polyline']}',
+        );
+      }
+
+      debugPrint('==============================================');
       if (status
           .contains(Get.find<RiderMapController>().currentRideState.name)) {
         Get.find<RiderMapController>().getDriverToPickupOrDestinationPolyline(

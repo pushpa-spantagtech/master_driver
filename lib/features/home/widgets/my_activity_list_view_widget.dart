@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ride_sharing_user_app/util/images.dart';
 import 'package:ride_sharing_user_app/features/home/widgets/activity_card_widget.dart';
 import 'package:ride_sharing_user_app/features/profile/controllers/profile_controller.dart';
+import 'package:ride_sharing_user_app/util/images.dart';
 
 class MyActivityListViewWidget extends StatelessWidget {
   const MyActivityListViewWidget({super.key});

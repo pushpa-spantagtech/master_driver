@@ -535,7 +535,8 @@ class _RideOngoingWidgetState extends State<RideOngoingWidget> {
                                           .primaryColor
                                           .withValues(alpha: 0.15),
                                       baseColor: Theme.of(context).primaryColor,
-                                    )
+                                    ),
+                          const SizedBox(height: 16),
                         ]),
                   );
                 })

@@ -4,8 +4,8 @@ import 'package:get/get.dart';
 import 'package:ride_sharing_user_app/common_widgets/loader_widget.dart';
 import 'package:ride_sharing_user_app/features/leaderboard/screens/leaderboard_screen.dart';
 import 'package:ride_sharing_user_app/features/map/controllers/map_controller.dart';
-import 'package:ride_sharing_user_app/features/map/widgets/calculating_sub_total_widget.dart';
 import 'package:ride_sharing_user_app/features/map/widgets/accepted_rider_widget.dart';
+import 'package:ride_sharing_user_app/features/map/widgets/calculating_sub_total_widget.dart';
 import 'package:ride_sharing_user_app/features/map/widgets/custom_icon_card_widget.dart';
 import 'package:ride_sharing_user_app/features/map/widgets/customer_ride_request_card_widget.dart';
 import 'package:ride_sharing_user_app/features/map/widgets/end_trip_dialog_widget.dart';
@@ -14,8 +14,9 @@ import 'package:ride_sharing_user_app/features/ride/controllers/ride_controller.
 import 'package:ride_sharing_user_app/features/ride/screens/ride_request_list_screen.dart';
 import 'package:ride_sharing_user_app/util/dimensions.dart';
 import 'package:ride_sharing_user_app/util/images.dart';
-import 'stay_online_widget.dart';
+
 import 'ride_ongoing_widget.dart';
+import 'stay_online_widget.dart';
 
 class RiderBottomSheetWidget extends StatelessWidget {
   final GlobalKey<ExpandableBottomSheetState> expandableKey;
@@ -63,6 +64,13 @@ class RiderBottomSheetWidget extends StatelessWidget {
                       top: Dimensions.paddingSizeDefault,
                       left: Dimensions.paddingSizeDefault,
                       right: Dimensions.paddingSizeDefault,
+                      // MapScreen intentionally uses
+                      // resizeToAvoidBottomInset: false. Therefore the
+                      // keyboard overlays the expandable sheet unless the
+                      // accepted-ride content reserves the keyboard inset.
+                      // Adding it here increases the expanded content height
+                      // and keeps the OTP fields above the keyboard without
+                      // changing the ride-state flow.
                       bottom: mediaQuery.padding.bottom,
                     ),
                     child: Column(

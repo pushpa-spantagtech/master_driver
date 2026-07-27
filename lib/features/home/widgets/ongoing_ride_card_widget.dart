@@ -3,17 +3,17 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
+import 'package:ride_sharing_user_app/common_widgets/no_data_widget.dart';
+import 'package:ride_sharing_user_app/features/home/widgets/custom_arrow_icon_widget.dart';
+import 'package:ride_sharing_user_app/features/home/widgets/custom_menu_driving_status_widget.dart';
+import 'package:ride_sharing_user_app/features/home/widgets/last_trip_shimmer_widget.dart';
+import 'package:ride_sharing_user_app/features/ride/controllers/ride_controller.dart';
+import 'package:ride_sharing_user_app/features/trip/screens/trip_details_screen.dart';
 import 'package:ride_sharing_user_app/helper/date_converter.dart';
 import 'package:ride_sharing_user_app/helper/price_converter.dart';
 import 'package:ride_sharing_user_app/util/dimensions.dart';
 import 'package:ride_sharing_user_app/util/images.dart';
 import 'package:ride_sharing_user_app/util/styles.dart';
-import 'package:ride_sharing_user_app/features/home/widgets/last_trip_shimmer_widget.dart';
-import 'package:ride_sharing_user_app/features/home/widgets/custom_arrow_icon_widget.dart';
-import 'package:ride_sharing_user_app/features/home/widgets/custom_menu_driving_status_widget.dart';
-import 'package:ride_sharing_user_app/features/ride/controllers/ride_controller.dart';
-import 'package:ride_sharing_user_app/features/trip/screens/trip_details_screen.dart';
-import 'package:ride_sharing_user_app/common_widgets/no_data_widget.dart';
 
 class OngoingRideCardWidget extends StatelessWidget {
   const OngoingRideCardWidget({super.key});

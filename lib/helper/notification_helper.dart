@@ -2,39 +2,39 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 import 'package:ride_sharing_user_app/features/chat/controllers/chat_controller.dart';
 import 'package:ride_sharing_user_app/features/chat/screens/message_screen.dart';
 import 'package:ride_sharing_user_app/features/dashboard/controllers/bottom_menu_controller.dart';
+import 'package:ride_sharing_user_app/features/dashboard/screens/dashboard_screen.dart';
 import 'package:ride_sharing_user_app/features/html/screens/policy_viewer_screen.dart';
+import 'package:ride_sharing_user_app/features/map/controllers/map_controller.dart';
+import 'package:ride_sharing_user_app/features/map/screens/map_screen.dart';
+import 'package:ride_sharing_user_app/features/profile/controllers/profile_controller.dart';
 import 'package:ride_sharing_user_app/features/profile/screens/edit_profile_screen.dart';
 import 'package:ride_sharing_user_app/features/profile/screens/profile_screen.dart';
 import 'package:ride_sharing_user_app/features/profile/widgets/level_congratulations_dialog_widget.dart';
 import 'package:ride_sharing_user_app/features/review/screens/review_screen.dart';
+import 'package:ride_sharing_user_app/features/ride/controllers/ride_controller.dart';
+import 'package:ride_sharing_user_app/features/ride/screens/ride_request_list_screen.dart';
+import 'package:ride_sharing_user_app/features/splash/controllers/splash_controller.dart';
+import 'package:ride_sharing_user_app/features/trip/screens/review_this_customer_screen.dart';
 import 'package:ride_sharing_user_app/features/wallet/controllers/wallet_controller.dart';
 import 'package:ride_sharing_user_app/helper/display_helper.dart';
 import 'package:ride_sharing_user_app/util/app_constants.dart';
-import 'package:ride_sharing_user_app/features/dashboard/screens/dashboard_screen.dart';
-import 'package:ride_sharing_user_app/features/map/controllers/map_controller.dart';
-import 'package:ride_sharing_user_app/features/map/screens/map_screen.dart';
-import 'package:ride_sharing_user_app/features/profile/controllers/profile_controller.dart';
-import 'package:ride_sharing_user_app/features/ride/controllers/ride_controller.dart';
-import 'package:ride_sharing_user_app/features/splash/controllers/splash_controller.dart';
-import 'package:ride_sharing_user_app/features/trip/screens/payment_received_screen.dart';
-import 'package:ride_sharing_user_app/features/trip/screens/review_this_customer_screen.dart';
-import 'package:ride_sharing_user_app/features/ride/screens/ride_request_list_screen.dart';
 
 class NotificationHelper {
   static bool _isHandlingNotification = false;
   static String? _lastHandledRideId;
   static DateTime? _lastHandledAt;
+
   static Future<void> handleNotificationNavigation(
     RemoteMessage message,
   ) async {
@@ -116,32 +116,11 @@ class NotificationHelper {
                 Get.currentRoute.contains('RideRequestScreen');
 
             if (isOnRideRequestScreen) {
-              // The screen is already visible, so refresh it in place.
               await rideController.getPendingRideRequestList(1);
             } else {
-              // Open immediately. RideRequestScreen performs the single fetch.
               Get.to(() => const RideRequestScreen());
             }
-          } else if (message.data['action'] == "new_message_arrived") {
-            Get.find<ChatController>().getConversation(message.data['type'], 1);
-          } else if (message.data['action'] == "ride_completed") {
-            Get.find<RideController>()
-                .getRideDetails(message.data['ride_request_id'])
-                .then((value) {
-              if (value.statusCode == 200) {
-                Get.find<RideController>()
-                    .getFinalFare(message.data['ride_request_id'])
-                    .then((value) {
-                  if (value.statusCode == 200) {
-                    Get.find<RiderMapController>()
-                        .setRideCurrentState(RideState.initial);
-                    Get.to(() => const PaymentReceivedScreen());
-                  }
-                });
-              }
-            });
           } else if (message.data['action'] == "ride_accepted") {
-            ///Bid Ride Accepted in this case....
             Get.find<RideController>()
                 .getRideDetails(message.data['ride_request_id'])
                 .then((value) {
@@ -227,7 +206,21 @@ class NotificationHelper {
             Get.find<WalletController>().getPayableHistoryList(1);
           }
         } else {
-          if (message.data['action'] == "ride_accepted") {
+          if (message.data['action'] == "new_ride_request_notification") {
+            final RideController rideController = Get.find<RideController>();
+
+            final AudioPlayer audio = AudioPlayer();
+            await audio.play(AssetSource('notification.wav'));
+
+            final bool isOnRideRequestScreen =
+                Get.currentRoute.contains('RideRequestScreen');
+
+            if (isOnRideRequestScreen) {
+              await rideController.getPendingRideRequestList(1);
+            } else {
+              Get.to(() => const RideRequestScreen());
+            }
+          } else if (message.data['action'] == "ride_accepted") {
             ///Bid Ride Accepted in this case....
             Get.find<RideController>()
                 .getRideDetails(message.data['ride_request_id'])

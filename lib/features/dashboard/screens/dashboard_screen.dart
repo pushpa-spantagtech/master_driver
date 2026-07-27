@@ -3,20 +3,18 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
-import 'package:ride_sharing_user_app/util/dimensions.dart';
-import 'package:ride_sharing_user_app/util/images.dart';
-import 'package:ride_sharing_user_app/util/styles.dart';
 import 'package:ride_sharing_user_app/features/dashboard/controllers/bottom_menu_controller.dart';
 import 'package:ride_sharing_user_app/features/dashboard/domain/models/navigation_model.dart';
 import 'package:ride_sharing_user_app/features/home/screens/home_screen.dart';
 import 'package:ride_sharing_user_app/features/location/controllers/location_controller.dart';
-import 'package:ride_sharing_user_app/features/map/controllers/map_controller.dart';
-import 'package:ride_sharing_user_app/features/map/screens/map_screen.dart';
 import 'package:ride_sharing_user_app/features/notification/screens/notification_screen.dart';
 import 'package:ride_sharing_user_app/features/profile/controllers/profile_controller.dart';
 import 'package:ride_sharing_user_app/features/ride/controllers/ride_controller.dart';
 import 'package:ride_sharing_user_app/features/trip/screens/trip_screen.dart';
 import 'package:ride_sharing_user_app/features/wallet/screens/wallet_screen.dart';
+import 'package:ride_sharing_user_app/util/dimensions.dart';
+import 'package:ride_sharing_user_app/util/images.dart';
+import 'package:ride_sharing_user_app/util/styles.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -56,13 +54,13 @@ class _DashboardScreenState extends State<DashboardScreen>
     // the first location permission information dialog.
     _homeLocationInitialDelayTimer = Timer(
       const Duration(seconds: 10),
-          () async {
+      () async {
         await _checkOnlineDriverLocationPermission();
 
         // If permission is still denied, keep reminding every 10 seconds.
         _locationPermissionReminderTimer = Timer.periodic(
           const Duration(seconds: 10),
-              (_) => _checkOnlineDriverLocationPermission(),
+          (_) => _checkOnlineDriverLocationPermission(),
         );
       },
     );
@@ -104,12 +102,11 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Future<void> _onAppResumed() async {
-    final bool profilePermissionHandled =
-    await Get.find<ProfileController>()
+    final bool profilePermissionHandled = await Get.find<ProfileController>()
         .handleOnlineLocationPermissionOnResume();
 
     final bool pendingActionHandled =
-    await Get.find<LocationController>().handlePermissionOnResume();
+        await Get.find<LocationController>().handlePermissionOnResume();
 
     if (profilePermissionHandled || pendingActionHandled) {
       _homeLocationInitialDelayTimer?.cancel();
@@ -247,9 +244,9 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   List<Widget> generateBottomNavigationItems(
-      BottomMenuController menuController,
-      List<NavigationModel> item,
-      ) {
+    BottomMenuController menuController,
+    List<NavigationModel> item,
+  ) {
     List<Widget> items = [];
 
     for (int index = 0; index < item.length; index++) {

@@ -1,17 +1,18 @@
 import 'dart:math';
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:get/get.dart';
 import 'package:ride_sharing_user_app/data/api_checker.dart';
-import 'package:ride_sharing_user_app/features/trip/domain/models/trip_cancellation_cause_list_model.dart';
-import 'package:ride_sharing_user_app/features/trip/domain/services/trip_service_interface.dart';
-import 'package:ride_sharing_user_app/helper/display_helper.dart';
 import 'package:ride_sharing_user_app/features/dashboard/screens/dashboard_screen.dart';
 import 'package:ride_sharing_user_app/features/ride/controllers/ride_controller.dart';
 import 'package:ride_sharing_user_app/features/ride/domain/models/trip_details_model.dart';
 import 'package:ride_sharing_user_app/features/splash/controllers/splash_controller.dart';
+import 'package:ride_sharing_user_app/features/trip/domain/models/trip_cancellation_cause_list_model.dart';
 import 'package:ride_sharing_user_app/features/trip/domain/models/trip_model.dart';
 import 'package:ride_sharing_user_app/features/trip/domain/models/trip_overview_model.dart';
+import 'package:ride_sharing_user_app/features/trip/domain/services/trip_service_interface.dart';
 import 'package:ride_sharing_user_app/features/trip/screens/review_this_customer_screen.dart';
+import 'package:ride_sharing_user_app/helper/display_helper.dart';
 
 class TripController extends GetxController implements GetxService {
   final TripServiceInterface tripServiceInterface;

@@ -233,51 +233,51 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Future<void> _openOngoingRide(RideController rideController) async {
-  //   if (rideController.ongoingTrip == null ||
-  //       rideController.ongoingTrip!.isEmpty) {
-  //     showCustomSnackBar('no_trip_available'.tr);
-  //     return;
-  //   }
-  //
-  //   final trip = rideController.ongoingTrip!.first;
-  //   final String status = (trip.currentStatus ?? '').toLowerCase();
-  //   final String paymentStatus = (trip.paymentStatus ?? '').toLowerCase();
-  //
-  //   final bool canOpen = status == 'accepted' ||
-  //       status == 'confirmed' ||
-  //       status == 'arrived' ||
-  //       status == 'picked_up' ||
-  //       status == 'ongoing' ||
-  //       ((status == 'completed' || status == 'cancelled') &&
-  //           paymentStatus == 'unpaid');
-  //
-  //   if (!canOpen) {
-  //     showCustomSnackBar('no_trip_available'.tr);
-  //     return;
-  //   }
-  //
-  //   // Fetch the latest ride details first. The existing controller keeps all
-  //   // accepted/ongoing/payment routing behaviour unchanged.
-  //   await rideController.getCurrentRideStatus(froDetails: true);
-  //
-  //   final String latestStatus = rideController.currentRideStatus.toLowerCase();
-  //   final String? tripId = rideController.tripDetail?.id;
-  //
-  //   if ((latestStatus == 'accepted' || latestStatus == 'ongoing') &&
-  //       tripId != null &&
-  //       tripId.isNotEmpty &&
-  //       !Get.currentRoute.contains('MapScreen')) {
-  //     final mapController = Get.find<RiderMapController>();
-  //     mapController.setRideCurrentState(
-  //       latestStatus == 'ongoing' ? RideState.ongoing : RideState.accepted,
-  //     );
-  //
-  //     await rideController.remainingDistance(tripId, mapBound: true);
-  //     rideController.startLiveTracking(tripId);
-  //     rideController.updateRoute(false, notify: true);
-  //
-  //     await Get.to(() => const MapScreen(fromScreen: 'home'));
-  //   }
-  // }
+// Future<void> _openOngoingRide(RideController rideController) async {
+//   if (rideController.ongoingTrip == null ||
+//       rideController.ongoingTrip!.isEmpty) {
+//     showCustomSnackBar('no_trip_available'.tr);
+//     return;
+//   }
+//
+//   final trip = rideController.ongoingTrip!.first;
+//   final String status = (trip.currentStatus ?? '').toLowerCase();
+//   final String paymentStatus = (trip.paymentStatus ?? '').toLowerCase();
+//
+//   final bool canOpen = status == 'accepted' ||
+//       status == 'confirmed' ||
+//       status == 'arrived' ||
+//       status == 'picked_up' ||
+//       status == 'ongoing' ||
+//       ((status == 'completed' || status == 'cancelled') &&
+//           paymentStatus == 'unpaid');
+//
+//   if (!canOpen) {
+//     showCustomSnackBar('no_trip_available'.tr);
+//     return;
+//   }
+//
+//   // Fetch the latest ride details first. The existing controller keeps all
+//   // accepted/ongoing/payment routing behaviour unchanged.
+//   await rideController.getCurrentRideStatus(froDetails: true);
+//
+//   final String latestStatus = rideController.currentRideStatus.toLowerCase();
+//   final String? tripId = rideController.tripDetail?.id;
+//
+//   if ((latestStatus == 'accepted' || latestStatus == 'ongoing') &&
+//       tripId != null &&
+//       tripId.isNotEmpty &&
+//       !Get.currentRoute.contains('MapScreen')) {
+//     final mapController = Get.find<RiderMapController>();
+//     mapController.setRideCurrentState(
+//       latestStatus == 'ongoing' ? RideState.ongoing : RideState.accepted,
+//     );
+//
+//     await rideController.remainingDistance(tripId, mapBound: true);
+//     rideController.startLiveTracking(tripId);
+//     rideController.updateRoute(false, notify: true);
+//
+//     await Get.to(() => const MapScreen(fromScreen: 'home'));
+//   }
+// }
 }

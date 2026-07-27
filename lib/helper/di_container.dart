@@ -1,5 +1,8 @@
 import 'dart:convert';
+
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+import 'package:ride_sharing_user_app/data/api_client.dart';
 import 'package:ride_sharing_user_app/features/auth/controllers/auth_controller.dart';
 import 'package:ride_sharing_user_app/features/auth/domain/repositories/auth_repository.dart';
 import 'package:ride_sharing_user_app/features/auth/domain/repositories/auth_repository_interface.dart';
@@ -47,13 +50,16 @@ import 'package:ride_sharing_user_app/features/ride/domain/services/ride_service
 import 'package:ride_sharing_user_app/features/setting/controllers/setting_controller.dart';
 import 'package:ride_sharing_user_app/features/splash/controllers/splash_controller.dart';
 import 'package:ride_sharing_user_app/features/splash/domain/repositories/splash_repository.dart';
-import 'package:ride_sharing_user_app/data/api_client.dart';
 import 'package:ride_sharing_user_app/features/splash/domain/repositories/splash_repository_interface.dart';
 import 'package:ride_sharing_user_app/features/splash/domain/services/splash_service.dart';
 import 'package:ride_sharing_user_app/features/splash/domain/services/splash_service_interface.dart';
+import 'package:ride_sharing_user_app/features/trip/controllers/trip_controller.dart';
+import 'package:ride_sharing_user_app/features/trip/domain/repositories/trip_repository.dart';
 import 'package:ride_sharing_user_app/features/trip/domain/repositories/trip_repository_interface.dart';
 import 'package:ride_sharing_user_app/features/trip/domain/services/trip_service.dart';
 import 'package:ride_sharing_user_app/features/trip/domain/services/trip_service_interface.dart';
+import 'package:ride_sharing_user_app/features/wallet/controllers/wallet_controller.dart';
+import 'package:ride_sharing_user_app/features/wallet/domain/repositories/wallet_repository.dart';
 import 'package:ride_sharing_user_app/features/wallet/domain/repositories/wallet_repository_interface.dart';
 import 'package:ride_sharing_user_app/features/wallet/domain/services/wallet_service.dart';
 import 'package:ride_sharing_user_app/features/wallet/domain/services/wallet_service_interface.dart';
@@ -61,12 +67,7 @@ import 'package:ride_sharing_user_app/localization/language_model.dart';
 import 'package:ride_sharing_user_app/localization/localization_controller.dart';
 import 'package:ride_sharing_user_app/theme/theme_controller.dart';
 import 'package:ride_sharing_user_app/util/app_constants.dart';
-import 'package:ride_sharing_user_app/features/trip/controllers/trip_controller.dart';
-import 'package:ride_sharing_user_app/features/trip/domain/repositories/trip_repository.dart';
-import 'package:ride_sharing_user_app/features/wallet/controllers/wallet_controller.dart';
-import 'package:ride_sharing_user_app/features/wallet/domain/repositories/wallet_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:get/get.dart';
 
 Future<Map<String, Map<String, String>>> init() async {
   // Core

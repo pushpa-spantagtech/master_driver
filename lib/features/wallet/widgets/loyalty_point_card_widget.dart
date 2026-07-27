@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:ride_sharing_user_app/common_widgets/divider_widget.dart';
+import 'package:ride_sharing_user_app/features/wallet/controllers/wallet_controller.dart';
+import 'package:ride_sharing_user_app/features/wallet/domain/models/loyalty_point_model.dart';
 import 'package:ride_sharing_user_app/helper/date_converter.dart';
 import 'package:ride_sharing_user_app/util/dimensions.dart';
 import 'package:ride_sharing_user_app/util/styles.dart';
-import 'package:ride_sharing_user_app/features/wallet/controllers/wallet_controller.dart';
-import 'package:ride_sharing_user_app/features/wallet/domain/models/loyalty_point_model.dart';
-import 'package:ride_sharing_user_app/common_widgets/divider_widget.dart';
 
 class LoyaltyPointCardWidget extends StatelessWidget {
   final Points points;

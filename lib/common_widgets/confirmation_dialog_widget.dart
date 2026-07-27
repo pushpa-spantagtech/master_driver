@@ -28,6 +28,7 @@ class ConfirmationDialogWidget extends StatelessWidget {
     this.loading = false,
     this.asBottomSheet = false,
   });
+
   @override
   Widget build(BuildContext context) {
     final Widget content = Container(

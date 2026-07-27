@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import 'package:ride_sharing_user_app/common_widgets/popup_banner/slider_item.dart';
 import 'package:ride_sharing_user_app/util/dimensions.dart';
 

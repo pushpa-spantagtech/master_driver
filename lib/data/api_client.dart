@@ -3,17 +3,15 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
-import 'package:get/get_connect/http/src/request/request.dart';
-import 'package:ride_sharing_user_app/data/error_response.dart';
-
-import 'package:ride_sharing_user_app/util/app_constants.dart';
-import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
+import 'package:get/get.dart';
+import 'package:get/get_connect/http/src/request/request.dart';
 import 'package:http/http.dart' as http;
-
+import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart';
+import 'package:ride_sharing_user_app/data/error_response.dart';
+import 'package:ride_sharing_user_app/util/app_constants.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiClient extends GetxService {
   final String appBaseUrl;

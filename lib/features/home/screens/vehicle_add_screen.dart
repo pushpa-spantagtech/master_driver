@@ -1,20 +1,21 @@
 import 'dart:io';
+
 import 'package:dotted_border/dotted_border.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
+import 'package:ride_sharing_user_app/common_widgets/app_bar_widget.dart';
+import 'package:ride_sharing_user_app/common_widgets/button_widget.dart';
+import 'package:ride_sharing_user_app/features/profile/controllers/profile_controller.dart';
+import 'package:ride_sharing_user_app/features/profile/domain/models/categoty_model.dart';
 import 'package:ride_sharing_user_app/features/profile/domain/models/profile_model.dart';
+import 'package:ride_sharing_user_app/features/profile/domain/models/vehicle_body.dart';
+import 'package:ride_sharing_user_app/features/profile/domain/models/vehicle_brand_model.dart';
 import 'package:ride_sharing_user_app/helper/display_helper.dart';
 import 'package:ride_sharing_user_app/util/dimensions.dart';
 import 'package:ride_sharing_user_app/util/images.dart';
 import 'package:ride_sharing_user_app/util/styles.dart';
-import 'package:ride_sharing_user_app/features/profile/controllers/profile_controller.dart';
-import 'package:ride_sharing_user_app/features/profile/domain/models/categoty_model.dart';
-import 'package:ride_sharing_user_app/features/profile/domain/models/vehicle_brand_model.dart';
-import 'package:ride_sharing_user_app/features/profile/domain/models/vehicle_body.dart';
-import 'package:ride_sharing_user_app/common_widgets/app_bar_widget.dart';
-import 'package:ride_sharing_user_app/common_widgets/button_widget.dart';
 
 class VehicleAddScreen extends StatefulWidget {
   final Vehicle? vehicleInfo;

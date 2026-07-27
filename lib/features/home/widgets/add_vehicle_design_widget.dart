@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:ride_sharing_user_app/common_widgets/button_widget.dart';
+import 'package:ride_sharing_user_app/features/home/screens/vehicle_add_screen.dart';
 import 'package:ride_sharing_user_app/util/dimensions.dart';
 import 'package:ride_sharing_user_app/util/images.dart';
 import 'package:ride_sharing_user_app/util/styles.dart';
-import 'package:ride_sharing_user_app/features/home/screens/vehicle_add_screen.dart';
-import 'package:ride_sharing_user_app/common_widgets/button_widget.dart';
 
 class AddYourVehicleWidget extends StatelessWidget {
   const AddYourVehicleWidget({super.key});

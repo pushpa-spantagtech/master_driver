@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:ride_sharing_user_app/common_widgets/app_bar_widget.dart';
 import 'package:ride_sharing_user_app/features/map/widgets/parcel_card_widget.dart';
 import 'package:ride_sharing_user_app/features/ride/domain/models/parcel_list_model.dart';
-import 'package:ride_sharing_user_app/common_widgets/app_bar_widget.dart';
 
 class OngoingParcelListViewWidget extends StatefulWidget {
   final String title;

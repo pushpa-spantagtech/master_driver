@@ -1,5 +1,6 @@
-import 'dart:convert';
 import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
@@ -9,9 +10,9 @@ import 'package:ride_sharing_user_app/common_widgets/confirmation_dialog_widget.
 import 'package:ride_sharing_user_app/common_widgets/payment_item_info_widget.dart';
 import 'package:ride_sharing_user_app/features/map/widgets/route_widget.dart';
 import 'package:ride_sharing_user_app/features/ride/controllers/ride_controller.dart';
-import 'package:ride_sharing_user_app/helper/route_helper.dart';
 import 'package:ride_sharing_user_app/features/trip/controllers/trip_controller.dart';
 import 'package:ride_sharing_user_app/helper/price_converter.dart';
+import 'package:ride_sharing_user_app/helper/route_helper.dart';
 import 'package:ride_sharing_user_app/util/dimensions.dart';
 import 'package:ride_sharing_user_app/util/images.dart';
 import 'package:ride_sharing_user_app/util/styles.dart';
@@ -32,6 +33,7 @@ class _PaymentReceivedScreenState extends State<PaymentReceivedScreen>
     with WidgetsBindingObserver {
   bool get fromParcel => widget.fromParcel;
   Timer? _paymentStatusTimer;
+
   @override
   void initState() {
     super.initState();

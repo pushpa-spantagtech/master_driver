@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:ride_sharing_user_app/common_widgets/popup_banner/dialog_item.dart';
 
 class PopupBanner {

@@ -1,18 +1,19 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:dart_pusher_channels/dart_pusher_channels.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:ride_sharing_user_app/common_widgets/snackbar_widget.dart';
 import 'package:ride_sharing_user_app/data/api_checker.dart';
 import 'package:ride_sharing_user_app/data/api_client.dart';
 import 'package:ride_sharing_user_app/features/auth/controllers/auth_controller.dart';
-import 'package:ride_sharing_user_app/features/chat/domain/services/chat_service_interface.dart';
-import 'package:ride_sharing_user_app/features/chat/screens/message_screen.dart';
 import 'package:ride_sharing_user_app/features/chat/domain/models/channel_model.dart';
 import 'package:ride_sharing_user_app/features/chat/domain/models/message_model.dart';
-import 'package:ride_sharing_user_app/common_widgets/snackbar_widget.dart';
+import 'package:ride_sharing_user_app/features/chat/domain/services/chat_service_interface.dart';
+import 'package:ride_sharing_user_app/features/chat/screens/message_screen.dart';
 import 'package:ride_sharing_user_app/features/splash/controllers/splash_controller.dart';
 import 'package:ride_sharing_user_app/helper/pusher_helper.dart';
 

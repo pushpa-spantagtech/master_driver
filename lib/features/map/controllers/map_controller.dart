@@ -1,7 +1,8 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
-import 'dart:collection';
+
 import 'package:custom_map_markers/custom_map_markers.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
@@ -9,9 +10,9 @@ import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:ride_sharing_user_app/features/location/controllers/location_controller.dart';
+import 'package:ride_sharing_user_app/features/ride/controllers/ride_controller.dart';
 import 'package:ride_sharing_user_app/features/splash/controllers/splash_controller.dart';
 import 'package:ride_sharing_user_app/util/images.dart';
-import 'package:ride_sharing_user_app/features/ride/controllers/ride_controller.dart';
 
 enum RideState {
   initial,
@@ -141,7 +142,7 @@ class RiderMapController extends GetxController implements GetxService {
     List<LatLng> polylineCoordinates = [];
     if (Get.find<RideController>().polyline != '') {
       List<PointLatLng> result =
-      polylinePoints.decodePolyline(Get.find<RideController>().polyline);
+          polylinePoints.decodePolyline(Get.find<RideController>().polyline);
       if (result.isNotEmpty) {
         for (var point in result) {
           polylineCoordinates.add(LatLng(point.latitude, point.longitude));
@@ -164,122 +165,209 @@ class RiderMapController extends GetxController implements GetxService {
 
   bool isBound = true;
 
-  void getDriverToPickupOrDestinationPolyline(String lines,
-      {bool mapBound = false}) async {
-    List<LatLng> polylineCoordinates = [];
-    if (lines != '') {
-      List<PointLatLng> result = polylinePoints.decodePolyline(lines);
-      if (result.isNotEmpty) {
-        for (var point in result) {
-          polylineCoordinates.add(LatLng(point.latitude, point.longitude));
-        }
-        _initialPosition = LatLng(result[0].latitude, result[0].longitude);
-        _destinationPosition = LatLng(result[result.length - 1].latitude,
-            result[result.length - 1].longitude);
-      }
-      _addPolyLine(polylineCoordinates);
-
-      polylineCoordinateList = polylineCoordinates;
-
-      // Use driver's live GPS position for marker and destination-radius check.
-      // Earlier this was checking route start vs route end, so the app could show
-      // distance 0.0 but still block trip completion.
-      final LatLng currentDriverPosition =
-          Get.find<LocationController>().initialPosition;
-      updateMarkerAndCircle(currentDriverPosition);
-
-      isInsideCircle(
-          currentDriverPosition.latitude,
-          currentDriverPosition.longitude,
-          _destinationPosition.latitude,
-          _destinationPosition.longitude,
-          Get.find<SplashController>().config!.completionRadius!);
-      if (mapBound) {
-        boundMapScreen(_initialPosition, _destinationPosition);
-      }
+  void getDriverToPickupOrDestinationPolyline(
+    String lines, {
+    bool mapBound = false,
+  }) async {
+    if (lines.trim().isEmpty) {
+      return;
     }
-    update();
-  }
 
-  _addPolyLine(List<LatLng> polylineCoordinates) {
-    polylines.clear();
-    Polyline polyline = Polyline(
-      polylineId: const PolylineId('poly'),
-      points: polylineCoordinates,
-      width: 4,
-      color: const Color(0xB2FF0000),
-      geodesic: true,
-      startCap: Cap.roundCap,
-      endCap: Cap.roundCap,
+    final List<LatLng> polylineCoordinates = [];
+
+    final List<PointLatLng> result = polylinePoints.decodePolyline(lines);
+
+    if (result.isEmpty) {
+      return;
+    }
+
+    for (final PointLatLng point in result) {
+      polylineCoordinates.add(
+        LatLng(point.latitude, point.longitude),
+      );
+    }
+
+    _initialPosition = LatLng(
+      result.first.latitude,
+      result.first.longitude,
     );
-    polylines.add(polyline);
+
+    _destinationPosition = LatLng(
+      result.last.latitude,
+      result.last.longitude,
+    );
+
+    polylineCoordinateList = polylineCoordinates;
+
+    // Draw route line.
+    _addPolyLine(polylineCoordinates);
+
+    final LatLng currentDriverPosition =
+        Get.find<LocationController>().initialPosition;
+
+    // Keep updating the driver/car location.
+    updateMarkerAndCircle(currentDriverPosition);
+
+    // Add source and destination markers.
+    await setFromToMarker(
+      _initialPosition,
+      _destinationPosition,
+      updateLiveLocation: true,
+    );
+
+    isInsideCircle(
+      currentDriverPosition.latitude,
+      currentDriverPosition.longitude,
+      _destinationPosition.latitude,
+      _destinationPosition.longitude,
+      Get.find<SplashController>().config?.completionRadius ?? 100,
+    );
+
+    if (mapBound) {
+      boundMapScreen(
+        _initialPosition,
+        _destinationPosition,
+      );
+    }
+
     update();
   }
 
-  void setFromToMarker(LatLng from, LatLng to,
-      {bool updateLiveLocation = false}) async {
-    // Keep the live driver/car marker while refreshing route markers.
-    // Clearing the entire set here caused the car icon to disappear when the
-    // accept response, location stream and route API completed in a different
-    // order. Only replace the route markers.
-    markers.removeWhere((marker) =>
-    marker.markerId.value == 'pickup' ||
-        marker.markerId.value == 'destination');
-    Uint8List fromMarker =
-    await convertAssetToUnit8List(Images.mapIcon, width: 25);
-    Uint8List toMarker =
-    await convertAssetToUnit8List(Images.mapLocationIcon, width: 25);
+  void _addPolyLine(List<LatLng> coordinates) {
+    if (coordinates.length < 2) {
+      polylines = {};
+      update();
+      return;
+    }
 
-    markers.add(Marker(
-      markerId: const MarkerId('pickup'),
-      position: from,
-      anchor: const Offset(0.5, 0.5),
-      infoWindow: InfoWindow(
-        title: 'Pickup Location',
-        snippet: Get.find<RideController>().tripDetail?.pickupAddress ?? '',
-      ),
-      icon: BitmapDescriptor.bytes(fromMarker),
-    ));
+    final List<Color> routeColors = [
+      const Color(0xFFE71921),
+      const Color(0xFFFF9800),
+      const Color(0xFFFFC107),
+    ];
 
-    markers.add(Marker(
-      markerId: const MarkerId('destination'),
-      position: to,
-      anchor: const Offset(0.5, 0.5),
-      infoWindow: InfoWindow(
-        title: 'Destination',
-        snippet:
-        Get.find<RideController>().tripDetail?.destinationAddress ?? '',
+    final Set<Polyline> updatedPolylines = {};
+
+    final int sectionSize =
+        math.max(2, (coordinates.length / routeColors.length).ceil());
+
+    for (int index = 0; index < routeColors.length; index++) {
+      final int startIndex = index * sectionSize;
+
+      if (startIndex >= coordinates.length - 1) {
+        break;
+      }
+
+      final int endIndex = math.min(
+        startIndex + sectionSize,
+        coordinates.length - 1,
+      );
+
+      final List<LatLng> sectionPoints = coordinates.sublist(
+        startIndex,
+        endIndex + 1,
+      );
+
+      updatedPolylines.add(
+        Polyline(
+          polylineId: PolylineId('route_section_$index'),
+          points: sectionPoints,
+          width: 5,
+          color: routeColors[index],
+          geodesic: true,
+          startCap: index == 0 ? Cap.roundCap : Cap.buttCap,
+          endCap: index == routeColors.length - 1 ? Cap.roundCap : Cap.buttCap,
+          jointType: JointType.round,
+          zIndex: 20,
+        ),
+      );
+    }
+
+    polylines = updatedPolylines;
+    update();
+  }
+
+  Future<void> setFromToMarker(
+    LatLng from,
+    LatLng to, {
+    bool updateLiveLocation = false,
+  }) async {
+    final Uint8List fromMarker =
+        await convertAssetToUnit8List(Images.mapIcon, width: 35);
+
+    final Uint8List toMarker =
+        await convertAssetToUnit8List(Images.mapLocationIcon, width: 35);
+
+    print('Pickup marker : $from');
+    print('Destination marker : $to');
+
+    final Set<Marker> updatedMarkers = Set<Marker>.from(markers);
+
+    // Remove only old pickup and destination markers.
+    // Keep the existing driver marker.
+    updatedMarkers.removeWhere(
+      (marker) =>
+          marker.markerId.value == 'pickup' ||
+          marker.markerId.value == 'destination',
+    );
+
+    updatedMarkers.add(
+      Marker(
+        markerId: const MarkerId('pickup'),
+        position: from,
+        zIndexInt: 100,
+        icon: BitmapDescriptor.defaultMarkerWithHue(
+          BitmapDescriptor.hueGreen,
+        ),
+        infoWindow: InfoWindow(
+          title: 'Pickup Location',
+          snippet: Get.find<RideController>().tripDetail?.pickupAddress ?? '',
+        ),
       ),
-      icon: BitmapDescriptor.bytes(toMarker),
-    ));
+    );
+
+    updatedMarkers.add(
+      Marker(
+        markerId: const MarkerId('destination'),
+        position: to,
+        zIndexInt: 101,
+        icon: BitmapDescriptor.defaultMarkerWithHue(
+          BitmapDescriptor.hueRed,
+        ),
+        infoWindow: InfoWindow(
+          title: 'Destination',
+          snippet:
+              Get.find<RideController>().tripDetail?.destinationAddress ?? '',
+        ),
+      ),
+    );
+
+    // Assign a completely new Set so GoogleMap detects the marker changes.
+    markers = updatedMarkers;
+    update();
 
     try {
-      LatLngBounds? bounds;
       if (mapController != null) {
-        if (from.latitude < to.latitude) {
-          bounds = LatLngBounds(southwest: from, northeast: to);
-        } else {
-          bounds = LatLngBounds(southwest: to, northeast: from);
-        }
-      }
-      LatLng centerBounds = LatLng(
-        (bounds!.northeast.latitude + bounds.southwest.latitude) / 2,
-        (bounds.northeast.longitude + bounds.southwest.longitude) / 2,
-      );
-      double bearing = Geolocator.bearingBetween(
-          from.latitude, from.longitude, to.latitude, to.longitude);
-      mapController!.moveCamera(CameraUpdate.newCameraPosition(CameraPosition(
-        bearing: bearing,
-        target: centerBounds,
-        zoom: 16,
-      )));
-      setMapPosition(mapController, bounds, centerBounds, bearing,
-          padding: 0.5);
-    } catch (e) {
-      // debugPrint('jhkygutyv' + e.toString());
-    }
+        final LatLngBounds bounds = LatLngBounds(
+          southwest: LatLng(
+            math.min(from.latitude, to.latitude),
+            math.min(from.longitude, to.longitude),
+          ),
+          northeast: LatLng(
+            math.max(from.latitude, to.latitude),
+            math.max(from.longitude, to.longitude),
+          ),
+        );
 
-    update();
+        await Future.delayed(const Duration(milliseconds: 150));
+
+        await mapController!.animateCamera(
+          CameraUpdate.newLatLngBounds(bounds, 120),
+        );
+      }
+    } catch (e) {
+      print('Route camera bounds error: $e');
+    }
   }
 
   void updateMarkerAndCircle(LatLng? latLong) async {
@@ -371,7 +459,7 @@ class RiderMapController extends GetxController implements GetxService {
     }
 
     final Uint8List requestMarker =
-    await convertAssetToUnit8List(Images.mapIcon, width: 34);
+        await convertAssetToUnit8List(Images.mapIcon, width: 34);
     final List<LatLng> requestPositions = [];
 
     for (int i = 0; i < pendingTrips.length; i++) {
@@ -475,9 +563,9 @@ class RiderMapController extends GetxController implements GetxService {
         targetWidth: width);
     ui.FrameInfo fi = await codec.getNextFrame();
     final Uint8List markerBytes =
-    (await fi.image.toByteData(format: ui.ImageByteFormat.png))!
-        .buffer
-        .asUint8List();
+        (await fi.image.toByteData(format: ui.ImageByteFormat.png))!
+            .buffer
+            .asUint8List();
     _markerIconCache[cacheKey] = markerBytes;
     return markerBytes;
   }
@@ -604,7 +692,7 @@ class RiderMapController extends GetxController implements GetxService {
   void setMarkersInitialPosition() {
     if (Get.find<RideController>().polyline != '') {
       List<PointLatLng> result =
-      polylinePoints.decodePolyline(Get.find<RideController>().polyline);
+          polylinePoints.decodePolyline(Get.find<RideController>().polyline);
 
       _initialPosition = LatLng(result[0].latitude, result[0].longitude);
       _destinationPosition = LatLng(result[result.length - 1].latitude,

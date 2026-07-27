@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'dart:math' as math;
+
+import 'package:flutter/material.dart';
 
 void showAnimatedDialogWidget(BuildContext context, Widget dialog,
     {bool isFlip = false, bool dismissible = true}) {

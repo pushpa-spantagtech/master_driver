@@ -1,14 +1,12 @@
 import 'dart:async';
+import 'dart:ui' as ui;
+
 import 'package:expandable_bottom_sheet/expandable_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:ride_sharing_user_app/util/app_constants.dart';
-import 'package:ride_sharing_user_app/util/dimensions.dart';
-import 'package:ride_sharing_user_app/util/images.dart';
-import 'package:ride_sharing_user_app/util/styles.dart';
 import 'package:ride_sharing_user_app/features/dashboard/screens/dashboard_screen.dart';
 import 'package:ride_sharing_user_app/features/location/controllers/location_controller.dart';
 import 'package:ride_sharing_user_app/features/map/controllers/map_controller.dart';
@@ -17,7 +15,10 @@ import 'package:ride_sharing_user_app/features/map/widgets/driver_header_info_wi
 import 'package:ride_sharing_user_app/features/map/widgets/expendale_bottom_sheet_widget.dart';
 import 'package:ride_sharing_user_app/features/ride/controllers/ride_controller.dart';
 import 'package:ride_sharing_user_app/features/ride/screens/ride_request_list_screen.dart';
-import 'dart:ui' as ui;
+import 'package:ride_sharing_user_app/util/app_constants.dart';
+import 'package:ride_sharing_user_app/util/dimensions.dart';
+import 'package:ride_sharing_user_app/util/images.dart';
+import 'package:ride_sharing_user_app/util/styles.dart';
 
 class MapScreen extends StatefulWidget {
   final String fromScreen;
@@ -133,6 +134,32 @@ class _MapScreenState extends State<MapScreen> {
   bool _isMapReady = false;
   bool _didMoveToInitialLocation = false;
   bool _isBottomSheetExpanded = false;
+  RideState? _lastHandledRideState;
+
+  void _ensureSheetExpandedForRideState(RideState state) {
+    if (_lastHandledRideState == state) return;
+    _lastHandledRideState = state;
+
+    if (state == RideState.accepted ||
+        state == RideState.ongoing ||
+        state == RideState.pending ||
+        state == RideState.completed ||
+        state == RideState.fareCalculating ||
+        state == RideState.acceptingRider) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+
+        Future.delayed(const Duration(milliseconds: 80), () {
+          if (!mounted) return;
+          key.currentState?.expand();
+
+          if (!_isBottomSheetExpanded) {
+            setState(() => _isBottomSheetExpanded = true);
+          }
+        });
+      });
+    }
+  }
 
   double _resolvedSheetHeight(
     RiderMapController controller,
@@ -144,6 +171,10 @@ class _MapScreenState extends State<MapScreen> {
         // is shown by expanding the sheet, so no empty area is reserved below.
         return 50;
       case RideState.accepted:
+        // During OTP entry, accepted_rider_widget updates sheetHeight using
+        // the real keyboard height. Respect that value here so the sheet can
+        // automatically rise above the keyboard.
+        return controller.sheetHeight > 0 ? controller.sheetHeight : 310;
       case RideState.ongoing:
         return 310;
       case RideState.pending:
@@ -194,7 +225,10 @@ class _MapScreenState extends State<MapScreen> {
 
     final pickup = trip?.pickupCoordinates?.coordinates;
     final destination = trip?.destinationCoordinates?.coordinates;
-
+    debugPrint("========== MAP DATA ==========");
+    debugPrint("Pickup : ${trip?.pickupCoordinates?.coordinates}");
+    debugPrint("Destination : ${trip?.destinationCoordinates?.coordinates}");
+    debugPrint("==============================");
     // Render route endpoint icons from already available trip details instead
     // of waiting for remainingDistance(). The API can update them afterwards.
     if (pickup != null &&
@@ -377,6 +411,10 @@ class _MapScreenState extends State<MapScreen> {
         resizeToAvoidBottomInset: false,
         body: GetBuilder<RiderMapController>(builder: (riderMapController) {
           return GetBuilder<RideController>(builder: (rideController) {
+            _ensureSheetExpandedForRideState(
+              riderMapController.currentRideState,
+            );
+
             if (riderMapController.currentRideState == RideState.end) {
               if (!_endSheetPositionScheduled) {
                 _endSheetPositionScheduled = true;
@@ -401,6 +439,11 @@ class _MapScreenState extends State<MapScreen> {
             );
             final double mapActionBottom =
                 resolvedSheetHeight + 56 + safeBottom;
+
+            final double otpKeyboardOffset =
+                riderMapController.currentRideState == RideState.accepted
+                    ? MediaQuery.of(context).viewInsets.bottom
+                    : 0.0;
 
             return ExpandableBottomSheet(
               key: key,
@@ -646,7 +689,9 @@ class _MapScreenState extends State<MapScreen> {
                     ),
                 ]);
               }),
-              persistentHeader: SizedBox(
+              persistentHeader: Transform.translate(
+                offset: Offset(0, -otpKeyboardOffset),
+                child: SizedBox(
                   height: 50,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -717,9 +762,14 @@ class _MapScreenState extends State<MapScreen> {
                         );
                       })),
                     ],
-                  )),
-              expandableContent: RiderBottomSheetWidget(
-                expandableKey: key,
+                  ),
+                ),
+              ),
+              expandableContent: Transform.translate(
+                offset: Offset(0, -otpKeyboardOffset),
+                child: RiderBottomSheetWidget(
+                  expandableKey: key,
+                ),
               ),
             );
           });

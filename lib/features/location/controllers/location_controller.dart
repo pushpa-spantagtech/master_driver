@@ -1,15 +1,16 @@
 import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:ride_sharing_user_app/features/location/domain/services/location_service_interface.dart';
-import 'package:ride_sharing_user_app/util/app_constants.dart';
-import 'package:ride_sharing_user_app/util/images.dart';
+import 'package:ride_sharing_user_app/common_widgets/confirmation_dialog_widget.dart';
 import 'package:ride_sharing_user_app/features/auth/controllers/auth_controller.dart';
 import 'package:ride_sharing_user_app/features/location/domain/models/zone_response.dart';
+import 'package:ride_sharing_user_app/features/location/domain/services/location_service_interface.dart';
 import 'package:ride_sharing_user_app/features/map/controllers/map_controller.dart';
-import 'package:ride_sharing_user_app/common_widgets/confirmation_dialog_widget.dart';
+import 'package:ride_sharing_user_app/util/app_constants.dart';
+import 'package:ride_sharing_user_app/util/images.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LocationController extends GetxController implements GetxService {
@@ -50,8 +51,8 @@ class LocationController extends GetxController implements GetxService {
 
   Future<Position> getCurrentLocation(
       {bool isAnimate = true,
-        GoogleMapController? mapController,
-        bool callZone = true}) async {
+      GoogleMapController? mapController,
+      bool callZone = true}) async {
     bool isSuccess = await checkPermission(() {});
     if (isSuccess) {
       try {
@@ -82,18 +83,18 @@ class LocationController extends GetxController implements GetxService {
         }
         _locationSubscription =
             Geolocator.getPositionStream().listen((newLocalData) {
-              if (mapController != null) {
-                mapController.moveCamera(CameraUpdate.newCameraPosition(
-                    CameraPosition(
-                        bearing: 192.8334901395799,
-                        target:
+          if (mapController != null) {
+            mapController.moveCamera(CameraUpdate.newCameraPosition(
+                CameraPosition(
+                    bearing: 192.8334901395799,
+                    target:
                         LatLng(newLocalData.latitude, newLocalData.longitude),
-                        tilt: 0,
-                        zoom: 16)));
-                Get.find<RiderMapController>().updateMarkerAndCircle(
-                    LatLng(newLocalData.latitude, newLocalData.longitude));
-              }
-            });
+                    tilt: 0,
+                    zoom: 16)));
+            Get.find<RiderMapController>().updateMarkerAndCircle(
+                LatLng(newLocalData.latitude, newLocalData.longitude));
+          }
+        });
         if (isAnimate) {
           _mapController?.moveCamera(CameraUpdate.newCameraPosition(
               CameraPosition(target: _initialPosition, zoom: 16)));
@@ -183,7 +184,7 @@ class LocationController extends GetxController implements GetxService {
 
   Future<String> getAddressFromGeocode(LatLng latLng) async {
     Response response =
-    await locationServiceInterface.getAddressFromGeocode(latLng);
+        await locationServiceInterface.getAddressFromGeocode(latLng);
     if (response.statusCode == 200) {
       _address =
           response.body['data']['results'][0]['formatted_address'].toString();

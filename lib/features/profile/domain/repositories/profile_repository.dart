@@ -3,9 +3,9 @@ import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:ride_sharing_user_app/data/api_client.dart';
+import 'package:ride_sharing_user_app/features/profile/domain/models/vehicle_body.dart';
 import 'package:ride_sharing_user_app/features/profile/domain/repositories/profile_repository_interface.dart';
 import 'package:ride_sharing_user_app/util/app_constants.dart';
-import 'package:ride_sharing_user_app/features/profile/domain/models/vehicle_body.dart';
 
 class ProfileRepository implements ProfileRepositoryInterface {
   ApiClient apiClient;

@@ -93,7 +93,7 @@ class ProfileStatusCardWidget extends StatelessWidget {
                     children: [
                       Text(
                         '${capitalize(profile.firstName ?? '')} '
-                            '${capitalize(profile.lastName ?? '')}',
+                        '${capitalize(profile.lastName ?? '')}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -151,7 +151,7 @@ class ProfileStatusCardWidget extends StatelessWidget {
                         inactiveThumbColor: Colors.white,
                         inactiveTrackColor: _offline.withValues(alpha: 0.82),
                         trackOutlineColor:
-                        WidgetStateProperty.all(Colors.transparent),
+                            WidgetStateProperty.all(Colors.transparent),
                         onChanged: (val) async {
                           Future<void> changeOnlineStatus() async {
                             Get.dialog(

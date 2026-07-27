@@ -10,6 +10,7 @@ class SplashController extends GetxController implements GetxService {
   SplashController({required this.splashServiceInterface});
 
   ConfigModel? _config;
+
   ConfigModel? get config => _config;
 
   bool loading = false;

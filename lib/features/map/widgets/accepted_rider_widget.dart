@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:expandable_bottom_sheet/expandable_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -32,8 +34,7 @@ class RideAcceptedWidget extends StatefulWidget {
   State<RideAcceptedWidget> createState() => _RideAcceptedWidgetState();
 }
 
-class _RideAcceptedWidgetState extends State<RideAcceptedWidget>
-    with WidgetsBindingObserver {
+class _RideAcceptedWidgetState extends State<RideAcceptedWidget> {
   String totalDistance = '0', estDistance = '0', removeComma = '0';
   int currentState = 0;
   JustTheController tooltipController = JustTheController();
@@ -41,8 +42,7 @@ class _RideAcceptedWidgetState extends State<RideAcceptedWidget>
 
   @override
   void initState() {
-    WidgetsBinding.instance.addObserver(this);
-    Get.find<RiderMapController>().setSheetHeight(250, false);
+    Get.find<RiderMapController>().setSheetHeight(310, false);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await Future.delayed(const Duration(milliseconds: 500));
 
@@ -59,16 +59,7 @@ class _RideAcceptedWidgetState extends State<RideAcceptedWidget>
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && isOtpVerificationActive) {
-      // Ensure OTP widget remains visible when app resumes
-      setState(() {});
-    }
   }
 
   @override
@@ -407,7 +398,7 @@ class _RideAcceptedWidgetState extends State<RideAcceptedWidget>
                             radius: Dimensions.paddingSizeSmall,
                             onPressed: () {
                               Get.find<RiderMapController>()
-                                  .setSheetHeight(250, true);
+                                  .setSheetHeight(310, true);
                               setState(() {
                                 currentState = 0;
                               });

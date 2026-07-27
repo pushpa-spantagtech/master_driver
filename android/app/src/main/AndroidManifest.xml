@@ -35,7 +35,7 @@
         android:fullBackupOnly="false">
        <meta-data
            android:name="com.google.android.geo.API_KEY"
-           android:value="AIzaSyBJWb9KucTt56VhkfCHFQVZL_cZpUZ1RH0" />
+           android:value="AIzaSyCmADNBymdKrvA5B1rYuQ8bm3ZMB8CaKJs" />
        <meta-data android:name="com.google.android.gms.version"
            android:value="@integer/google_play_services_version" />
        <!-- Necessary for apps that target Android 9.0 or higher -->

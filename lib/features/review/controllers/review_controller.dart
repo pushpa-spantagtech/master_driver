@@ -1,9 +1,9 @@
 import 'package:get/get.dart';
 import 'package:ride_sharing_user_app/data/api_checker.dart';
-import 'package:ride_sharing_user_app/features/review/domain/services/review_service_interface.dart';
-import 'package:ride_sharing_user_app/helper/display_helper.dart';
 import 'package:ride_sharing_user_app/features/dashboard/screens/dashboard_screen.dart';
 import 'package:ride_sharing_user_app/features/review/domain/models/review_model.dart';
+import 'package:ride_sharing_user_app/features/review/domain/services/review_service_interface.dart';
+import 'package:ride_sharing_user_app/helper/display_helper.dart';
 
 class ReviewController extends GetxController implements GetxService {
   final ReviewServiceInterface reviewServiceInterface;

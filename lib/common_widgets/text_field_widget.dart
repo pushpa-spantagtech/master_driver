@@ -57,6 +57,30 @@ class TextFieldWidget extends StatefulWidget {
   State<TextFieldWidget> createState() => _TextFieldWidgetState();
 }
 
+class IndianPhoneNumberFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue,
+      TextEditingValue newValue,
+      ) {
+    // Keep only digits
+    String digits = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+
+    // Android autofill may return:
+    // +91 7358823558
+    // 917358823558
+    // Keep only the last 10 digits.
+    if (digits.length > 10) {
+      digits = digits.substring(digits.length - 10);
+    }
+
+    return TextEditingValue(
+      text: digits,
+      selection: TextSelection.collapsed(offset: digits.length),
+    );
+  }
+}
+
 class _TextFieldWidgetState extends State<TextFieldWidget> {
   bool _obscureText = true;
   bool _isFocused = false;
@@ -113,11 +137,13 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
             color: Theme.of(context).textTheme.bodyMedium?.color,
           ),
           textInputAction: widget.inputAction,
-          keyboardType: (widget.isAmount || isPhoneField)
+          keyboardType: isPhoneField
+              ? TextInputType.phone
+              : widget.isAmount
               ? const TextInputType.numberWithOptions(
-                  signed: false,
-                  decimal: true,
-                )
+            signed: false,
+            decimal: true,
+          )
               : widget.inputType,
           cursorColor: Theme.of(context).colorScheme.primary,
           textCapitalization: widget.capitalization,
@@ -140,9 +166,8 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
           obscureText: widget.isPassword ? _obscureText : false,
           inputFormatters: isPhoneField
               ? <TextInputFormatter>[
-                  FilteringTextInputFormatter.digitsOnly,
-                  LengthLimitingTextInputFormatter(10),
-                ]
+            IndianPhoneNumberFormatter(),
+          ]
               : widget.isAmount
                   ? [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))]
                   : null,

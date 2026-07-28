@@ -49,63 +49,108 @@ class LocationController extends GetxController implements GetxService {
 
   Function? _pendingPermissionCallback;
 
-  Future<Position> getCurrentLocation(
-      {bool isAnimate = true,
-      GoogleMapController? mapController,
-      bool callZone = true}) async {
-    bool isSuccess = await checkPermission(() {});
-    if (isSuccess) {
-      try {
-        var location = await Geolocator.getCurrentPosition(
-          timeLimit: const Duration(seconds: 10),
-          desiredAccuracy: LocationAccuracy.high,
-        );
-
-        Get.find<RiderMapController>().updateMarkerAndCircle(
-            LatLng(location.latitude, location.longitude));
-
-        await _locationSubscription?.cancel();
-        _locationSubscription = null;
-        Position newLocalData = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high,
-          timeLimit: const Duration(seconds: 5),
-        );
-        _position = newLocalData;
-        _initialPosition = LatLng(_position.latitude, _position.longitude);
-        if (callZone) {
-          getZone(_position.latitude.toString(), _position.longitude.toString(),
-              false);
-          getAddressFromGeocode(_initialPosition);
-        }
-        if (Get.find<AuthController>().isLoggedIn()) {
-          updateLastLocation(
-              location.latitude.toString(), location.longitude.toString());
-        }
-        _locationSubscription =
-            Geolocator.getPositionStream().listen((newLocalData) {
-          if (mapController != null) {
-            mapController.moveCamera(CameraUpdate.newCameraPosition(
-                CameraPosition(
-                    bearing: 192.8334901395799,
-                    target:
-                        LatLng(newLocalData.latitude, newLocalData.longitude),
-                    tilt: 0,
-                    zoom: 16)));
-            Get.find<RiderMapController>().updateMarkerAndCircle(
-                LatLng(newLocalData.latitude, newLocalData.longitude));
-          }
-        });
-        if (isAnimate) {
-          _mapController?.moveCamera(CameraUpdate.newCameraPosition(
-              CameraPosition(target: _initialPosition, zoom: 16)));
-        }
-      } catch (e) {
-        if (kDebugMode) {
-          print('');
-        }
-        _position = (await Geolocator.getLastKnownPosition()) ?? _position;
-      }
+  Future<Position> getCurrentLocation({
+    bool isAnimate = true,
+    GoogleMapController? mapController,
+    bool callZone = true,
+  }) async {
+    final bool isSuccess = await checkPermission(() {});
+    if (!isSuccess) {
+      return _position;
     }
+
+    try {
+      await _locationSubscription?.cancel();
+      _locationSubscription = null;
+
+      final Position currentPosition = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 10),
+      );
+
+      _position = currentPosition;
+      _initialPosition = LatLng(
+        currentPosition.latitude,
+        currentPosition.longitude,
+      );
+      _mapController = mapController ?? _mapController;
+
+      Get.find<RiderMapController>().updateMarkerAndCircle(_initialPosition);
+
+      if (callZone) {
+        await getZone(
+          currentPosition.latitude.toString(),
+          currentPosition.longitude.toString(),
+          false,
+        );
+        await getAddressFromGeocode(_initialPosition);
+      } else if (Get.find<AuthController>().isLoggedIn()) {
+        await updateLastLocation(
+          currentPosition.latitude.toString(),
+          currentPosition.longitude.toString(),
+        );
+      }
+
+      if (isAnimate && mapController != null) {
+        await mapController.moveCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(target: _initialPosition, zoom: 16),
+          ),
+        );
+      }
+
+      _locationSubscription = Geolocator.getPositionStream(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          distanceFilter: 5,
+        ),
+      ).listen(
+            (Position livePosition) async {
+          _position = livePosition;
+          _initialPosition = LatLng(
+            livePosition.latitude,
+            livePosition.longitude,
+          );
+
+          Get.find<RiderMapController>().updateMarkerAndCircle(_initialPosition);
+
+          if (mapController != null) {
+            await mapController.moveCamera(
+              CameraUpdate.newCameraPosition(
+                CameraPosition(
+                  target: _initialPosition,
+                  zoom: 16,
+                ),
+              ),
+            );
+          }
+
+          if (Get.find<AuthController>().isLoggedIn()) {
+            await updateLastLocation(
+              livePosition.latitude.toString(),
+              livePosition.longitude.toString(),
+            );
+          }
+
+          update();
+        },
+        onError: (Object error) {
+          if (kDebugMode) {
+            print('LIVE LOCATION STREAM ERROR: $error');
+          }
+        },
+      );
+
+      update();
+    } catch (e) {
+      if (kDebugMode) {
+        print('GET CURRENT LOCATION ERROR: $e');
+      }
+      _position = (await Geolocator.getLastKnownPosition()) ?? _position;
+      _initialPosition = LatLng(_position.latitude, _position.longitude);
+      update();
+    }
+
     return _position;
   }
 
@@ -168,23 +213,55 @@ class LocationController extends GetxController implements GetxService {
   bool lastLocationLoading = false;
 
   Future<void> storeLastLocationApi(
-      String lat, String lng, String zoneID) async {
+      String lat, String lng, String zoneId) async {
+    String resolvedZoneId = zoneId.trim();
+
+    if (resolvedZoneId.isEmpty) {
+      resolvedZoneId =
+          Get.find<SharedPreferences>().getString(AppConstants.zoneId) ?? '';
+    }
+
+    // Never upload an invalid fallback such as "1". Resolve the real zone
+    // from the driver's latest coordinates before storing live location.
+    if (resolvedZoneId.isEmpty || resolvedZoneId == '1') {
+      final ZoneResponseModel zoneResponse = await getZone(lat, lng, false);
+      resolvedZoneId = zoneResponse.zoneIds.trim();
+      if (!zoneResponse.isSuccess || resolvedZoneId.isEmpty) {
+        if (kDebugMode) {
+          print('LIVE LOCATION NOT STORED: valid zone unavailable');
+        }
+        return;
+      }
+      // getZone already stores this same location after resolving the zone.
+      return;
+    }
+
     lastLocationLoading = true;
     update();
-    Response response = await locationServiceInterface.storeLastLocationApi(
-      lat,
-      lng,
-      Get.find<SharedPreferences>().getString(AppConstants.zoneId) ?? "1",
-    );
-    if (response.statusCode == 200) {
+
+    try {
+      final Response response =
+      await locationServiceInterface.storeLastLocationApi(
+        lat,
+        lng,
+        resolvedZoneId,
+      );
+
+      if (kDebugMode) {
+        print(
+          'LIVE LOCATION STORED: $lat, $lng, zone: $resolvedZoneId, '
+              'status: ${response.statusCode}',
+        );
+      }
+    } finally {
       lastLocationLoading = false;
+      update();
     }
-    update();
   }
 
   Future<String> getAddressFromGeocode(LatLng latLng) async {
     Response response =
-        await locationServiceInterface.getAddressFromGeocode(latLng);
+    await locationServiceInterface.getAddressFromGeocode(latLng);
     if (response.statusCode == 200) {
       _address =
           response.body['data']['results'][0]['formatted_address'].toString();

@@ -1,17 +1,18 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ride_sharing_user_app/util/dimensions.dart';
-import 'package:ride_sharing_user_app/util/images.dart';
-import 'package:ride_sharing_user_app/util/styles.dart';
-import 'package:ride_sharing_user_app/features/map/widgets/route_widget.dart';
-import 'package:ride_sharing_user_app/features/ride/controllers/ride_controller.dart';
-import 'package:ride_sharing_user_app/features/trip/screens/payment_received_screen.dart';
-import 'package:ride_sharing_user_app/features/trip/widgets/sub_total_header.dart';
 import 'package:ride_sharing_user_app/common_widgets/app_bar_widget.dart';
 import 'package:ride_sharing_user_app/common_widgets/button_widget.dart';
 import 'package:ride_sharing_user_app/common_widgets/loader_widget.dart';
 import 'package:ride_sharing_user_app/common_widgets/payment_item_info_widget.dart';
+import 'package:ride_sharing_user_app/features/map/widgets/route_widget.dart';
+import 'package:ride_sharing_user_app/features/ride/controllers/ride_controller.dart';
+import 'package:ride_sharing_user_app/features/trip/screens/payment_received_screen.dart';
+import 'package:ride_sharing_user_app/features/trip/widgets/sub_total_header.dart';
+import 'package:ride_sharing_user_app/util/dimensions.dart';
+import 'package:ride_sharing_user_app/util/images.dart';
+import 'package:ride_sharing_user_app/util/styles.dart';
 
 class TripDetails extends StatefulWidget {
   final String tripId;

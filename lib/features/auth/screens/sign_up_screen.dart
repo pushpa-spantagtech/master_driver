@@ -1,16 +1,16 @@
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ride_sharing_user_app/features/html/screens/policy_viewer_screen.dart';
+import 'package:ride_sharing_user_app/common_widgets/button_widget.dart';
+import 'package:ride_sharing_user_app/common_widgets/text_field_widget.dart';
+import 'package:ride_sharing_user_app/features/auth/controllers/auth_controller.dart';
+import 'package:ride_sharing_user_app/features/auth/screens/additional_sign_up_screen.dart';
+import 'package:ride_sharing_user_app/features/html/screens/terms_and_conditions_screen.dart';
+import 'package:ride_sharing_user_app/features/splash/controllers/splash_controller.dart';
 import 'package:ride_sharing_user_app/helper/display_helper.dart';
 import 'package:ride_sharing_user_app/util/dimensions.dart';
 import 'package:ride_sharing_user_app/util/images.dart';
 import 'package:ride_sharing_user_app/util/styles.dart';
-import 'package:ride_sharing_user_app/features/auth/screens/additional_sign_up_screen.dart';
-import 'package:ride_sharing_user_app/features/auth/controllers/auth_controller.dart';
-import 'package:ride_sharing_user_app/features/splash/controllers/splash_controller.dart';
-import 'package:ride_sharing_user_app/common_widgets/button_widget.dart';
-import 'package:ride_sharing_user_app/common_widgets/text_field_widget.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -294,7 +294,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         GestureDetector(
                                           onTap: () async {
                                             await Get.to(() =>
-                                                const PolicyViewerScreen());
+                                                const TermsAndConditionsScreen());
                                             if (!authController.acceptTerms) {
                                               authController.toggleTerms();
                                             }
@@ -341,6 +341,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               showCustomSnackBar('phone_is_required'.tr);
                               FocusScope.of(context)
                                   .requestFocus(authController.phoneNode);
+                            } else if (phone.length != 10) {
+                              showCustomSnackBar(
+                                  'Phone number must be exactly 10 digits');
+                              FocusScope.of(context)
+                                  .requestFocus(authController.phoneNode);
                             } else if (!GetUtils.isPhoneNumber(
                                 authController.countryDialCode + phone)) {
                               showCustomSnackBar(
@@ -353,7 +358,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   .requestFocus(authController.passwordNode);
                             } else if (password.length < 8) {
                               showCustomSnackBar(
-                                  'minimum_password_length_is_8'.tr);
+                                  'Password must be at least 8 characters');
+                              FocusScope.of(context)
+                                  .requestFocus(authController.passwordNode);
+                            } else if (!RegExp(
+                                    r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&^#()_+\-=\[\]{};:"\\|,.<>\/?]).{8,}$')
+                                .hasMatch(password)) {
+                              showCustomSnackBar(
+                                  'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character');
                               FocusScope.of(context)
                                   .requestFocus(authController.passwordNode);
                             } else if (confirmPassword.isEmpty) {

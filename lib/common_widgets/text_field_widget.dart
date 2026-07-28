@@ -60,9 +60,9 @@ class TextFieldWidget extends StatefulWidget {
 class IndianPhoneNumberFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue,
-      TextEditingValue newValue,
-      ) {
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     // Keep only digits
     String digits = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
 
@@ -140,11 +140,11 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
           keyboardType: isPhoneField
               ? TextInputType.phone
               : widget.isAmount
-              ? const TextInputType.numberWithOptions(
-            signed: false,
-            decimal: true,
-          )
-              : widget.inputType,
+                  ? const TextInputType.numberWithOptions(
+                      signed: false,
+                      decimal: true,
+                    )
+                  : widget.inputType,
           cursorColor: Theme.of(context).colorScheme.primary,
           textCapitalization: widget.capitalization,
           enabled: widget.isEnabled,
@@ -166,8 +166,9 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
           obscureText: widget.isPassword ? _obscureText : false,
           inputFormatters: isPhoneField
               ? <TextInputFormatter>[
-            IndianPhoneNumberFormatter(),
-          ]
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(10),
+                ]
               : widget.isAmount
                   ? [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))]
                   : null,

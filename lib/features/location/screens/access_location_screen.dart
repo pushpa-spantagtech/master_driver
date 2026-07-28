@@ -6,9 +6,7 @@ import 'package:ride_sharing_user_app/features/auth/screens/sign_in_screen.dart'
 import 'package:ride_sharing_user_app/features/dashboard/controllers/bottom_menu_controller.dart';
 import 'package:ride_sharing_user_app/features/dashboard/screens/dashboard_screen.dart';
 import 'package:ride_sharing_user_app/features/location/controllers/location_controller.dart';
-import 'package:ride_sharing_user_app/util/dimensions.dart';
 import 'package:ride_sharing_user_app/util/images.dart';
-import 'package:ride_sharing_user_app/util/styles.dart';
 
 class AccessLocationScreen extends StatelessWidget {
   const AccessLocationScreen({super.key});

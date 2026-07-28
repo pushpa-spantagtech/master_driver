@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:ride_sharing_user_app/common_widgets/snackbar_widget.dart';
 import 'package:ride_sharing_user_app/data/api_checker.dart';
 import 'package:ride_sharing_user_app/data/api_client.dart';
+import 'package:ride_sharing_user_app/features/auth/domain/models/signup_body.dart';
 import 'package:ride_sharing_user_app/features/auth/domain/services/auth_service_interface.dart';
+import 'package:ride_sharing_user_app/features/auth/screens/reset_password_screen.dart';
+import 'package:ride_sharing_user_app/features/auth/screens/sign_in_screen.dart';
+import 'package:ride_sharing_user_app/features/auth/screens/verification_screen.dart';
+import 'package:ride_sharing_user_app/features/auth/widgets/approve_dialog_widget.dart';
+import 'package:ride_sharing_user_app/features/dashboard/screens/dashboard_screen.dart';
+import 'package:ride_sharing_user_app/features/location/screens/access_location_screen.dart';
 import 'package:ride_sharing_user_app/features/map/controllers/otp_time_count_controller.dart';
+import 'package:ride_sharing_user_app/features/profile/controllers/profile_controller.dart';
+import 'package:ride_sharing_user_app/features/ride/controllers/ride_controller.dart';
 import 'package:ride_sharing_user_app/helper/display_helper.dart';
 import 'package:ride_sharing_user_app/helper/pusher_helper.dart';
 import 'package:ride_sharing_user_app/util/images.dart';
-import 'package:ride_sharing_user_app/features/auth/domain/models/signup_body.dart';
-import 'package:ride_sharing_user_app/features/auth/screens/sign_in_screen.dart';
-import 'package:ride_sharing_user_app/features/auth/widgets/approve_dialog_widget.dart';
-import 'package:ride_sharing_user_app/features/dashboard/screens/dashboard_screen.dart';
-import 'package:ride_sharing_user_app/features/auth/screens/reset_password_screen.dart';
-import 'package:ride_sharing_user_app/features/auth/screens/verification_screen.dart';
-import 'package:ride_sharing_user_app/features/location/screens/access_location_screen.dart';
-import 'package:ride_sharing_user_app/features/profile/controllers/profile_controller.dart';
-import 'package:ride_sharing_user_app/features/ride/controllers/ride_controller.dart';
-import 'package:ride_sharing_user_app/common_widgets/snackbar_widget.dart';
 
 class AuthController extends GetxController implements GetxService {
   final AuthServiceInterface authServiceInterface;
@@ -104,7 +104,12 @@ class AuthController extends GetxController implements GetxService {
     } else {
       identityImage = pickedFile;
       identityImages.add(identityImage);
-      multipartList.add(MultipartBody('identity_images[]', identityImage));
+      multipartList.add(
+        MultipartBody(
+          'identity_images[${identityImages.length}]',
+          identityImage,
+        ),
+      );
     }
 
     update();

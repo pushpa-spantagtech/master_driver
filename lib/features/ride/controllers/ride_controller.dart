@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:typed_data';
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:expandable_bottom_sheet/expandable_bottom_sheet.dart';
 import 'package:flutter/foundation.dart';
@@ -8,24 +8,24 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:ride_sharing_user_app/data/api_checker.dart';
-import 'package:ride_sharing_user_app/features/map/controllers/otp_time_count_controller.dart';
-import 'package:ride_sharing_user_app/features/ride/domain/services/ride_service_interface.dart';
-import 'package:ride_sharing_user_app/helper/display_helper.dart';
-import 'package:ride_sharing_user_app/helper/pusher_helper.dart';
-import 'package:ride_sharing_user_app/helper/route_helper.dart';
 import 'package:ride_sharing_user_app/features/auth/controllers/auth_controller.dart';
 import 'package:ride_sharing_user_app/features/location/screens/access_location_screen.dart';
 import 'package:ride_sharing_user_app/features/map/controllers/map_controller.dart';
+import 'package:ride_sharing_user_app/features/map/controllers/otp_time_count_controller.dart';
 import 'package:ride_sharing_user_app/features/map/screens/map_screen.dart';
 import 'package:ride_sharing_user_app/features/profile/controllers/profile_controller.dart';
-import 'package:ride_sharing_user_app/features/splash/controllers/splash_controller.dart';
 import 'package:ride_sharing_user_app/features/ride/domain/models/final_fare_model.dart';
 import 'package:ride_sharing_user_app/features/ride/domain/models/on_going_trip_model.dart';
 import 'package:ride_sharing_user_app/features/ride/domain/models/parcel_list_model.dart';
 import 'package:ride_sharing_user_app/features/ride/domain/models/pending_ride_request_model.dart';
 import 'package:ride_sharing_user_app/features/ride/domain/models/remaining_distance_model.dart';
 import 'package:ride_sharing_user_app/features/ride/domain/models/trip_details_model.dart';
+import 'package:ride_sharing_user_app/features/ride/domain/services/ride_service_interface.dart';
+import 'package:ride_sharing_user_app/features/splash/controllers/splash_controller.dart';
 import 'package:ride_sharing_user_app/features/trip/screens/payment_received_screen.dart';
+import 'package:ride_sharing_user_app/helper/display_helper.dart';
+import 'package:ride_sharing_user_app/helper/pusher_helper.dart';
+import 'package:ride_sharing_user_app/helper/route_helper.dart';
 
 class RideController extends GetxController implements GetxService {
   final RideServiceInterface rideServiceInterface;

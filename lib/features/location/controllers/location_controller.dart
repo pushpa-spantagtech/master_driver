@@ -105,14 +105,15 @@ class LocationController extends GetxController implements GetxService {
           distanceFilter: 5,
         ),
       ).listen(
-            (Position livePosition) async {
+        (Position livePosition) async {
           _position = livePosition;
           _initialPosition = LatLng(
             livePosition.latitude,
             livePosition.longitude,
           );
 
-          Get.find<RiderMapController>().updateMarkerAndCircle(_initialPosition);
+          Get.find<RiderMapController>()
+              .updateMarkerAndCircle(_initialPosition);
 
           if (mapController != null) {
             await mapController.moveCamera(
@@ -241,7 +242,7 @@ class LocationController extends GetxController implements GetxService {
 
     try {
       final Response response =
-      await locationServiceInterface.storeLastLocationApi(
+          await locationServiceInterface.storeLastLocationApi(
         lat,
         lng,
         resolvedZoneId,
@@ -250,7 +251,7 @@ class LocationController extends GetxController implements GetxService {
       if (kDebugMode) {
         print(
           'LIVE LOCATION STORED: $lat, $lng, zone: $resolvedZoneId, '
-              'status: ${response.statusCode}',
+          'status: ${response.statusCode}',
         );
       }
     } finally {
@@ -261,7 +262,7 @@ class LocationController extends GetxController implements GetxService {
 
   Future<String> getAddressFromGeocode(LatLng latLng) async {
     Response response =
-    await locationServiceInterface.getAddressFromGeocode(latLng);
+        await locationServiceInterface.getAddressFromGeocode(latLng);
     if (response.statusCode == 200) {
       _address =
           response.body['data']['results'][0]['formatted_address'].toString();

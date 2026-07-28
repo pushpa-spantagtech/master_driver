@@ -1,28 +1,29 @@
 import 'dart:convert';
+
 import 'package:expandable_bottom_sheet/expandable_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:ride_sharing_user_app/common_widgets/button_widget.dart';
 import 'package:ride_sharing_user_app/common_widgets/image_widget.dart';
+import 'package:ride_sharing_user_app/common_widgets/payment_item_info_widget.dart';
 import 'package:ride_sharing_user_app/common_widgets/ride_completation_dialog_widget.dart';
 import 'package:ride_sharing_user_app/common_widgets/swipable_button/slider_buttion_widget.dar.dart';
-import 'package:ride_sharing_user_app/features/dashboard/screens/dashboard_screen.dart';
-import 'package:ride_sharing_user_app/features/map/widgets/cancelation_radio_button.dart';
-import 'package:ride_sharing_user_app/features/trip/controllers/trip_controller.dart';
-import 'package:ride_sharing_user_app/localization/localization_controller.dart';
-import 'package:ride_sharing_user_app/util/dimensions.dart';
-import 'package:ride_sharing_user_app/util/images.dart';
-import 'package:ride_sharing_user_app/util/styles.dart';
 import 'package:ride_sharing_user_app/features/chat/controllers/chat_controller.dart';
+import 'package:ride_sharing_user_app/features/dashboard/screens/dashboard_screen.dart';
 import 'package:ride_sharing_user_app/features/map/controllers/map_controller.dart';
+import 'package:ride_sharing_user_app/features/map/widgets/cancelation_radio_button.dart';
 import 'package:ride_sharing_user_app/features/map/widgets/route_calculation_widget.dart';
 import 'package:ride_sharing_user_app/features/map/widgets/route_widget.dart';
 import 'package:ride_sharing_user_app/features/map/widgets/user_details_widget.dart';
 import 'package:ride_sharing_user_app/features/ride/controllers/ride_controller.dart';
 import 'package:ride_sharing_user_app/features/splash/controllers/splash_controller.dart';
+import 'package:ride_sharing_user_app/features/trip/controllers/trip_controller.dart';
 import 'package:ride_sharing_user_app/features/trip/screens/payment_received_screen.dart';
-import 'package:ride_sharing_user_app/common_widgets/payment_item_info_widget.dart';
+import 'package:ride_sharing_user_app/localization/localization_controller.dart';
+import 'package:ride_sharing_user_app/util/dimensions.dart';
+import 'package:ride_sharing_user_app/util/images.dart';
+import 'package:ride_sharing_user_app/util/styles.dart';
 
 class RideOngoingWidget extends StatefulWidget {
   final String tripId;

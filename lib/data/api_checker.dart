@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:ride_sharing_user_app/features/auth/screens/sign_in_screen.dart';
 import 'package:ride_sharing_user_app/features/splash/controllers/splash_controller.dart';
 import 'package:ride_sharing_user_app/helper/display_helper.dart';
+
 import 'error_response.dart';
 
 class ApiChecker {

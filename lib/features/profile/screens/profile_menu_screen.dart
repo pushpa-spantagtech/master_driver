@@ -5,6 +5,7 @@ import 'package:ride_sharing_user_app/features/auth/controllers/auth_controller.
 import 'package:ride_sharing_user_app/features/chat/screens/chat_screen.dart';
 import 'package:ride_sharing_user_app/features/help_and_support/screens/help_and_support_screen.dart';
 import 'package:ride_sharing_user_app/features/html/screens/policy_viewer_screen.dart';
+import 'package:ride_sharing_user_app/features/html/screens/terms_and_conditions_screen.dart';
 import 'package:ride_sharing_user_app/features/leaderboard/screens/leaderboard_screen.dart';
 import 'package:ride_sharing_user_app/features/profile/screens/profile_screen.dart';
 import 'package:ride_sharing_user_app/features/profile/widgets/profile_level_widget.dart';
@@ -91,13 +92,8 @@ class _ProfileMenuScreenState extends State<ProfileMenuScreen> {
           ProfileMenuItem(
             icon: Images.termsAndCondition,
             title: 'terms_and_condition',
-            onTap: () => Get.to(() => PolicyViewerScreen(
-                  image: Get.find<SplashController>()
-                          .config
-                          ?.termsAndConditions
-                          ?.image ??
-                      '',
-                )),
+            onTap: () async =>
+                await Get.to(() => const TermsAndConditionsScreen()),
           ),
           ProfileMenuItem(
             icon: Images.privacyPolicy,

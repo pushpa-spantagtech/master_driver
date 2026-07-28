@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_switch/flutter_switch.dart';
 import 'package:get/get.dart';
-import 'package:ride_sharing_user_app/util/styles.dart';
 import 'package:ride_sharing_user_app/features/profile/controllers/profile_controller.dart';
+import 'package:ride_sharing_user_app/util/styles.dart';
 
 class ProfileItemWidget extends StatelessWidget {
   final String title;
@@ -30,7 +30,7 @@ class ProfileItemWidget extends StatelessWidget {
               if (icon != null)
                 CircleAvatar(
                   radius: 20,
-                  backgroundColor: Colors.red.withOpacity(0.08),
+                  backgroundColor: Colors.red.withValues(alpha: 0.08),
                   child: Icon(
                     icon,
                     color: Colors.red,

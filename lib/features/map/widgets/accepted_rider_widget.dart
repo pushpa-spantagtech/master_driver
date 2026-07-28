@@ -1,4 +1,4 @@
-import 'dart:ui';
+import 'dart:math' as math;
 
 import 'package:expandable_bottom_sheet/expandable_bottom_sheet.dart';
 import 'package:flutter/material.dart';
@@ -23,7 +23,6 @@ import 'package:ride_sharing_user_app/localization/localization_controller.dart'
 import 'package:ride_sharing_user_app/util/dimensions.dart';
 import 'package:ride_sharing_user_app/util/images.dart';
 import 'package:ride_sharing_user_app/util/styles.dart';
-import 'dart:math' as math;
 
 class RideAcceptedWidget extends StatefulWidget {
   final GlobalKey<ExpandableBottomSheetState> expandableKey;

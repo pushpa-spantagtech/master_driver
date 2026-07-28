@@ -1,24 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ride_sharing_user_app/features/home/widgets/home_bottom_sheet_widget.dart';
-import 'package:ride_sharing_user_app/features/profile/controllers/profile_controller.dart';
-import 'package:ride_sharing_user_app/features/profile/screens/profile_screen.dart';
-import 'package:ride_sharing_user_app/helper/display_helper.dart';
-import 'package:ride_sharing_user_app/helper/home_screen_helper.dart';
-import 'package:ride_sharing_user_app/localization/localization_controller.dart';
-import 'package:ride_sharing_user_app/util/images.dart';
+import 'package:ride_sharing_user_app/common_widgets/app_bar_widget.dart';
+import 'package:ride_sharing_user_app/common_widgets/sliver_delegate.dart';
+import 'package:ride_sharing_user_app/common_widgets/zoom_drawer_context_widget.dart';
 import 'package:ride_sharing_user_app/features/home/widgets/add_vehicle_design_widget.dart';
+import 'package:ride_sharing_user_app/features/home/widgets/home_bottom_sheet_widget.dart';
 import 'package:ride_sharing_user_app/features/home/widgets/my_activity_list_view_widget.dart';
 import 'package:ride_sharing_user_app/features/home/widgets/ongoing_ride_card_widget.dart';
 import 'package:ride_sharing_user_app/features/home/widgets/profile_info_card_widget.dart';
 import 'package:ride_sharing_user_app/features/home/widgets/vehicle_pending_widget.dart';
+import 'package:ride_sharing_user_app/features/profile/controllers/profile_controller.dart';
 import 'package:ride_sharing_user_app/features/profile/screens/profile_menu_screen.dart';
+import 'package:ride_sharing_user_app/features/profile/screens/profile_screen.dart';
 import 'package:ride_sharing_user_app/features/ride/controllers/ride_controller.dart';
-import 'package:ride_sharing_user_app/features/map/controllers/map_controller.dart';
-import 'package:ride_sharing_user_app/features/map/screens/map_screen.dart';
-import 'package:ride_sharing_user_app/common_widgets/app_bar_widget.dart';
-import 'package:ride_sharing_user_app/common_widgets/sliver_delegate.dart';
-import 'package:ride_sharing_user_app/common_widgets/zoom_drawer_context_widget.dart';
+import 'package:ride_sharing_user_app/helper/home_screen_helper.dart';
+import 'package:ride_sharing_user_app/localization/localization_controller.dart';
+import 'package:ride_sharing_user_app/util/images.dart';
 
 class HomeMenu extends GetView<ProfileController> {
   const HomeMenu({super.key});

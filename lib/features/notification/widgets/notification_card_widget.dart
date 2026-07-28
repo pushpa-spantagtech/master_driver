@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:ride_sharing_user_app/features/notification/domain/models/notification_model.dart';
+import 'package:ride_sharing_user_app/features/ride/controllers/ride_controller.dart';
+import 'package:ride_sharing_user_app/features/ride/screens/ride_request_list_screen.dart';
 import 'package:ride_sharing_user_app/helper/date_converter.dart';
 import 'package:ride_sharing_user_app/helper/display_helper.dart';
 import 'package:ride_sharing_user_app/util/dimensions.dart';
 import 'package:ride_sharing_user_app/util/styles.dart';
-import 'package:ride_sharing_user_app/features/notification/domain/models/notification_model.dart';
-import 'package:ride_sharing_user_app/features/ride/controllers/ride_controller.dart';
-import 'package:ride_sharing_user_app/features/ride/screens/ride_request_list_screen.dart';
 
 class NotificationCardWidget extends StatelessWidget {
   final Notifications notification;
@@ -30,10 +30,10 @@ class NotificationCardWidget extends StatelessWidget {
           decoration: BoxDecoration(
             color: canOpenRideRequest ? Colors.white : const Color(0xFFF8FAFC),
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: style.color.withOpacity(.10)),
+            border: Border.all(color: style.color.withValues(alpha: 0.10)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(.045),
+                color: Colors.black.withValues(alpha: .045),
                 blurRadius: 18,
                 offset: const Offset(0, 8),
               ),
@@ -48,7 +48,7 @@ class NotificationCardWidget extends StatelessWidget {
                   width: 46,
                   height: 46,
                   decoration: BoxDecoration(
-                    color: style.color.withOpacity(.13),
+                    color: style.color.withValues(alpha: 0.13),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(style.icon, color: style.color, size: 22),
@@ -102,7 +102,8 @@ class NotificationCardWidget extends StatelessWidget {
                           Icon(
                             Icons.access_time_rounded,
                             size: 15,
-                            color: const Color(0xFF94A3B8).withOpacity(.95),
+                            color:
+                                const Color(0xFF94A3B8).withValues(alpha: 0.95),
                           ),
                           const SizedBox(width: 5),
                           Expanded(

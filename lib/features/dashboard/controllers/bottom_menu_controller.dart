@@ -1,8 +1,9 @@
 import 'dart:io';
+
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:ride_sharing_user_app/util/images.dart';
 import 'package:ride_sharing_user_app/common_widgets/confirmation_dialog_widget.dart';
+import 'package:ride_sharing_user_app/util/images.dart';
 
 class BottomMenuController extends GetxController implements GetxService {
   int _currentTab = 0;

@@ -1,17 +1,18 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
+import 'package:ride_sharing_user_app/common_widgets/app_bar_widget.dart';
+import 'package:ride_sharing_user_app/common_widgets/no_data_widget.dart';
+import 'package:ride_sharing_user_app/common_widgets/paginated_list_view_widget.dart';
+import 'package:ride_sharing_user_app/features/chat/controllers/chat_controller.dart';
+import 'package:ride_sharing_user_app/features/chat/widgets/message_bubble_widget.dart';
 import 'package:ride_sharing_user_app/helper/display_helper.dart';
 import 'package:ride_sharing_user_app/localization/localization_controller.dart';
 import 'package:ride_sharing_user_app/util/dimensions.dart';
 import 'package:ride_sharing_user_app/util/images.dart';
 import 'package:ride_sharing_user_app/util/styles.dart';
-import 'package:ride_sharing_user_app/features/chat/controllers/chat_controller.dart';
-import 'package:ride_sharing_user_app/features/chat/widgets/message_bubble_widget.dart';
-import 'package:ride_sharing_user_app/common_widgets/app_bar_widget.dart';
-import 'package:ride_sharing_user_app/common_widgets/no_data_widget.dart';
-import 'package:ride_sharing_user_app/common_widgets/paginated_list_view_widget.dart';
 
 class MessageScreen extends StatefulWidget {
   final String channelId;

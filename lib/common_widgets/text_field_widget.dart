@@ -166,9 +166,8 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
           obscureText: widget.isPassword ? _obscureText : false,
           inputFormatters: isPhoneField
               ? <TextInputFormatter>[
-                  FilteringTextInputFormatter.digitsOnly,
-                  LengthLimitingTextInputFormatter(10),
-                ]
+              IndianPhoneNumberFormatter(),
+              ]
               : widget.isAmount
                   ? [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))]
                   : null,

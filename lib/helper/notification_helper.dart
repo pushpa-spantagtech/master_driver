@@ -7,6 +7,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:ride_sharing_user_app/features/html/screens/terms_and_conditions_screen.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
@@ -685,11 +686,6 @@ Future<void> notificationToRoute(RemoteMessage message) async {
           image: Get.find<SplashController>().config?.legal?.image ?? ''));
     });
   } else if (message.data['action'] == 'terms_and_condition_page_updated') {
-    Get.find<SplashController>().getConfigData().then((value) {
-      Get.to(() => PolicyViewerScreen(
-          image:
-              Get.find<SplashController>().config?.termsAndConditions?.image ??
-                  ''));
-    });
+    Get.to(() => const TermsAndConditionsScreen());
   }
 }

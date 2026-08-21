@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
@@ -17,6 +17,32 @@ class LocationController extends GetxController implements GetxService {
   final LocationServiceInterface locationServiceInterface;
 
   LocationController({required this.locationServiceInterface});
+
+  Future<bool> _showLocationDisclosure() async {
+    final bool? agreed = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('Location access'),
+        content: const Text(
+          'SevenTaxi Driver collects location data to enable ride requests, '
+          'navigation, live trip tracking, and sharing the driver’s location '
+          'with the customer, even when the app is closed or not in use.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: const Text('Not now'),
+          ),
+          FilledButton(
+            onPressed: () => Get.back(result: true),
+            child: const Text('Agree'),
+          ),
+        ],
+      ),
+      barrierDismissible: false,
+    );
+
+    return agreed == true;
+  }
 
   Position _position = Position(
       longitude: 0,
@@ -274,12 +300,19 @@ class LocationController extends GetxController implements GetxService {
     LocationPermission permission = await Geolocator.checkPermission();
 
     if (permission == LocationPermission.denied) {
+      final bool agreed = await _showLocationDisclosure();
+
+      if (!agreed) {
+        return false;
+      }
+
       permission = await Geolocator.requestPermission();
     }
 
     if (permission != LocationPermission.denied &&
         permission != LocationPermission.deniedForever) {
       _pendingPermissionCallback = null;
+
       await onTap();
       return true;
     }

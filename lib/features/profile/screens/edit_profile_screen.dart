@@ -21,6 +21,7 @@ import 'package:ride_sharing_user_app/localization/localization_controller.dart'
 import 'package:ride_sharing_user_app/util/dimensions.dart';
 import 'package:ride_sharing_user_app/util/images.dart';
 import 'package:ride_sharing_user_app/util/styles.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfileEditScreen extends StatefulWidget {
   final ProfileInfo profileInfo;
@@ -45,7 +46,18 @@ class ProfileEditScreenState extends State<ProfileEditScreen>
   FocusNode emailFocus = FocusNode();
 
   bool isRideShare = true;
-  bool isParcelDelivery = true;
+  bool isParcelDelivery = false;
+
+  Future<void> _openIdentityDocument(String imageUrl) async {
+    final Uri uri = Uri.parse(imageUrl);
+    final bool opened = await launchUrl(
+      uri,
+      mode: LaunchMode.externalApplication,
+    );
+    if (!opened) {
+      showCustomSnackBar('Unable to open identity document');
+    }
+  }
 
   @override
   void initState() {
@@ -53,15 +65,8 @@ class ProfileEditScreenState extends State<ProfileEditScreen>
     lastNameController.text = widget.profileInfo.lastName!;
     emailController.text = widget.profileInfo.email!;
     identityNumberController.text = widget.profileInfo.identificationNumber!;
-    if (widget.profileInfo.details!.services != null) {
-      if (widget.profileInfo.details!.services!.length == 1) {
-        if (widget.profileInfo.details!.services![0] == 'ride_request') {
-          isParcelDelivery = false;
-        } else {
-          isRideShare = false;
-        }
-      }
-    }
+    Get.find<AuthController>().identityImages.clear();
+    Get.find<AuthController>().multipartList.clear();
     Get.find<AuthController>()
         .setIdentityType(widget.profileInfo.identificationType!);
     if (Get.find<LocalizationController>().isLtr) {
@@ -306,14 +311,19 @@ class ProfileEditScreenState extends State<ProfileEditScreen>
                         return Padding(
                           padding: const EdgeInsets.only(
                               bottom: Dimensions.paddingSizeDefault),
-                          child: DottedBorder(
-                            strokeWidth: 2,
-                            dashPattern: const [10, 5],
-                            color: Theme.of(context).hintColor,
-                            borderType: BorderType.RRect,
-                            radius: const Radius.circular(
-                                Dimensions.paddingSizeSmall),
-                            child: Stack(children: [
+                          child: Builder(builder: (context) {
+                            final String imageUrl =
+                                '${Get.find<SplashController>().config!.imageBaseUrl!.identityImage}/${profileController.profileInfo!.identificationImage![index]}';
+                            return GestureDetector(
+                              onTap: () => _openIdentityDocument(imageUrl),
+                              child: DottedBorder(
+                                strokeWidth: 2,
+                                dashPattern: const [10, 5],
+                                color: Theme.of(context).hintColor,
+                                borderType: BorderType.RRect,
+                                radius: const Radius.circular(
+                                    Dimensions.paddingSizeSmall),
+                                child: Stack(children: [
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(
                                     Dimensions.paddingSizeSmall),
@@ -322,27 +332,40 @@ class ProfileEditScreenState extends State<ProfileEditScreen>
                                       MediaQuery.of(context).size.width / 4.3,
                                   width: MediaQuery.of(context).size.width,
                                   child: ImageWidget(
-                                    image:
-                                        '${Get.find<SplashController>().config!.imageBaseUrl!.identityImage}/${profileController.profileInfo!.identificationImage![index]}',
+                                    image: imageUrl,
                                   ),
                                 ),
                               ),
                               Positioned(
-                                bottom: 0,
-                                right: 0,
-                                top: 0,
-                                left: 0,
+                                right: Dimensions.paddingSizeSmall,
+                                bottom: Dimensions.paddingSizeSmall,
                                 child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: Dimensions.paddingSizeSmall,
+                                    vertical: 6,
+                                  ),
                                     decoration: BoxDecoration(
-                                  color: Theme.of(context)
-                                      .hintColor
-                                      .withValues(alpha: 0.07),
-                                  borderRadius: BorderRadius.circular(
-                                      Dimensions.paddingSizeSmall),
-                                )),
+                                      color: Colors.black.withValues(alpha: 0.65),
+                                      borderRadius: BorderRadius.circular(
+                                          Dimensions.paddingSizeSmall),
+                                    ),
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.open_in_new,
+                                            color: Colors.white, size: 18),
+                                        SizedBox(width: 5),
+                                        Text('View / Download',
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 12)),
+                                      ],
+                                    )),
                               ),
                             ]),
-                          ),
+                              ),
+                            );
+                          }),
                         );
                       },
                     ),
@@ -350,6 +373,21 @@ class ProfileEditScreenState extends State<ProfileEditScreen>
                 if (!profileController
                     .profileInfo!.isOldIdentificationImage!) ...[
                   TextFieldTitleWidget(title: 'upload_identity_image'.tr),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      Dimensions.paddingSizeDefault,
+                      0,
+                      Dimensions.paddingSizeDefault,
+                      Dimensions.paddingSizeSmall,
+                    ),
+                    child: Text(
+                      'JPG, JPEG, PNG, GIF or WebP • Max 10 MB • Recommended up to 2000 × 2000 px',
+                      style: textRegular.copyWith(
+                        color: Theme.of(context).hintColor,
+                        fontSize: Dimensions.fontSizeSmall,
+                      ),
+                    ),
+                  ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(
                       Dimensions.paddingSizeDefault,
@@ -526,16 +564,10 @@ class ProfileEditScreenState extends State<ProfileEditScreen>
                   child: ButtonWidget(
                     buttonText: 'submit'.tr,
                     onPressed: () {
-                      List<String> services = [];
+                      List<String> services = ['ride_request'];
                       String email = emailController.text;
                       String fName = firstNameController.text;
                       String lName = lastNameController.text;
-                      if (isRideShare) {
-                        services.add('ride_request');
-                      }
-                      if (isParcelDelivery) {
-                        services.add('parcel');
-                      }
                       if (fName.isEmpty) {
                         showCustomSnackBar('first_name_is_required'.tr);
                       } else if (lName.isEmpty) {
@@ -544,8 +576,10 @@ class ProfileEditScreenState extends State<ProfileEditScreen>
                         showCustomSnackBar('enter_valid_email_address'.tr);
                       } else if (identityNumberController.text.isEmpty) {
                         showCustomSnackBar('identity_number_is_required'.tr);
-                      } else if (!isRideShare && !isParcelDelivery) {
-                        showCustomSnackBar('required_to_select_service'.tr);
+                      } else if ((identityNumberController.text != widget.profileInfo.identificationNumber ||
+                              Get.find<AuthController>().identityType != widget.profileInfo.identificationType) &&
+                          Get.find<AuthController>().identityImages.isEmpty) {
+                        showCustomSnackBar('identity_image_is_required'.tr);
                       } else {
                         profileController.updateProfile(fName, lName, email,
                             identityNumberController.text, services);

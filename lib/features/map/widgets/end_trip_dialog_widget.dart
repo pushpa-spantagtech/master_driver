@@ -94,20 +94,13 @@ class EndTripWidget extends StatelessWidget {
                                       '')
                                   .then((value) async {
                                 if (value.statusCode == 200) {
-                                  rideController.getRideDetails(
-                                      rideController.tripDetail!.id!);
-                                  rideController
-                                      .getFinalFare(
-                                          rideController.tripDetail!.id!)
-                                      .then((value) {
-                                    if (value.statusCode == 200) {
-                                      Get.find<RiderMapController>()
-                                          .setRideCurrentState(
-                                              RideState.initial);
-                                      Get.off(
-                                          () => const PaymentReceivedScreen());
-                                    }
-                                  });
+                                  final String tripId =
+                                      rideController.tripDetail!.id!;
+                                  rideController.getRideDetails(tripId);
+                                  rideController.getFinalFare(tripId);
+                                  Get.find<RiderMapController>()
+                                      .setRideCurrentState(RideState.initial);
+                                  Get.off(() => const PaymentReceivedScreen());
                                 }
                               });
                               return;
@@ -135,33 +128,22 @@ class EndTripWidget extends StatelessWidget {
                                             if (rideController
                                                     .tripDetail!.type ==
                                                 "ride_request") {
-                                              rideController.getRideDetails(
+                                              final String tripId =
                                                   rideController
-                                                      .tripDetail!.id!);
+                                                      .tripDetail!.id!;
                                               rideController
-                                                  .getFinalFare(rideController
-                                                      .tripDetail!.id!)
-                                                  .then((value) {
-                                                if (value.statusCode == 200) {
-                                                  Get.find<RiderMapController>()
-                                                      .setRideCurrentState(
-                                                          RideState.initial);
-                                                  Get.off(() =>
-                                                      const PaymentReceivedScreen());
-                                                }
-                                              });
+                                                  .getRideDetails(tripId);
+                                              rideController
+                                                  .getFinalFare(tripId);
+                                              Get.find<RiderMapController>()
+                                                  .setRideCurrentState(
+                                                      RideState.initial);
+                                              Get.off(() =>
+                                                  const PaymentReceivedScreen());
                                             }
                                           }
                                         });
-                                      }
-/*                              else if(!rideController.tripDetail!.isReachedDestination! && rideController.tripDetail!.type == "ride_request"){
-                                rideController.tripStatusUpdate('cancelled', rideController.tripDetail!.id!, "trip_cancelled_successfully", Get.find<TripController>().tripCancellationCauseList!.data![0].ongoingRide![Get.find<TripController>().tripCancellationCauseCurrentIndex]).then((value) async {
-                                  if(value.statusCode == 200){
-                                    Get.find<RiderMapController>().setRideCurrentState(RideState.initial);
-                                    Get.offAll(()=> const DashboardScreen());
-                                  }});
-                              }*/
-                                      else {
+                                      } else {
                                         if (Get.find<RideController>()
                                                     .matchedMode !=
                                                 null &&
@@ -198,20 +180,17 @@ class EndTripWidget extends StatelessWidget {
                                                     : Get.offAll(() =>
                                                         const DashboardScreen());
                                               } else {
+                                                final String tripId =
+                                                    rideController
+                                                        .tripDetail!.id!;
                                                 rideController
-                                                    .getFinalFare(rideController
-                                                        .tripDetail!.id!)
-                                                    .then((value) {
-                                                  if (value.statusCode == 200) {
-                                                    Get.find<
-                                                            RiderMapController>()
-                                                        .setRideCurrentState(
-                                                            RideState.initial);
-                                                    Get.off(() =>
-                                                        const PaymentReceivedScreen(
-                                                            fromParcel: true));
-                                                  }
-                                                });
+                                                    .getFinalFare(tripId);
+                                                Get.find<RiderMapController>()
+                                                    .setRideCurrentState(
+                                                        RideState.initial);
+                                                Get.off(() =>
+                                                    const PaymentReceivedScreen(
+                                                        fromParcel: true));
                                               }
                                             });
                                           });

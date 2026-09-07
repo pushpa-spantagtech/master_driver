@@ -51,20 +51,27 @@ class ApiClient extends GetxService {
 
   Future<Response> getData(String uri,
       {Map<String, dynamic>? query, Map<String, String>? headers}) async {
-    try {
-      if (kDebugMode) {
-        log('====> API Call: $uri\nHeader: $_mainHeaders');
+    const int maxAttempts = 3;
+    for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        if (kDebugMode) {
+          log('====> API Call: $uri (Attempt $attempt)\nHeader: $_mainHeaders');
+        }
+        http.Response response = await http
+            .get(
+              Uri.parse(appBaseUrl + uri),
+              headers: headers ?? _mainHeaders,
+            )
+            .timeout(Duration(seconds: timeoutInSeconds));
+        return handleResponse(response, uri);
+      } catch (e) {
+        if (attempt == maxAttempts) {
+          return Response(statusCode: 1, statusText: noInternetMessage);
+        }
+        await Future.delayed(Duration(milliseconds: 500 * attempt));
       }
-      http.Response response = await http
-          .get(
-            Uri.parse(appBaseUrl + uri),
-            headers: headers ?? _mainHeaders,
-          )
-          .timeout(Duration(seconds: timeoutInSeconds));
-      return handleResponse(response, uri);
-    } catch (e) {
-      return Response(statusCode: 1, statusText: noInternetMessage);
     }
+    return Response(statusCode: 1, statusText: noInternetMessage);
   }
 
   Future<Response> postData(
@@ -72,25 +79,32 @@ class ApiClient extends GetxService {
     dynamic body, {
     Map<String, String>? headers,
   }) async {
-    try {
-      if (kDebugMode) {
-        log('====> API Call: $uri\nHeader: $_mainHeaders');
-        log('====> API Body: $body');
-        print('AUTH HEADER = ${_mainHeaders['Authorization']}');
+    const int maxAttempts = 3;
+    for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        if (kDebugMode) {
+          log('====> API Call: $uri (Attempt $attempt)\nHeader: $_mainHeaders');
+          log('====> API Body: $body');
+          print('AUTH HEADER = ${_mainHeaders['Authorization']}');
+        }
+
+        http.Response response = await http
+            .post(
+              Uri.parse(appBaseUrl + uri),
+              body: jsonEncode(body),
+              headers: headers ?? _mainHeaders,
+            )
+            .timeout(Duration(seconds: timeoutInSeconds));
+
+        return handleResponse(response, uri);
+      } catch (e) {
+        if (attempt == maxAttempts) {
+          return Response(statusCode: 1, statusText: noInternetMessage);
+        }
+        await Future.delayed(Duration(milliseconds: 500 * attempt));
       }
-
-      http.Response response = await http
-          .post(
-            Uri.parse(appBaseUrl + uri),
-            body: jsonEncode(body),
-            headers: headers ?? _mainHeaders,
-          )
-          .timeout(Duration(seconds: timeoutInSeconds));
-
-      return handleResponse(response, uri);
-    } catch (e) {
-      return Response(statusCode: 1, statusText: noInternetMessage);
     }
+    return Response(statusCode: 1, statusText: noInternetMessage);
   }
 
   Future<Response> postMultipartData(
@@ -112,11 +126,13 @@ class ApiClient extends GetxService {
       if (logo != null) {
         if (logo.file != null) {
           Uint8List list = await logo.file!.readAsBytes();
-          request.files.add(http.MultipartFile(
+          final String originalName = basename(logo.file!.path);
+          request.files.add(http.MultipartFile.fromBytes(
             logo.key,
-            logo.file!.readAsBytes().asStream(),
-            list.length,
-            filename: '${DateTime.now().toString()}.png',
+            list,
+            filename: originalName.isNotEmpty
+                ? originalName
+                : 'upload_${DateTime.now().millisecondsSinceEpoch}.png',
           ));
         }
       }
@@ -124,11 +140,13 @@ class ApiClient extends GetxService {
       for (MultipartBody multipart in multipartBody) {
         if (multipart.file != null) {
           Uint8List list = await multipart.file!.readAsBytes();
-          request.files.add(http.MultipartFile(
+          final String originalName = basename(multipart.file!.path);
+          request.files.add(http.MultipartFile.fromBytes(
             multipart.key,
-            multipart.file!.readAsBytes().asStream(),
-            list.length,
-            filename: '${DateTime.now().toString()}.png',
+            list,
+            filename: originalName.isNotEmpty
+                ? originalName
+                : 'upload_${DateTime.now().millisecondsSinceEpoch}.png',
           ));
         }
       }
@@ -139,7 +157,7 @@ class ApiClient extends GetxService {
           Uint8List list0 = await aaa.readAsBytes();
 
           var part = http.MultipartFile(
-              'other_documents', aaa.readAsBytes().asStream(), list0.length,
+              file.key, aaa.readAsBytes().asStream(), list0.length,
               filename: basename(aaa.path));
           request.files.add(part);
         }

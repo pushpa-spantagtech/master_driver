@@ -50,17 +50,21 @@ class CustomerInfoWidget extends StatelessWidget {
             const SizedBox(
               width: 8,
             ),
-            if (customer != null)
-              Expanded(
+            Builder(builder: (context) {
+              final String fullName =
+                  '${customer?.firstName ?? ''} ${customer?.lastName ?? ''}'.trim();
+              final String displayName = fullName.isNotEmpty
+                  ? fullName
+                  : (customer?.phone ?? 'Customer');
+              return Expanded(
                   child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (customer!.firstName != null && customer!.lastName != null)
-                    Text(
-                      '${customer!.firstName!} ${customer!.lastName!}',
-                      style: textBold.copyWith(
-                          color: Theme.of(context).colorScheme.secondary),
-                    ),
+                  Text(
+                    displayName,
+                    style: textBold.copyWith(
+                        color: Theme.of(context).colorScheme.secondary),
+                  ),
                   if (customerRating != null && customerRating!.isNotEmpty)
                     Row(children: [
                       Icon(
@@ -72,7 +76,8 @@ class CustomerInfoWidget extends StatelessWidget {
                           style: textRegular.copyWith())
                     ])
                 ],
-              )),
+              ));
+            }),
             fromTripDetails
                 ? const SizedBox()
                 : Column(crossAxisAlignment: CrossAxisAlignment.end, children: [

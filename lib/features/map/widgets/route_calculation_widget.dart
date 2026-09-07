@@ -14,27 +14,37 @@ class RouteCalculationWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetBuilder<RideController>(builder: (rideController) {
-      int hour = 0, min = 0, sec = 0;
-      double remainingPercent = 0;
-      String distanceText = '--';
+  int hour = 0, min = 0, sec = 0;
+  double remainingPercent = 0;
+  String distanceText = '--';
 
-      if (rideController.matchedMode != null) {
-        final duration = rideController.matchedMode?.durationSec ?? 0;
-        hour = duration ~/ 3600;
-        min = (duration % 3600) ~/ 60;
-        sec = duration % 60;
-        distanceText = rideController.matchedMode?.distanceText ?? '--';
+  final bool isPaused =
+      rideController.tripDetail?.isPaused ?? false;
 
-        final estimatedDistance =
-            rideController.tripDetail?.estimatedDistance ?? 0;
-        if (estimatedDistance > 0) {
-          remainingPercent = ((double.tryParse(
-                          rideController.matchedMode!.distance.toString()) ??
-                      0) /
-                  1000) /
-              estimatedDistance;
-        }
-      }
+  if (rideController.matchedMode != null) {
+    final duration =
+        rideController.matchedMode?.durationSec ?? 0;
+
+    hour = duration ~/ 3600;
+    min = (duration % 3600) ~/ 60;
+    sec = duration % 60;
+
+    distanceText =
+        rideController.matchedMode?.distanceText ?? '--';
+
+    final double estimatedDistance =
+        rideController.tripDetail?.estimatedDistance ?? 0;
+
+    if (estimatedDistance > 0) {
+      final double remainingDistance = double.tryParse(
+            rideController.matchedMode!.distance.toString(),
+          ) ??
+          0;
+
+      remainingPercent =
+          remainingDistance / estimatedDistance;
+    }
+  }
 
       return Container(
         margin: const EdgeInsets.fromLTRB(
@@ -99,20 +109,20 @@ class RouteCalculationWidget extends StatelessWidget {
               ),
             ),
           ]),
-          if (rideController.tripDetail!.type == 'ride_request' &&
+          if (rideController.tripDetail?.type == 'ride_request' &&
               !fromEnd) ...[
             const SizedBox(height: Dimensions.paddingSizeDefault),
             ButtonWidget(
-              buttonText: rideController.tripDetail!.isPaused!
+              buttonText: isPaused
                   ? 'resume_trip_from_here'.tr
                   : 'pause_trip_for_a_moment'.tr,
               transparent: true,
-              icon: rideController.tripDetail!.isPaused!
+              icon: isPaused
                   ? Icons.play_arrow_rounded
                   : Icons.pause_rounded,
               borderWidth: 1,
               showBorder: true,
-              iconColor: rideController.tripDetail!.isPaused!
+              iconColor: isPaused
                   ? Theme.of(context).colorScheme.error
                   : Theme.of(context).colorScheme.primary,
               textColor: Theme.of(context).colorScheme.secondary,
@@ -122,7 +132,7 @@ class RouteCalculationWidget extends StatelessWidget {
                 rideController
                     .waitingForCustomer(
                   rideController.tripDetail!.id!,
-                  rideController.tripDetail!.isPaused! ? 'resume' : 'pause',
+                  isPaused ? 'resume' : 'pause',
                 )
                     .then((value) {
                   if (value.statusCode == 200) {
@@ -144,49 +154,81 @@ class _InfoTile extends StatelessWidget {
   final String title;
   final String value;
 
-  const _InfoTile(
-      {required this.icon, required this.title, required this.value});
+  const _InfoTile({
+    required this.icon,
+    required this.title,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 12,
+      ),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.06),
+        color: Theme.of(context)
+            .colorScheme
+            .primary
+            .withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Row(children: [
-        Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color:
-                Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
-            shape: BoxShape.circle,
+      child: Row(
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: Theme.of(context)
+                  .colorScheme
+                  .primary
+                  .withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              size: 17,
+              color: Theme.of(context).colorScheme.primary,
+            ),
           ),
-          child: Icon(icon,
-              size: 17, color: Theme.of(context).colorScheme.primary),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: textRegular.copyWith(
-                    fontSize: 11,
-                    color: Theme.of(context).colorScheme.secondary)),
-            const SizedBox(height: 2),
-            Text(value,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: textBold.copyWith(
-                    fontSize: 13,
-                    color: Theme.of(context).colorScheme.onPrimary)),
-          ]),
-        ),
-      ]),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    title,
+                    maxLines: 1,
+                    style: textRegular.copyWith(
+                      fontSize: 11,
+                      color:
+                          Theme.of(context).colorScheme.secondary,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    value,
+                    maxLines: 1,
+                    style: textBold.copyWith(
+                      fontSize: 13,
+                      color:
+                          Theme.of(context).colorScheme.onPrimary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

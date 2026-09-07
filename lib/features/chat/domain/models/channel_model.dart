@@ -82,7 +82,11 @@ class ChannelUsers {
     id = json['id'];
     channelId = json['channel_id'];
     userId = json['user_id'];
-    isRead = json['is_read'] ? 1 : 0;
+    isRead = (json['is_read'] == true ||
+            json['is_read'] == 1 ||
+            json['is_read'] == '1')
+        ? 1
+        : 0;
     updatedAt = json['updated_at'];
     user = json['user'] != null ? User.fromJson(json['user']) : null;
   }

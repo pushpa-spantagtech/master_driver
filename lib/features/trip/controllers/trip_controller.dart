@@ -188,6 +188,7 @@ class TripController extends GetxController implements GetxService {
         rideController.tripDetail?.paymentStatus = 'paid';
         rideController.currentRideStatus = 'fresh';
         rideController.stopLiveTracking();
+        rideController.clearLastRideDetails();
         rideController.update();
 
         if (Get.isDialogOpen == true) {

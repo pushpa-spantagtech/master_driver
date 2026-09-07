@@ -21,7 +21,7 @@ class SignUpScreen extends StatefulWidget {
 
 class _SignUpScreenState extends State<SignUpScreen> {
   bool isRideShare = true;
-  bool isParcelDelivery = true;
+  bool isParcelDelivery = false;
 
   @override
   void initState() {
@@ -382,17 +382,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 'Please accept Terms and Conditions',
                               );
                               return;
-                            } else if (!isRideShare && !isParcelDelivery) {
-                              showCustomSnackBar(
-                                  'required_to_select_service'.tr);
                             } else {
-                              List<String> services = [];
-                              if (isRideShare) {
-                                services.add('ride_request');
-                              }
-                              if (isParcelDelivery) {
-                                services.add('parcel');
-                              }
+                              List<String> services = ['ride_request'];
                               Get.to(() => AdditionalSignUpScreen(
                                     countryCode: authController.countryDialCode,
                                     services: services,

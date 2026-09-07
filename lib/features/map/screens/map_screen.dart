@@ -251,7 +251,7 @@ class _MapScreenState extends State<MapScreen> {
       final LatLng cachedLocation =
           Get.find<LocationController>().initialPosition;
       final Marker cachedDriverMarker = Marker(
-        markerId: const MarkerId('driver_marker'),
+        markerId: const MarkerId('home'),
         position: cachedLocation,
         draggable: false,
         zIndexInt: 999,
@@ -261,7 +261,7 @@ class _MapScreenState extends State<MapScreen> {
       );
 
       mapController.markers.removeWhere(
-        (marker) => marker.markerId.value == 'driver_marker',
+        (marker) => marker.markerId.value == 'home',
       );
       mapController.markers.add(cachedDriverMarker);
       mapController.update();
@@ -287,7 +287,7 @@ class _MapScreenState extends State<MapScreen> {
   void updateMarkerAndCircle(Position? newLocalData, Uint8List imageData) {
     if (Get.find<RiderMapController>().currentRideState == RideState.initial) {
       Get.find<RiderMapController>().markers.removeWhere(
-            (m) => m.markerId.value == "driver_marker",
+            (m) => m.markerId.value == "home",
           );
 
       Get.find<RiderMapController>().update();
@@ -299,7 +299,7 @@ class _MapScreenState extends State<MapScreen> {
       newLocalData.longitude,
     );
     final Marker updatedMarker = Marker(
-      markerId: const MarkerId("driver_marker"),
+      markerId: const MarkerId("home"),
       position: latlng,
       rotation: newLocalData.heading,
       draggable: false,
@@ -314,7 +314,7 @@ class _MapScreenState extends State<MapScreen> {
       });
     }
     Get.find<RiderMapController>().markers.removeWhere(
-          (m) => m.markerId.value == "driver_marker",
+          (m) => m.markerId.value == "home",
         );
     Get.find<RiderMapController>().markers.add(updatedMarker);
     Get.find<RiderMapController>().update();
@@ -393,19 +393,10 @@ class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: Navigator.canPop(context),
+      canPop: false,
       onPopInvokedWithResult: (didPop, result) {
-        // When back is pressed but this route is not popped, keep the global
-        // right-side map tab hidden. This prevents it appearing over MapScreen.
-        if (!didPop) {
-          if (!Navigator.canPop(context)) {
-            Get.offAll(() => const DashboardScreen());
-          }
-          return;
-        }
-
-        Get.find<RideController>().getOngoingParcelList();
-        Get.find<RideController>().getLastTrip();
+        if (didPop) return;
+        Get.offAll(() => const DashboardScreen());
       },
       child: Scaffold(
         resizeToAvoidBottomInset: false,
@@ -488,7 +479,9 @@ class _MapScreenState extends State<MapScreen> {
                               .toDouble(),
                     ),
                     child: GoogleMap(
-                      myLocationEnabled: true,
+                      myLocationEnabled:
+                        riderMapController.currentRideState ==
+                              RideState.initial,
                       myLocationButtonEnabled: false,
                       compassEnabled: false,
                       // style: Get.isDarkMode`
@@ -699,6 +692,15 @@ class _MapScreenState extends State<MapScreen> {
                     children: [
                       Center(child:
                           GetBuilder<RideController>(builder: (rideController) {
+                        final int pendingCount =
+                            rideController.pendingRideRequestModel?.data?.length ?? 0;
+                        if (riderMapController.currentRideState != RideState.initial ||
+                              pendingCount <= 0) {
+                            return const SizedBox();
+                          }
+                        final String countText = pendingCount == 1
+                            ? '1 ${'more_request'.tr}'
+                            : '$pendingCount ${'more_request'.tr}s';
                         return InkWell(
                           overlayColor:
                               WidgetStateProperty.all(Colors.transparent),
@@ -748,7 +750,7 @@ class _MapScreenState extends State<MapScreen> {
                                   const SizedBox(
                                       width: Dimensions.paddingSizeSmall),
                                   Text(
-                                    '${rideController.pendingRideRequestModel?.data?.length ?? 0} ${'more_request'.tr}',
+                                    countText,
                                     style: textRegular.copyWith(
                                         color: Theme.of(context)
                                             .textTheme

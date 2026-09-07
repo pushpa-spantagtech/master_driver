@@ -13,6 +13,7 @@ import 'package:ride_sharing_user_app/features/location/controllers/location_con
 import 'package:ride_sharing_user_app/features/ride/controllers/ride_controller.dart';
 import 'package:ride_sharing_user_app/features/splash/controllers/splash_controller.dart';
 import 'package:ride_sharing_user_app/util/images.dart';
+import 'package:ride_sharing_user_app/features/profile/controllers/profile_controller.dart';
 
 enum RideState {
   initial,
@@ -72,6 +73,17 @@ class RiderMapController extends GetxController implements GetxService {
 
   void setRideCurrentState(RideState newState, {bool notify = true}) {
     currentRideState = newState;
+    if (currentRideState != RideState.initial) {
+      markers.removeWhere(
+        (marker) => marker.markerId.value.startsWith('request_'),
+      );
+    }
+
+    if (currentRideState == RideState.ongoing) {
+      markers.removeWhere(
+        (marker) => marker.markerId.value == 'pickup',
+      );
+    }
     if (currentRideState == RideState.initial) {
       initializeData();
     }
@@ -155,17 +167,22 @@ class RiderMapController extends GetxController implements GetxService {
       _addPolyLine(polylineCoordinates);
 
       polylineCoordinateList = polylineCoordinates;
-      updateMarkerAndCircle(Get.find<LocationController>().initialPosition);
+      await updateMarkerAndCircle(
+        Get.find<LocationController>().initialPosition,
+      );
 
-      setFromToMarker(_initialPosition, _destinationPosition,
-          updateLiveLocation: updateLiveLocation);
+      await setFromToMarker(
+        _initialPosition,
+        _destinationPosition,
+        updateLiveLocation: updateLiveLocation,
+      );
     }
     update();
   }
 
   bool isBound = true;
 
-  void getDriverToPickupOrDestinationPolyline(
+  Future<void> getDriverToPickupOrDestinationPolyline(
     String lines, {
     bool mapBound = false,
   }) async {
@@ -205,10 +222,11 @@ class RiderMapController extends GetxController implements GetxService {
     final LatLng currentDriverPosition =
         Get.find<LocationController>().initialPosition;
 
-    // Keep updating the driver/car location.
-    updateMarkerAndCircle(currentDriverPosition);
+    // Wait until the live car marker is completely created before rebuilding
+// the route markers. Otherwise route recalculation can overwrite it.
+    await updateMarkerAndCircle(currentDriverPosition);
 
-    // Add source and destination markers.
+// Add source and destination markers without removing the car marker.
     await setFromToMarker(
       _initialPosition,
       _destinationPosition,
@@ -292,40 +310,36 @@ class RiderMapController extends GetxController implements GetxService {
     LatLng to, {
     bool updateLiveLocation = false,
   }) async {
-    final Uint8List fromMarker =
-        await convertAssetToUnit8List(Images.mapIcon, width: 35);
-
-    final Uint8List toMarker =
-        await convertAssetToUnit8List(Images.mapLocationIcon, width: 35);
-
-    print('Pickup marker : $from');
-    print('Destination marker : $to');
+    final bool isOngoing = currentRideState == RideState.ongoing;
 
     final Set<Marker> updatedMarkers = Set<Marker>.from(markers);
 
-    // Remove only old pickup and destination markers.
-    // Keep the existing driver marker.
     updatedMarkers.removeWhere(
       (marker) =>
           marker.markerId.value == 'pickup' ||
-          marker.markerId.value == 'destination',
+          marker.markerId.value == 'destination' ||
+          (isOngoing && marker.markerId.value.startsWith('request_')),
     );
 
-    updatedMarkers.add(
-      Marker(
-        markerId: const MarkerId('pickup'),
-        position: from,
-        zIndexInt: 100,
-        icon: BitmapDescriptor.defaultMarkerWithHue(
-          BitmapDescriptor.hueGreen,
+    // Pickup pin is needed only before the trip starts.
+    if (!isOngoing) {
+      updatedMarkers.add(
+        Marker(
+          markerId: const MarkerId('pickup'),
+          position: from,
+          zIndexInt: 100,
+          icon: BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueGreen,
+          ),
+          infoWindow: InfoWindow(
+            title: 'Pickup Location',
+            snippet: Get.find<RideController>().tripDetail?.pickupAddress ?? '',
+          ),
         ),
-        infoWindow: InfoWindow(
-          title: 'Pickup Location',
-          snippet: Get.find<RideController>().tripDetail?.pickupAddress ?? '',
-        ),
-      ),
-    );
+      );
+    }
 
+    // Keep destination pin during the ongoing ride.
     updatedMarkers.add(
       Marker(
         markerId: const MarkerId('destination'),
@@ -342,7 +356,6 @@ class RiderMapController extends GetxController implements GetxService {
       ),
     );
 
-    // Assign a completely new Set so GoogleMap detects the marker changes.
     markers = updatedMarkers;
     update();
 
@@ -359,10 +372,8 @@ class RiderMapController extends GetxController implements GetxService {
           ),
         );
 
-        await Future.delayed(const Duration(milliseconds: 150));
-
         await mapController!.animateCamera(
-          CameraUpdate.newLatLngBounds(bounds, 120),
+          CameraUpdate.newLatLngBounds(bounds, 100),
         );
       }
     } catch (e) {
@@ -370,22 +381,26 @@ class RiderMapController extends GetxController implements GetxService {
     }
   }
 
-  void updateMarkerAndCircle(LatLng? latLong) async {
+  Future<void> updateMarkerAndCircle(LatLng? latLong) async {
     if (latLong == null) return;
 
     markers.removeWhere((marker) => marker.markerId.value == "home");
 
-    if (currentRideState.name == "initial") {
-      update();
-      return;
+    if (currentRideState == RideState.ongoing) {
+      markers.removeWhere(
+        (marker) =>
+            marker.markerId.value == 'pickup' ||
+            marker.markerId.value.startsWith('request_'),
+      );
     }
 
-    // final Uint8List car = await convertAssetToUnit8List(
-    //   Get.find<ProfileController>().profileInfo?.vehicle?.category?.type == 'car'
-    //       ? Images.carIconTop
-    //       : Images.bike,
-    //   width: 28,
-    // );
+    final Uint8List car = await convertAssetToUnit8List(
+      Get.find<ProfileController>().profileInfo?.vehicle?.category?.type ==
+              'car'
+          ? Images.carIconTop
+          : Images.bike,
+      width: 28,
+    );
 
     double bearing = 0;
     if (polylineCoordinateList.length > 1) {
@@ -416,16 +431,16 @@ class RiderMapController extends GetxController implements GetxService {
       bearing = _calculateBearing(latLong, targetPoint);
     }
 
-    // markers.add(Marker(
-    //   markerId: const MarkerId("home"),
-    //   position: latLong,
-    //   rotation: bearing,
-    //   draggable: false,
-    //   zIndexInt: 10,
-    //   flat: true,
-    //   anchor: const Offset(0.5, 0.5),
-    //   icon: BitmapDescriptor.bytes(car),
-    // ));
+    markers.add(Marker(
+      markerId: const MarkerId("home"),
+      position: latLong,
+      rotation: bearing,
+      draggable: false,
+      zIndexInt: 10,
+      flat: true,
+      anchor: const Offset(0.5, 0.5),
+      icon: BitmapDescriptor.bytes(car),
+    ));
 
     // Keep destination reach status based on actual driver GPS.
     if (_destinationPosition.latitude != 23.83721 ||
@@ -460,6 +475,16 @@ class RiderMapController extends GetxController implements GetxService {
 
     final Uint8List requestMarker =
         await convertAssetToUnit8List(Images.mapIcon, width: 34);
+
+// The ride may have been accepted while the marker icon was loading.
+    if (currentRideState != RideState.initial) {
+      markers.removeWhere(
+        (marker) => marker.markerId.value.startsWith('request_'),
+      );
+      update();
+      return;
+    }
+
     final List<LatLng> requestPositions = [];
 
     for (int i = 0; i < pendingTrips.length; i++) {

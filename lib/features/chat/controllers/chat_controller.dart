@@ -240,13 +240,14 @@ class ChatController extends GetxController implements GetxService {
   String id = "";
 
   void subscribeMessageChannel(String tripId) {
-    id = "";
-    if (id == "") {
-      id = tripId;
-    }
+    id = tripId;
 
-    if (Get.find<SplashController>().pusherConnectionStatus != null ||
-        Get.find<SplashController>().pusherConnectionStatus == 'Connected') {
+    if (Get.find<SplashController>().pusherConnectionStatus == 'Connected' &&
+        PusherHelper.pusherClient != null) {
+      try {
+        channel.unsubscribe();
+      } catch (_) {}
+
       channel = PusherHelper.pusherClient!.privateChannel(
           "private-driver-ride-chat.$id",
           authorizationDelegate:
@@ -262,21 +263,19 @@ class ChatController extends GetxController implements GetxService {
               'Access-Control-Allow-Methods': "PUT, GET, POST, DELETE, OPTIONS"
             },
           ));
-      if (channel.currentStatus == null) {
-        channel.subscribe();
 
-        channel.bind("driver-ride-chat.$id").listen((event) {
-          if (id ==
-              jsonDecode(event.data!)['channel_conversation']['channel']
-                  ['trip_id']) {
-            messageModel!.data!.insert(
-                0,
-                Message.fromJson(
-                    jsonDecode(event.data!)['channel_conversation']));
-            update();
-          }
-        });
-      }
+      channel.subscribe();
+
+      channel.bind("driver-ride-chat.$id").listen((event) async {
+        final dynamic data = jsonDecode(event.data!);
+        final String eventTripId = data['channel_conversation']?['channel']
+                    ?['trip_id']
+                ?.toString() ??
+            '';
+        if (id == eventTripId) {
+          await getConversation(id, 1);
+        }
+      });
     }
   }
 

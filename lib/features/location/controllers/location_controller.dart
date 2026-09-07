@@ -71,6 +71,7 @@ class LocationController extends GetxController implements GetxService {
   LatLng _initialPosition = const LatLng(23.83721, 90.363715);
 
   LatLng get initialPosition => _initialPosition;
+  StreamSubscription? get locationSubscription => _locationSubscription;
 
   StreamSubscription? _locationSubscription;
 

@@ -202,6 +202,7 @@ class _SplashScreenState extends State<SplashScreen> {
           final rideResponse =
               await Get.find<RideController>().getCurrentRideStatus(
             fromRefresh: true,
+            fromSplash: true,
           );
 
           if (!mounted) return;

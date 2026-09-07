@@ -24,8 +24,10 @@ import 'package:ride_sharing_user_app/features/ride/domain/services/ride_service
 import 'package:ride_sharing_user_app/features/splash/controllers/splash_controller.dart';
 import 'package:ride_sharing_user_app/features/trip/screens/payment_received_screen.dart';
 import 'package:ride_sharing_user_app/helper/display_helper.dart';
+import 'package:ride_sharing_user_app/helper/notification_helper.dart';
 import 'package:ride_sharing_user_app/helper/pusher_helper.dart';
 import 'package:ride_sharing_user_app/helper/route_helper.dart';
+import 'package:ride_sharing_user_app/features/location/controllers/location_controller.dart';
 
 class RideController extends GetxController implements GetxService {
   final RideServiceInterface rideServiceInterface;
@@ -101,6 +103,8 @@ class RideController extends GetxController implements GetxService {
     bool fromRefresh = false,
     bool froDetails = false,
     bool isUpdate = true,
+    bool allowNavigation = true,
+    bool fromSplash = false,
   }) async {
     isLoading = true;
 
@@ -160,7 +164,7 @@ class RideController extends GetxController implements GetxService {
           startLiveTracking(tripDetail!.id!);
           updateRoute(false, notify: true);
 
-          if (!_isOnMapScreen() && !isNavigatingToMap) {
+          if (allowNavigation && !_isOnMapScreen() && !isNavigatingToMap) {
             isNavigatingToMap = true;
 
             Future.delayed(
@@ -168,6 +172,12 @@ class RideController extends GetxController implements GetxService {
               () async {
                 try {
                   if (Get.currentRoute != '/MapScreen') {
+                    if (fromSplash) {
+                      Get.offAllNamed(RouteHelper.getHomeRoute());
+                      await Future.delayed(
+                        const Duration(milliseconds: 250),
+                      );
+                    }
                     await Get.to(
                       () => const MapScreen(fromScreen: 'splash'),
                     );
@@ -189,7 +199,7 @@ class RideController extends GetxController implements GetxService {
           startLiveTracking(tripDetail!.id!);
           updateRoute(false, notify: true);
 
-          if (!_isOnMapScreen() && !isNavigatingToMap) {
+          if (allowNavigation && !_isOnMapScreen() && !isNavigatingToMap) {
             isNavigatingToMap = true;
 
             Future.delayed(
@@ -197,6 +207,12 @@ class RideController extends GetxController implements GetxService {
               () async {
                 try {
                   if (Get.currentRoute != '/MapScreen') {
+                    if (fromSplash) {
+                      Get.offAllNamed(RouteHelper.getHomeRoute());
+                      await Future.delayed(
+                        const Duration(milliseconds: 250),
+                      );
+                    }
                     await Get.to(
                       () => const MapScreen(fromScreen: 'splash'),
                     );
@@ -216,11 +232,14 @@ class RideController extends GetxController implements GetxService {
           if (paymentStatus == 'paid') {
             Get.offAllNamed(RouteHelper.getHomeRoute());
           } else {
-            await getFinalFare(tripDetail!.id!);
+            final Response fareResponse =
+                await getFinalFare(tripDetail!.id!);
 
-            Get.offAll(
-              () => const PaymentReceivedScreen(),
-            );
+            if (fareResponse.statusCode == 200) {
+              Get.offAll(
+                () => const PaymentReceivedScreen(),
+              );
+            }
           }
         } else if (currentRideStatus == 'cancelled') {
           stopLiveTracking();
@@ -300,7 +319,7 @@ class RideController extends GetxController implements GetxService {
       tripDetail = TripDetailsModel.fromJson(response.body).data!;
       currentRideStatus = (tripDetail?.currentStatus ?? currentRideStatus);
 
-      polyline = tripDetail!.encodedPolyline!;
+      polyline = tripDetail?.encodedPolyline ?? '';
       isLoading = false;
     } else {
       isLoading = false;
@@ -328,7 +347,7 @@ class RideController extends GetxController implements GetxService {
     if (response.statusCode == 200) {
       tripDetail = TripDetailsModel.fromJson(response.body).data!;
       isLoading = false;
-      polyline = tripDetail!.encodedPolyline!;
+      polyline = tripDetail?.encodedPolyline ?? '';
       Get.find<RideController>().remainingDistance(tripId, mapBound: true);
       Get.find<RiderMapController>().getPickupToDestinationPolyline();
     } else {
@@ -377,6 +396,7 @@ class RideController extends GetxController implements GetxService {
     update();
     Response response =
         await rideServiceInterface.tripAcceptOrReject(tripId, type);
+    await NotificationHelper.stopAlertSound();
     if (response.statusCode == 200) {
       if (fromList &&
           pendingRideRequestModel?.data != null &&
@@ -400,13 +420,14 @@ class RideController extends GetxController implements GetxService {
         );
 
         // Do not block the Accept response while loading ride details,
-        // distance, polyline, and the refreshed pending list. The request
+        // distance and polyline. The request
         // card already places the accepted ride into tripDetail, so the map
         // can open immediately after the accept API succeeds.
         unawaited(getRideDetails(tripId));
         unawaited(remainingDistance(tripId, mapBound: true));
         startLiveTracking(tripId);
-        unawaited(getPendingRideRequestList(1));
+        pendingRideRequestModel?.data = <TripDetail>[];
+        pendingRideRequestModel?.totalSize = 0;
       }
     } else {
       if (fromList &&
@@ -584,30 +605,61 @@ class RideController extends GetxController implements GetxService {
 
       final bool isOngoingTrip =
           Get.find<RiderMapController>().currentRideState ==
-                  RideState.ongoing &&
+              RideState.ongoing &&
               tripDetail != null &&
               !(tripDetail!.isPaused ?? false) &&
               tripDetail!.isReachedDestination != true;
-      final bool isInsideDestinationRadius =
-          Get.find<RiderMapController>().isInside;
-      final bool isRemainingDistanceReached =
-          matchedMode != null && ((matchedMode!.distance ?? 999) <= 0.10);
+
+      final List<double>? destinationCoordinates =
+          tripDetail?.destinationCoordinates?.coordinates;
+
+      double? actualDestinationDistanceMeters;
+
+      if (destinationCoordinates != null &&
+          destinationCoordinates.length >= 2) {
+        final currentDriverPosition =
+            Get.find<LocationController>().initialPosition;
+
+        // GeoJSON coordinates are stored as [longitude, latitude].
+        final double destinationLongitude = destinationCoordinates[0];
+        final double destinationLatitude = destinationCoordinates[1];
+
+        actualDestinationDistanceMeters =
+            Get.find<RiderMapController>().distanceBetween(
+              currentDriverPosition.latitude,
+              currentDriverPosition.longitude,
+              destinationLatitude,
+              destinationLongitude,
+            );
+      }
+
+      final double completionRadius =
+          Get.find<SplashController>().config?.completionRadius ?? 100;
+
+      final bool isInsideActualDestinationRadius =
+          actualDestinationDistanceMeters != null &&
+              actualDestinationDistanceMeters <= completionRadius;
+
+      debugPrint(
+        'DESTINATION RADIUS CHECK: '
+            'distance=$actualDestinationDistanceMeters, '
+            'radius=$completionRadius, '
+            'inside=$isInsideActualDestinationRadius',
+      );
 
       if (isOngoingTrip &&
-          matchedMode != null &&
           !destinationApiCalled &&
-          (isRemainingDistanceReached || isInsideDestinationRadius)) {
+          isInsideActualDestinationRadius) {
         destinationApiCalled = true;
 
         final Response destinationResponse =
-            await arrivalDestination(tripId, "destination");
+        await arrivalDestination(tripId, 'destination');
 
         if (destinationResponse.statusCode == 200) {
           localDestinationReached = true;
           tripDetail?.isReachedDestination = true;
           await getRideDetails(tripId);
         } else {
-          // Allow retry on next live tracking tick if backend/network failed.
           destinationApiCalled = false;
           localDestinationReached = false;
         }
@@ -671,6 +723,61 @@ class RideController extends GetxController implements GetxService {
 
   PendingRideRequestModel? get getPendingRideRequestModel =>
       pendingRideRequestModel;
+
+  Future<Response> getNotifiedRideRequest(String tripId) async {
+    isLoading = true;
+    pendingRideRequestModel = null;
+    update();
+
+    late Response response;
+
+    // The push/Pusher event can arrive a fraction of a second before the
+    // notified-driver mapping is visible to the details endpoint. Retry only
+    // this exact ride a few times; never poll the full pending-rides list.
+    for (int attempt = 0; attempt < 4; attempt++) {
+      response = await rideServiceInterface.getRideDetails(tripId);
+      if (response.statusCode == 200) {
+        break;
+      }
+      if ((response.statusCode == 403 || response.statusCode == 404) &&
+          attempt < 3) {
+        await Future.delayed(const Duration(milliseconds: 750));
+        continue;
+      }
+      break;
+    }
+
+    if (response.statusCode == 200 && response.body['data'] != null) {
+      final TripDetail notifiedRide =
+          TripDetailsModel.fromJson(response.body).data!;
+      tripDetail = notifiedRide;
+      currentRideStatus =
+          (notifiedRide.currentStatus ?? currentRideStatus).toLowerCase();
+      polyline = notifiedRide.encodedPolyline ?? '';
+
+      pendingRideRequestModel = PendingRideRequestModel(
+        totalSize: 1,
+        limit: '1',
+        offset: '1',
+        data: <TripDetail>[notifiedRide],
+      );
+
+      Get.find<RiderMapController>()
+          .addPendingTripRequestMarkers(<TripDetail>[notifiedRide]);
+    } else {
+      pendingRideRequestModel = PendingRideRequestModel(
+        totalSize: 0,
+        limit: '1',
+        offset: '1',
+        data: <TripDetail>[],
+      );
+      Get.find<RiderMapController>().addPendingTripRequestMarkers([]);
+    }
+
+    isLoading = false;
+    update();
+    return response;
+  }
 
   Future<Response> getPendingRideRequestList(
     int offset, {
@@ -741,11 +848,19 @@ class RideController extends GetxController implements GetxService {
   }
 
   FinalFare? finalFare;
+  String? _finalFareRequestTripId;
 
   Future<Response> getFinalFare(String tripId) async {
+    _finalFareRequestTripId = tripId;
+    finalFare = null;
     isLoading = true;
     update();
     Response response = await rideServiceInterface.getFinalFare(tripId);
+
+    // Ignore a late response belonging to an older trip.
+    if (_finalFareRequestTripId != tripId) {
+      return response;
+    }
 
     if (response.statusCode == 200) {
       Get.find<RiderMapController>().initializeData();
@@ -824,35 +939,40 @@ class RideController extends GetxController implements GetxService {
     return response;
   }
 
-  Future<Response> arrivalDestination(String tripId, String type) async {
-    Response response =
-        await rideServiceInterface.arrivalDestination(tripId, type);
+  Future<Response> arrivalDestination(
+      String tripId,
+      String type,
+      ) async {
+    final Response response =
+    await rideServiceInterface.arrivalDestination(tripId, type);
 
     if (response.statusCode == 200) {
-      if (Get.find<RiderMapController>().isInside) {
-        Future.delayed(const Duration(seconds: 2), () {
-          Get.snackbar(
-            'Destination Reached',
-            'You have reached your destination.',
-            snackPosition: SnackPosition.TOP,
-            backgroundColor: Colors.white,
-            colorText: Colors.black87,
-            duration: const Duration(seconds: 10),
-            dismissDirection: DismissDirection.horizontal,
-            isDismissible: true,
-            borderRadius: 16,
-            margin: const EdgeInsets.all(12),
-            icon: const Icon(
-              Icons.location_on_rounded,
-              color: Color(0xFFFFB300),
-            ),
-          );
+      // The destination API is called only after the destination-radius
+      // validation in remainingDistance(). Do not check isInside again here,
+      // because route recalculation can temporarily reset that value.
+      Future.delayed(const Duration(seconds: 2), () {
+        Get.snackbar(
+          'Destination Reached',
+          'You have reached your destination.',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.white,
+          colorText: Colors.black87,
+          duration: const Duration(seconds: 10),
+          dismissDirection: DismissDirection.horizontal,
+          isDismissible: true,
+          borderRadius: 16,
+          margin: const EdgeInsets.all(12),
+          icon: const Icon(
+            Icons.location_on_rounded,
+            color: Color(0xFFFFB300),
+          ),
+        );
 
-          AudioPlayer().play(AssetSource('notification.wav'));
-        });
-      }
+        AudioPlayer().play(AssetSource('ride_alert.wav'));
+      });
     } else {
       if (_isResourceNotFoundResponse(response)) {
+        // Allow the next tracking cycle to retry.
         destinationApiCalled = false;
       } else {
         ApiChecker.checkApi(response);
@@ -889,6 +1009,8 @@ class RideController extends GetxController implements GetxService {
     }
     key.currentState?.expand();
   }
+
+
 
   ParcelListModel? parcelListModel;
 

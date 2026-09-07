@@ -199,17 +199,19 @@ class CustomerRideRequestCardWidget extends StatelessWidget {
                     RouteWidget(
                       fromCard: true,
                       pickupAddress: rideRequest.pickupAddress!,
-                      destinationAddress: rideRequest.destinationAddress!,
+                      destinationAddress: rideRequest.destinationAddress ?? '',
                       extraRoutes: extraRoutes,
                       entrance: rideRequest.entrance ?? '',
                     ),
-                    if (rideRequest.customer != null)
-                      CustomerInfoWidget(
-                        fromTripDetails: false,
-                        customer: rideRequest.customer!,
-                        fare: rideRequest.estimatedFare!,
-                        customerRating: rideRequest.customerAvgRating!,
-                      ),
+                    CustomerInfoWidget(
+                      fromTripDetails: false,
+                      customer: rideRequest.customer,
+                      fare: rideRequest.estimatedFare ??
+                          rideRequest.actualFare ??
+                          rideRequest.paidFare ??
+                          '0',
+                      customerRating: rideRequest.customerAvgRating ?? '',
+                    ),
                     Get.find<RideController>().matchedMode != null
                         ? Padding(
                             padding: const EdgeInsets.symmetric(
@@ -635,7 +637,7 @@ class CustomerRideRequestCardWidget extends StatelessWidget {
                   RouteWidget(
                     fromCard: true,
                     pickupAddress: rideRequest.pickupAddress!,
-                    destinationAddress: rideRequest.destinationAddress!,
+                    destinationAddress: rideRequest.destinationAddress ?? '',
                     extraRoutes: extraRoutes,
                     entrance: rideRequest.entrance ?? '',
                   ),

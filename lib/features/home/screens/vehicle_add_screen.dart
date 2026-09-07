@@ -680,6 +680,9 @@ class _VehicleAddScreenState extends State<VehicleAddScreen> {
                         showCustomSnackBar('expire_date_is_required'.tr);
                       } else if (fuelType == 'Select Fuel type') {
                         showCustomSnackBar('fuel_type_is_required'.tr);
+                      } else if (widget.vehicleInfo == null &&
+                          profileController.listOfDocuments.isEmpty) {
+                        showCustomSnackBar('please_upload_vehicle_document'.tr);
                       } else {
                         String brandId = profileController.selectedBrand!.id!;
                         String modelId = profileController.selectedModel.id!;

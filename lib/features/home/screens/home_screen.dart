@@ -226,6 +226,34 @@ class _HomeScreenState extends State<HomeScreen> {
         //     ),
         //   );
         // })
+        floatingActionButton:
+            GetBuilder<RideController>(builder: (rideController) {
+          final activeTrip = rideController.ongoingTrip != null &&
+                  rideController.ongoingTrip!.isNotEmpty
+              ? rideController.ongoingTrip!.first
+              : rideController.tripDetail;
+          final String status =
+              (activeTrip?.currentStatus ?? '').toLowerCase();
+          final bool canReturnToRide =
+              status == 'accepted' || status == 'ongoing';
+
+          if (!canReturnToRide) {
+            return const SizedBox.shrink();
+          }
+
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 72),
+            child: FloatingActionButton.extended(
+              heroTag: 'return_to_ongoing_ride',
+              onPressed: () =>
+                  OngoingRideCardWidget.reopenActiveRide(rideController),
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Colors.white,
+              icon: const Icon(Icons.navigation_rounded),
+              label: Text('ongoing_ride'.tr),
+            ),
+          );
+        }),
       ),
     );
   }

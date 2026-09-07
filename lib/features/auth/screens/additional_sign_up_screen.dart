@@ -262,6 +262,21 @@ class AdditionalSignUpScreen extends StatelessWidget {
                         Dimensions.paddingSizeDefault,
                         0,
                         Dimensions.paddingSizeDefault,
+                        Dimensions.paddingSizeSmall,
+                      ),
+                      child: Text(
+                        'JPG, JPEG, PNG, GIF or WebP • Max 10 MB • Recommended up to 2000 × 2000 px',
+                        style: textRegular.copyWith(
+                          color: Theme.of(context).hintColor,
+                          fontSize: Dimensions.fontSizeSmall,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        Dimensions.paddingSizeDefault,
+                        0,
+                        Dimensions.paddingSizeDefault,
                         Dimensions.paddingSizeDefault,
                       ),
                       child: Column(

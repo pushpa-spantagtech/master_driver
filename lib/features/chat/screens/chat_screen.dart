@@ -57,7 +57,8 @@ class _ChatScreenState extends State<ChatScreen> {
                             ChannelUsers? channelUser;
                             for (var element in chatController
                                 .channelModel!.data![index].channelUsers!) {
-                              if (element.user!.userType == 'customer') {
+                              if (element.user != null &&
+                                  element.user!.userType == 'customer') {
                                 channelUser = element;
                               }
                             }

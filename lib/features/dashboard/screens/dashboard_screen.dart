@@ -128,6 +128,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     try {
       await Get.find<RideController>().getCurrentRideStatus(
         fromRefresh: true,
+        allowNavigation: false,
       );
     } finally {
       _checkingCurrentRide = false;

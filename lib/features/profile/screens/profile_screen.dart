@@ -64,6 +64,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         final splashConfig = Get.find<SplashController>().config;
         final imageBaseUrl = splashConfig?.imageBaseUrl;
         final services = profileInfo.details?.services ?? [];
+        final bool hasRideRequest = services.contains('ride_request');
         final phone = profileInfo.phone ?? '';
 
         return Stack(
@@ -205,13 +206,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     '${profileController.levelModel?.data?.currentLevel?.name}',
                                 isLevel: true,
                               ),
-                            if (services.isNotEmpty)
+                            if (hasRideRequest)
                               ProfileItemWidget(
                                 title: 'service',
                                 icon: Icons.local_taxi_outlined,
-                                value: services.length == 1
-                                    ? services.first.tr
-                                    : '${services.first.tr} & ${services[1].tr}',
+                                value: 'ride_request'.tr,
                               ),
                             ProfileItemWidget(
                               icon: Icons.phone_outlined,

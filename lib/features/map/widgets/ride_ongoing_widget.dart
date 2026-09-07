@@ -87,7 +87,7 @@ class _RideOngoingWidgetState extends State<RideOngoingWidget> {
                               pickupAddress:
                                   riderController.tripDetail!.pickupAddress!,
                               destinationAddress: riderController
-                                  .tripDetail!.destinationAddress!,
+                                  .tripDetail?.destinationAddress ?? '',
                               extraOne: firstRoute,
                               extraTwo: secondRoute,
                               entrance:
@@ -158,50 +158,52 @@ class _RideOngoingWidgetState extends State<RideOngoingWidget> {
                                           ),
                                         ),
                                       ]),
-                                      Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            if (riderController.tripDetail!
-                                                        .customer!.firstName !=
-                                                    null &&
-                                                riderController.tripDetail!
-                                                        .customer!.lastName !=
-                                                    null)
-                                              SizedBox(
-                                                  width: 100,
-                                                  child: Text(
-                                                    '${riderController.tripDetail!.customer!.firstName!} ${riderController.tripDetail!.customer!.lastName!}',
-                                                    style:
-                                                        textSemiBold.copyWith(),
-                                                  )),
-                                            if (riderController
-                                                    .tripDetail!.customer !=
-                                                null)
-                                              Row(children: [
-                                                Icon(
-                                                  Icons.star_rate_rounded,
-                                                  color: Theme.of(Get.context!)
-                                                      .colorScheme
-                                                      .primary,
-                                                  size:
-                                                      Dimensions.iconSizeMedium,
-                                                ),
-                                                const SizedBox(
-                                                  width: 2,
-                                                ),
-                                                Text(
-                                                  double.parse(riderController
-                                                          .tripDetail!
-                                                          .customerAvgRating!)
-                                                      .toStringAsFixed(1),
-                                                  style: textRegular.copyWith(
-                                                      color: Theme.of(context)
-                                                          .colorScheme
-                                                          .secondary),
-                                                ),
-                                              ]),
-                                          ]),
+                                       Builder(builder: (context) {
+                                         final customer = riderController.tripDetail?.customer;
+                                         final String fullName = '${customer?.firstName ?? ''} ${customer?.lastName ?? ''}'.trim();
+                                         final String displayName = fullName.isNotEmpty
+                                             ? fullName
+                                             : (customer?.phone ?? 'Customer');
+                                         return Column(
+                                             crossAxisAlignment:
+                                                 CrossAxisAlignment.start,
+                                             children: [
+                                               SizedBox(
+                                                   width: 120,
+                                                   child: Text(
+                                                     displayName,
+                                                     maxLines: 1,
+                                                     overflow: TextOverflow.ellipsis,
+                                                     style:
+                                                         textSemiBold.copyWith(),
+                                                   )),
+                                               if (riderController.tripDetail?.customerAvgRating != null &&
+                                                   riderController.tripDetail!.customerAvgRating!.isNotEmpty)
+                                                 Row(children: [
+                                                   Icon(
+                                                     Icons.star_rate_rounded,
+                                                     color: Theme.of(Get.context!)
+                                                         .colorScheme
+                                                         .primary,
+                                                     size:
+                                                         Dimensions.iconSizeMedium,
+                                                   ),
+                                                   const SizedBox(
+                                                     width: 2,
+                                                   ),
+                                                   Text(
+                                                     double.parse(riderController
+                                                             .tripDetail!
+                                                             .customerAvgRating!)
+                                                         .toStringAsFixed(1),
+                                                     style: textRegular.copyWith(
+                                                       color: Theme.of(context)
+                                                           .colorScheme
+                                                           .secondary),
+                                                 ),
+                                               ]),
+                                           ]);
+                                       }),
                                     ]),
                                     Container(
                                         width: 1,
@@ -405,7 +407,7 @@ class _RideOngoingWidgetState extends State<RideOngoingWidget> {
                                             );
 
                                             if (response.statusCode == 200) {
-                                              await rideController.getFinalFare(
+                                              rideController.getFinalFare(
                                                   rideController
                                                       .tripDetail!.id!);
                                               Get.find<RiderMapController>()

@@ -8,29 +8,39 @@ import 'package:ride_sharing_user_app/features/map/widgets/customer_ride_request
 import 'package:ride_sharing_user_app/features/ride/controllers/ride_controller.dart';
 
 class RideRequestScreen extends StatefulWidget {
-  const RideRequestScreen({super.key});
+  final bool fromNotification;
+  final String? rideRequestId;
+  const RideRequestScreen({
+    super.key,
+    this.fromNotification = false,
+    this.rideRequestId,
+  });
 
   @override
   State<RideRequestScreen> createState() => _RideRequestScreenState();
 }
 
 class _RideRequestScreenState extends State<RideRequestScreen> {
+  final ScrollController scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final RideController rideController = Get.find<RideController>();
-
-      // Fetch only once after the screen is mounted. Notification navigation
-      // no longer waits for this API before opening the screen.
-      if (!rideController.isLoading) {
-        rideController.getPendingRideRequestList(1);
-      }
-    });
+    final RideController rideController = Get.find<RideController>();
+    rideController.pendingRideRequestModel = null;
+    final String rideId = widget.rideRequestId?.trim() ?? '';
+    if (widget.fromNotification && rideId.isNotEmpty) {
+      rideController.getNotifiedRideRequest(rideId);
+    } else {
+      rideController.getPendingRideRequestList(1);
+    }
   }
 
-  final ScrollController scrollController = ScrollController();
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

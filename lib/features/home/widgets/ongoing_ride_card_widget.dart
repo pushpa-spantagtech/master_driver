@@ -7,7 +7,10 @@ import 'package:ride_sharing_user_app/common_widgets/no_data_widget.dart';
 import 'package:ride_sharing_user_app/features/home/widgets/custom_arrow_icon_widget.dart';
 import 'package:ride_sharing_user_app/features/home/widgets/custom_menu_driving_status_widget.dart';
 import 'package:ride_sharing_user_app/features/home/widgets/last_trip_shimmer_widget.dart';
+import 'package:ride_sharing_user_app/features/map/controllers/map_controller.dart';
+import 'package:ride_sharing_user_app/features/map/screens/map_screen.dart';
 import 'package:ride_sharing_user_app/features/ride/controllers/ride_controller.dart';
+import 'package:ride_sharing_user_app/features/trip/screens/payment_received_screen.dart';
 import 'package:ride_sharing_user_app/features/trip/screens/trip_details_screen.dart';
 import 'package:ride_sharing_user_app/helper/date_converter.dart';
 import 'package:ride_sharing_user_app/helper/price_converter.dart';
@@ -18,17 +21,77 @@ import 'package:ride_sharing_user_app/util/styles.dart';
 class OngoingRideCardWidget extends StatelessWidget {
   const OngoingRideCardWidget({super.key});
 
+  static Future<void> reopenActiveRide(RideController rideController) async {
+    if (rideController.isNavigatingToMap) {
+      return;
+    }
+
+    final trip = rideController.ongoingTrip != null &&
+            rideController.ongoingTrip!.isNotEmpty
+        ? rideController.ongoingTrip!.first
+        : rideController.tripDetail;
+    if (trip == null) {
+      return;
+    }
+    final String tripId = trip.id ?? '';
+    final String status = (trip.currentStatus ?? '').toLowerCase();
+    final String paymentStatus = (trip.paymentStatus ?? '').toLowerCase();
+
+    if (tripId.isEmpty) {
+      return;
+    }
+
+    if (status == 'accepted' || status == 'ongoing') {
+      rideController.isNavigatingToMap = true;
+
+      try {
+        final response = await rideController.getRideDetails(tripId);
+        if (response.statusCode != 200) {
+          return;
+        }
+
+        final mapController = Get.find<RiderMapController>();
+        mapController.setRideCurrentState(
+          status == 'ongoing' ? RideState.ongoing : RideState.accepted,
+        );
+        mapController.setMarkersInitialPosition();
+        rideController.startLiveTracking(tripId);
+        rideController.updateRoute(false, notify: true);
+
+        await Get.to(() => const MapScreen(fromScreen: 'home'));
+      } finally {
+        rideController.isNavigatingToMap = false;
+      }
+      return;
+    }
+
+    if (status == 'completed' && paymentStatus == 'unpaid') {
+      final response = await rideController.getFinalFare(tripId);
+      if (response.statusCode == 200) {
+        Get.to(() => const PaymentReceivedScreen());
+      }
+      return;
+    }
+
+    Get.to(() => TripDetails(tripId: tripId));
+  }
+
   @override
   Widget build(BuildContext context) {
     String capitalize(String s) => s[0].toUpperCase() + s.substring(1);
     return GetBuilder<RideController>(builder: (rideController) {
       String tripDate = '0', suffix = 'st';
       List<dynamic> extraRoute = [];
-      int onGoingMin = 0, onGoingHr = 0, count = 1;
+      int totalMinutes = 0, count = 1;
+      bool isCompleted = false;
+
       if (rideController.ongoingTrip != null &&
           rideController.ongoingTrip!.isNotEmpty) {
+        final currentTrip = rideController.ongoingTrip![0];
+        isCompleted = currentTrip.currentStatus == 'completed';
+
         tripDate = DateConverter.dateTimeStringToDateOnly(
-            rideController.ongoingTrip![0].createdAt!);
+            currentTrip.createdAt!);
         if (tripDate == "1") {
           suffix = "st";
         } else if (tripDate == "2") {
@@ -39,14 +102,32 @@ class OngoingRideCardWidget extends StatelessWidget {
           suffix = "th";
         }
 
-        onGoingHr = DateTime.now()
-            .difference(
-                DateTime.parse(rideController.ongoingTrip![0].createdAt!))
-            .inHours;
-        onGoingMin = DateTime.now()
-            .difference(
-                DateTime.parse(rideController.ongoingTrip![0].createdAt!))
-            .inHours;
+        if (isCompleted && currentTrip.actualTime != null && currentTrip.actualTime! > 0) {
+          totalMinutes = currentTrip.actualTime!.toInt();
+        } else if (isCompleted &&
+            currentTrip.tripStatus?.ongoing != null &&
+            currentTrip.tripStatus?.completed != null) {
+          try {
+            totalMinutes = DateTime.parse(currentTrip.tripStatus!.completed!)
+                .difference(DateTime.parse(currentTrip.tripStatus!.ongoing!))
+                .inMinutes;
+          } catch (_) {
+            totalMinutes = DateTime.now()
+                .difference(DateTime.parse(currentTrip.createdAt!))
+                .inMinutes;
+          }
+        } else {
+          try {
+            final startTime = currentTrip.tripStatus?.ongoing != null
+                ? DateTime.parse(currentTrip.tripStatus!.ongoing!)
+                : DateTime.parse(currentTrip.createdAt!);
+            totalMinutes = DateTime.now().difference(startTime).inMinutes;
+          } catch (_) {
+            totalMinutes = 0;
+          }
+        }
+
+        if (totalMinutes < 0) totalMinutes = 0;
 
         for (int i = 0; i < extraRoute.length; i++) {
           if (extraRoute[i] != '') {
@@ -57,6 +138,15 @@ class OngoingRideCardWidget extends StatelessWidget {
           }
         }
       }
+
+      final int durationHrs = totalMinutes ~/ 60;
+      final int durationMins = totalMinutes % 60;
+      final String durationFormatted = durationHrs > 0
+          ? '$durationHrs hr $durationMins min'
+          : '$durationMins min';
+
+      Future<void> openCurrentRide() => reopenActiveRide(rideController);
+
       return rideController.ongoingTrip != null
           ? rideController.ongoingTrip!.isNotEmpty
               ? Padding(
@@ -151,28 +241,7 @@ class OngoingRideCardWidget extends StatelessWidget {
                                   InkWell(
                                       overlayColor: WidgetStateProperty.all(
                                           Colors.transparent),
-                                      onTap: () {
-                                        if (rideController.ongoingTrip![0]
-                                                    .currentStatus ==
-                                                'ongoing' ||
-                                            rideController.ongoingTrip![0]
-                                                    .currentStatus ==
-                                                'accepted' ||
-                                            (rideController.ongoingTrip![0]
-                                                        .currentStatus ==
-                                                    'completed' &&
-                                                rideController.ongoingTrip![0]
-                                                        .paymentStatus ==
-                                                    'unpaid')) {
-                                          Get.find<RideController>()
-                                              .getCurrentRideStatus(
-                                                  froDetails: true);
-                                        } else {
-                                          Get.to(() => TripDetails(
-                                              tripId: rideController
-                                                  .ongoingTrip![0].id!));
-                                        }
-                                      },
+                                      onTap: openCurrentRide,
                                       child: CircularPercentIndicator(
                                           radius: 80.0,
                                           lineWidth: 10.0,
@@ -190,7 +259,10 @@ class OngoingRideCardWidget extends StatelessWidget {
                                           center: Column(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              Text("estimated".tr,
+                                              Text(
+                                                  isCompleted && rideController.orderStatusSelectedIndex == 0
+                                                      ? "trip_duration".tr
+                                                      : "estimated".tr,
                                                   style: textRegular.copyWith(
                                                       color: Theme.of(context)
                                                           .colorScheme
@@ -204,17 +276,22 @@ class OngoingRideCardWidget extends StatelessWidget {
                                                   rideController
                                                               .orderStatusSelectedIndex ==
                                                           0
-                                                      ? "${rideController.ongoingTrip![0].estimatedTime} min"
+                                                      ? (isCompleted && totalMinutes > 0
+                                                          ? "$totalMinutes min"
+                                                          : "${rideController.ongoingTrip![0].estimatedTime} min")
                                                       : rideController
                                                                   .orderStatusSelectedIndex ==
                                                               1
-                                                          ? '${rideController.ongoingTrip![0].estimatedDistance!.toStringAsFixed(2)} km'
+                                                          ? (isCompleted && (rideController.ongoingTrip![0].actualDistance ?? 0) > 0
+                                                              ? '${rideController.ongoingTrip![0].actualDistance!.toStringAsFixed(2)} km'
+                                                              : '${rideController.ongoingTrip![0].estimatedDistance!.toStringAsFixed(2)} km')
                                                           : PriceConverter.convertPrice(
                                                               context,
-                                                              double.parse(rideController
-                                                                  .ongoingTrip![
-                                                                      0]
-                                                                  .estimatedFare
+                                                              double.parse((isCompleted
+                                                                      ? (rideController.ongoingTrip![0].paidFare ??
+                                                                          rideController.ongoingTrip![0].actualFare ??
+                                                                          rideController.ongoingTrip![0].estimatedFare)
+                                                                      : rideController.ongoingTrip![0].estimatedFare)
                                                                   .toString())),
                                                   style: textBold.copyWith(
                                                       color: Theme.of(context)
@@ -228,7 +305,7 @@ class OngoingRideCardWidget extends StatelessWidget {
                                                 rideController
                                                             .orderStatusSelectedIndex ==
                                                         0
-                                                    ? "driving".tr
+                                                    ? (isCompleted ? "completed".tr : "driving".tr)
                                                     : rideController
                                                                 .orderStatusSelectedIndex ==
                                                             1
@@ -284,7 +361,9 @@ class OngoingRideCardWidget extends StatelessWidget {
                             children: [
                               Text(
                                   rideController.orderStatusSelectedIndex == 0
-                                      ? '${'ongoing_trip_time'.tr}:'
+                                      ? (isCompleted
+                                          ? '${'trip_duration'.tr}:'
+                                          : '${'ongoing_trip_time'.tr}:')
                                       : '${'ongoing_trip_distance'.tr}:',
                                   style: textRegular.copyWith(
                                       color: Get.isDarkMode
@@ -298,7 +377,7 @@ class OngoingRideCardWidget extends StatelessWidget {
                                         Dimensions.paddingSizeExtraSmall),
                                 child: Text(
                                     rideController.orderStatusSelectedIndex == 0
-                                        ? '${onGoingHr.toString()}:$onGoingMin'
+                                        ? durationFormatted
                                         : rideController
                                             .ongoingTrip![0].estimatedDistance!
                                             .toStringAsFixed(2),
@@ -308,16 +387,15 @@ class OngoingRideCardWidget extends StatelessWidget {
                                             .secondary,
                                         fontSize: Dimensions.fontSizeLarge)),
                               ),
-                              Text(
-                                  rideController.orderStatusSelectedIndex == 0
-                                      ? 'Hour'.tr
-                                      : 'km'.tr,
-                                  style: textRegular.copyWith(
-                                      color: Get.isDarkMode
-                                          ? Theme.of(context).hintColor
-                                          : Theme.of(context)
-                                              .colorScheme
-                                              .onSurface)),
+                              if (rideController.orderStatusSelectedIndex != 0)
+                                Text(
+                                    'km'.tr,
+                                    style: textRegular.copyWith(
+                                        color: Get.isDarkMode
+                                            ? Theme.of(context).hintColor
+                                            : Theme.of(context)
+                                                .colorScheme
+                                                .onSurface)),
                             ],
                           ),
                         ),

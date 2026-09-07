@@ -1,6 +1,20 @@
 import 'package:ride_sharing_user_app/features/profile/domain/models/categoty_model.dart';
 import 'package:ride_sharing_user_app/features/profile/domain/models/vehicle_brand_model.dart';
 
+Map<String, dynamic> _unpackRelation(dynamic jsonVal) {
+  if (jsonVal is Map<String, dynamic>) {
+    for (var key in jsonVal.keys) {
+      if (key.startsWith('Modules\\') || key.contains('\\')) {
+        final val = jsonVal[key];
+        if (val is Map<String, dynamic>) {
+          return val;
+        }
+      }
+    }
+  }
+  return jsonVal is Map<String, dynamic> ? jsonVal : {};
+}
+
 class ProfileModel {
   String? responseCode;
   ProfileInfo? data;
@@ -76,9 +90,9 @@ class ProfileInfo {
     id = json['id'];
     firstName = json['first_name'];
     lastName = json['last_name'];
-    level = json['level'] != null ? Level.fromJson(json['level']) : null;
+    level = json['level'] != null ? Level.fromJson(_unpackRelation(json['level'])) : null;
     vehicle =
-        json['vehicle'] != null ? Vehicle.fromJson(json['vehicle']) : null;
+        json['vehicle'] != null ? Vehicle.fromJson(_unpackRelation(json['vehicle'])) : null;
     email = json['email'];
     phone = json['phone'];
     identificationNumber = json['identification_number'];
@@ -87,20 +101,20 @@ class ProfileInfo {
     phoneVerifiedAt = json['phone_verified_at'];
     userType = json['user_type'];
     details =
-        json['details'] != null ? Details.fromJson(json['details']) : null;
+        json['details'] != null ? Details.fromJson(_unpackRelation(json['details'])) : null;
     vehicleStatus = json['vehicle_status'];
-    wallet = json['wallet'] != null ? Wallet.fromJson(json['wallet']) : null;
+    wallet = json['wallet'] != null ? Wallet.fromJson(_unpackRelation(json['wallet'])) : null;
     loyaltyPoint = json['loyalty_points'];
     timeTrack = json['time_track'] != null
-        ? TimeTrack.fromJson(json['time_track'])
+        ? TimeTrack.fromJson(_unpackRelation(json['time_track']))
         : null;
-    avgRatting = json['rating'].toDouble();
-    tripIncome = json['trip_income'].toDouble();
-    totalTips = json['total_tips'].toDouble();
-    totalEarning = json['total_earning'].toDouble();
-    totalCommission = json['total_commission'].toDouble();
-    paidAmount = json['paid_amount'].toDouble();
-    levelUpRewardAmount = json['level_up_reward_amount'].toDouble();
+    avgRatting = json['rating'] != null ? double.tryParse(json['rating'].toString()) ?? 0.0 : 0.0;
+    tripIncome = json['trip_income'] != null ? double.tryParse(json['trip_income'].toString()) ?? 0.0 : 0.0;
+    totalTips = json['total_tips'] != null ? double.tryParse(json['total_tips'].toString()) ?? 0.0 : 0.0;
+    totalEarning = json['total_earning'] != null ? double.tryParse(json['total_earning'].toString()) ?? 0.0 : 0.0;
+    totalCommission = json['total_commission'] != null ? double.tryParse(json['total_commission'].toString()) ?? 0.0 : 0.0;
+    paidAmount = json['paid_amount'] != null ? double.tryParse(json['paid_amount'].toString()) ?? 0.0 : 0.0;
+    levelUpRewardAmount = json['level_up_reward_amount'] != null ? double.tryParse(json['level_up_reward_amount'].toString()) ?? 0.0 : 0.0;
     if (json['old_identification_image'] == null &&
         json['identification_image'] == null) {
       identificationImage = null;

@@ -49,8 +49,8 @@ class _PaymentReceivedScreenState extends State<PaymentReceivedScreen>
 
         final RideController rideController = Get.find<RideController>();
 
-        final String tripId = rideController.finalFare?.id?.toString() ??
-            rideController.tripDetail?.id?.toString() ??
+        final String tripId = rideController.tripDetail?.id?.toString() ??
+            rideController.finalFare?.id?.toString() ??
             '';
 
         if (tripId.isEmpty) {
@@ -443,12 +443,19 @@ class _PaymentReceivedScreenState extends State<PaymentReceivedScreen>
                                 ),
                                 PaymentItemInfoWidget(
                                   icon: Images.farePrice,
-                                  title: 'fare_price'.tr,
+                                  title: finalFareController
+                                      .finalFare?.hourlyPackageHours !=
+                                      null
+                                      ? 'Package fare'
+                                      : 'fare_price'.tr,
                                   amount: finalFareController
-                                          .finalFare?.actualFare ??
-                                      finalFareController
-                                          .finalFare?.distanceWiseFare ??
-                                      0,
+                                      .finalFare?.hourlyPackageHours !=
+                                      null
+                                      ? ((finalFareController.finalFare?.actualFare ?? 0) -
+                                      (finalFareController.finalFare?.additionalCharge ?? 0))
+                                      : (finalFareController.finalFare?.actualFare ??
+                                      finalFareController.finalFare?.distanceWiseFare ??
+                                      0),
                                 ),
                                 if (!fromParcel &&
                                     finalFareController
@@ -484,6 +491,41 @@ class _PaymentReceivedScreenState extends State<PaymentReceivedScreen>
                                             .finalFare?.delayFee ??
                                         0,
                                   ),
+                                if (!fromParcel &&
+                                    finalFareController
+                                            .finalFare?.hourlyPackageHours !=
+                                        null)
+                                  Builder(builder: (context) {
+                                    String formatHourlyDuration(double decimalHours, {bool isExtra = false}) {
+                                      final int totalMins = (decimalHours * 60).round();
+                                      if (totalMins <= 0) return isExtra ? '0 extra min' : '0 min';
+                                      final int hrs = totalMins ~/ 60;
+                                      final int mins = totalMins % 60;
+                                      if (isExtra) {
+                                        if (hrs > 0 && mins > 0) return '$hrs hr $mins extra min';
+                                        if (hrs > 0) return '$hrs extra hr';
+                                        return '$mins extra min';
+                                      }
+                                      if (hrs > 0 && mins > 0) return '$hrs hr $mins min';
+                                      if (hrs > 0) return '$hrs hr';
+                                      return '$mins min';
+                                    }
+
+                                    final String runningTime = formatHourlyDuration(
+                                        finalFareController.finalFare?.hourlyActualHours ?? 0);
+                                    final String extraTime = formatHourlyDuration(
+                                        finalFareController.finalFare?.hourlyExtraHours ?? 0, isExtra: true);
+
+                                    return PaymentItemInfoWidget(
+                                      icon: Images.waitingPrice,
+                                      title: 'Package extra charge',
+                                      amount: finalFareController
+                                              .finalFare?.additionalCharge ??
+                                          0,
+                                      subTitle:
+                                          'Running: ${(finalFareController.finalFare?.actualDistance ?? 0).toStringAsFixed(2)} km / $runningTime • Extra: ${(finalFareController.finalFare?.hourlyExtraKm ?? 0).toStringAsFixed(2)} km / $extraTime',
+                                    );
+                                  }),
                                 if (finalFareController.finalFare!.couponAmount!
                                         .toDouble() >
                                     0)
@@ -551,7 +593,8 @@ class _PaymentReceivedScreenState extends State<PaymentReceivedScreen>
                     Dimensions.paddingSizeDefault,
                     Dimensions.paddingSizeLarge,
                   ),
-                  child: tripController.isLoading
+                  child: tripController.isLoading ||
+                          finalFareController.finalFare == null
                       ? Center(
                           child: SpinKitCircle(
                             color: Theme.of(context).colorScheme.primary,

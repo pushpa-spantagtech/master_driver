@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:audioplayers/audioplayers.dart';
 import 'package:dart_pusher_channels/dart_pusher_channels.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
@@ -12,6 +11,7 @@ import 'package:ride_sharing_user_app/features/splash/controllers/splash_control
 import 'package:ride_sharing_user_app/features/trip/screens/payment_received_screen.dart';
 import 'package:ride_sharing_user_app/features/trip/screens/review_this_customer_screen.dart';
 import 'package:ride_sharing_user_app/util/app_constants.dart';
+import 'package:ride_sharing_user_app/helper/notification_helper.dart';
 
 import '../features/dashboard/screens/dashboard_screen.dart';
 
@@ -159,15 +159,16 @@ class PusherHelper {
           .bind("customer-trip-request.$id")
           .listen((event) async {
         try {
-          AudioPlayer audio = AudioPlayer();
-          await audio.play(AssetSource('notification.wav'));
-
-          await Get.find<RideController>().getPendingRideRequestList(1);
           final tripId = jsonDecode(event.data!)['trip_id'];
+          if (!NotificationHelper.claimRideEvent(tripId.toString())) {
+            return;
+          }
+
+          await NotificationHelper.startAlertSound();
           Get.find<RideController>().setRideId(tripId);
 
           final value = await Get.find<RideController>()
-              .getRideDetailBeforeAccept(tripId);
+              .getNotifiedRideRequest(tripId);
 
           if (value.statusCode == 200) {
             Get.find<RiderMapController>().getPickupToDestinationPolyline();
@@ -218,6 +219,7 @@ class PusherHelper {
         customerInitialTripCancelChannel
             .bind("customer-trip-cancelled.$tripId.$userId")
             .listen((event) {
+          NotificationHelper.stopAlertSound();
           Get.find<RideController>().getPendingRideRequestList(1).then((value) {
             if (value.statusCode == 200) {
               Get.find<RiderMapController>()
@@ -258,6 +260,7 @@ class PusherHelper {
         anotherDriverAcceptedTripChannel
             .bind("another-driver-trip-accepted.$tripId.$userId")
             .listen((event) {
+          NotificationHelper.stopAlertSound();
           Get.find<RideController>().getPendingRideRequestList(1).then((value) {
             if (value.statusCode == 200) {
               Get.find<RiderMapController>()
@@ -297,6 +300,7 @@ class PusherHelper {
         tripCancelAfterOngoingChannel
             .bind("customer-trip-cancelled-after-ongoing.$tripId")
             .listen((event) {
+          NotificationHelper.stopAlertSound();
           Get.find<RideController>()
               .getRideDetails(jsonDecode(event.data!)['id'])
               .then((value) {
@@ -344,9 +348,16 @@ class PusherHelper {
         tripPaymentSuccessfulChannel
             .bind("customer-trip-payment-successful.$tripId")
             .listen((event) {
-          if (jsonDecode(event.data!)['type'] == 'parcel') {
+          final dynamic eventData = jsonDecode(event.data!);
+          final String eventTripId = eventData['id']?.toString() ?? tripId;
+          if (!NotificationHelper.claimTerminalEvent(
+              'payment_successful', eventTripId)) {
+            return;
+          }
+          Get.find<RideController>().clearLastRideDetails();
+          if (eventData['type'] == 'parcel') {
             Get.find<RideController>()
-                .getRideDetails(jsonDecode(event.data!)['id'])
+                .getRideDetails(eventTripId)
                 .then((value) {
               if (value.statusCode == 200) {
                 Get.find<RideController>().getOngoingParcelList();
@@ -355,12 +366,12 @@ class PusherHelper {
             });
           } else {
             Get.find<RideController>()
-                .getRideDetails(jsonDecode(event.data!)['id'])
+                .getRideDetails(eventTripId)
                 .then((value) {
               if (value.statusCode == 200) {
                 if (Get.find<SplashController>().config!.reviewStatus!) {
                   Get.offAll(() => ReviewThisCustomerScreen(
-                      tripId: jsonDecode(event.data!)['id']));
+                      tripId: eventTripId));
                 } else {
                   Get.offAll(() => const DashboardScreen());
                 }

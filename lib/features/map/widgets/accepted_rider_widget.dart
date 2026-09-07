@@ -106,8 +106,11 @@ class _RideAcceptedWidgetState extends State<RideAcceptedWidget> {
                             : Column(children: [
                                 const SizedBox(
                                     height: Dimensions.paddingSizeDefault),
-                                Text(
-                                  'your_pickup_time_is_continuing'.tr,
+                               Text(
+                                  riderController.currentRideState ==
+                                          RideState.ongoing
+                                      ? 'trip_is_ongoing'.tr
+                                      : 'your_pickup_time_is_continuing'.tr,
                                   style: textMedium.copyWith(
                                     color: Theme.of(context)
                                         .colorScheme
@@ -118,7 +121,10 @@ class _RideAcceptedWidgetState extends State<RideAcceptedWidget> {
                                 const SizedBox(
                                     height: Dimensions.paddingSizeExtraSmall),
                                 Text(
-                                  'Please_reach_the_pickup_point'.tr,
+                                  riderController.currentRideState ==
+                                          RideState.ongoing
+                                      ? 'you_are_on_the_way_to_destination'.tr
+                                      : 'Please_reach_the_pickup_point'.tr,
                                   style: textRegular.copyWith(
                                       fontSize: Dimensions.fontSizeDefault),
                                 ),
@@ -204,49 +210,49 @@ class _RideAcceptedWidgetState extends State<RideAcceptedWidget> {
                                     const SizedBox(
                                       width: 8,
                                     ),
-                                    Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          if (rideController.tripDetail!
-                                                      .customer!.firstName !=
-                                                  null &&
-                                              rideController.tripDetail!
-                                                      .customer!.lastName !=
-                                                  null)
+                                    Builder(builder: (context) {
+                                      final customer = rideController.tripDetail?.customer;
+                                      final String fullName = '${customer?.firstName ?? ''} ${customer?.lastName ?? ''}'.trim();
+                                      final String displayName = fullName.isNotEmpty
+                                          ? fullName
+                                          : (customer?.phone ?? 'Customer');
+                                      return Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
                                             SizedBox(
-                                              width: 100,
+                                              width: 120,
                                               child: Text(
-                                                  '${rideController.tripDetail!.customer!.firstName!} '
-                                                  '${rideController.tripDetail!.customer!.lastName!}',
+                                                  displayName,
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
                                                   style: textBold.copyWith(
                                                       color: Theme.of(context)
                                                           .colorScheme
                                                           .secondary)),
                                             ),
-                                          if (rideController
-                                                  .tripDetail!.customer !=
-                                              null)
-                                            Row(children: [
-                                              Icon(
-                                                Icons.star_rate_rounded,
-                                                color: Theme.of(Get.context!)
-                                                    .colorScheme
-                                                    .primary,
-                                                size: Dimensions.iconSizeMedium,
-                                              ),
-                                              Text(
-                                                  double.parse(rideController
-                                                          .tripDetail!
-                                                          .customerAvgRating!)
-                                                      .toStringAsFixed(1),
-                                                  style: textMedium.copyWith(
-                                                      color: Theme.of(context)
-                                                          .colorScheme
-                                                          .onSecondary)),
-                                            ]),
-                                        ]),
-                                  ]),
+                                            if (rideController.tripDetail?.customerAvgRating != null &&
+                                                rideController.tripDetail!.customerAvgRating!.isNotEmpty)
+                                              Row(children: [
+                                                Icon(
+                                                  Icons.star_rate_rounded,
+                                                  color: Theme.of(Get.context!)
+                                                      .colorScheme
+                                                      .primary,
+                                                  size: Dimensions.iconSizeMedium,
+                                                ),
+                                                Text(
+                                                    double.parse(rideController
+                                                            .tripDetail!
+                                                            .customerAvgRating!)
+                                                        .toStringAsFixed(1),
+                                                    style: textMedium.copyWith(
+                                                        color: Theme.of(context)
+                                                            .colorScheme
+                                                            .onSecondary)),
+                                              ]),
+                                          ]);
+                                    }),]),
                                   Container(
                                       width: 1,
                                       height: 25,
@@ -320,8 +326,10 @@ class _RideAcceptedWidgetState extends State<RideAcceptedWidget> {
                                   width: double.infinity,
                                   height: buttonHeight,
                                   child: FilledButton(
-                                    onPressed: () {
+                                    onPressed: () async {
                                       if (currentState == 1) return;
+                                      await Get.find<TripController>()
+                                          .getOngoingAndAcceptedCancellationCauseList();
 
                                       // Give the cancellation view its correct persistent height
                                       // before switching the content. This keeps the sheet fixed
@@ -374,14 +382,20 @@ class _RideAcceptedWidgetState extends State<RideAcceptedWidget> {
                       children: [
                         const SizedBox(height: Dimensions.paddingSizeSmall),
                         Text(
-                          'your_pickup_time_is_continuing'.tr,
+                          riderController.currentRideState == RideState.ongoing
+                              ? 'trip_is_ongoing'.tr
+                              : 'your_pickup_time_is_continuing'.tr,
                           style: textSemiBold.copyWith(
                             color: Theme.of(context).colorScheme.secondary,
                             fontSize: Dimensions.fontSizeSmall,
                           ),
                         ),
                         const SizedBox(height: Dimensions.paddingSizeSmall),
-                        const CancellationRadioButton(isOngoing: false),
+                        CancellationRadioButton(
+                          isOngoing:
+                              riderController.currentRideState ==
+                              RideState.ongoing,
+                        ),
                         const SizedBox(height: Dimensions.paddingSizeSix),
                         Row(children: [
                           Expanded(
@@ -415,52 +429,50 @@ class _RideAcceptedWidgetState extends State<RideAcceptedWidget> {
                             borderColor: Theme.of(context).hintColor,
                             radius: Dimensions.paddingSizeSmall,
                             onPressed: () async {
-                              String cancelReason = "Driver cancelled";
-                              if (Get.find<TripController>()
-                                          .tripCancellationCauseList !=
-                                      null &&
-                                  Get.find<TripController>()
-                                          .tripCancellationCauseList!
-                                          .data !=
-                                      null &&
-                                  Get.find<TripController>()
-                                      .tripCancellationCauseList!
-                                      .data!
-                                      .isNotEmpty &&
-                                  Get.find<TripController>()
-                                          .tripCancellationCauseList!
-                                          .data![0]
-                                          .acceptedRide !=
-                                      null &&
-                                  Get.find<TripController>()
-                                      .tripCancellationCauseList!
-                                      .data![0]
-                                      .acceptedRide!
-                                      .isNotEmpty) {
-                                cancelReason = Get.find<TripController>()
-                                        .tripCancellationCauseList!
-                                        .data![0]
-                                        .acceptedRide![
-                                    Get.find<TripController>()
-                                        .tripCancellationCauseCurrentIndex];
-                              }
+                            String cancelReason = 'Driver cancelled';
 
-                              var value = await rideController.tripStatusUpdate(
-                                'cancelled',
-                                rideController.tripDetail!.id!,
-                                "trip_cancelled_successfully",
-                                cancelReason,
-                              );
-                              if (value.statusCode == 200) {
-                                Get.find<OtpTimeCountController>()
-                                    .initialCounter();
+                            final TripController tripController =
+                                Get.find<TripController>();
 
-                                Get.find<RiderMapController>()
-                                    .setRideCurrentState(RideState.initial);
+                            final bool isOngoing =
+                                riderController.currentRideState == RideState.ongoing;
 
-                                Get.offAll(() => const DashboardScreen());
-                              }
-                            },
+                            final cancellationData =
+                                tripController.tripCancellationCauseList?.data;
+
+                            List<String> cancellationCauses = <String>[];
+
+                            if (cancellationData != null &&
+                                cancellationData.isNotEmpty) {
+                              cancellationCauses = isOngoing
+                                  ? cancellationData.first.ongoingRide ?? <String>[]
+                                  : cancellationData.first.acceptedRide ?? <String>[];
+                            }
+
+                            final int selectedIndex =
+                                tripController.tripCancellationCauseCurrentIndex;
+
+                            if (selectedIndex >= 0 &&
+                                selectedIndex < cancellationCauses.length) {
+                              cancelReason = cancellationCauses[selectedIndex];
+                            }
+
+                            final value = await rideController.tripStatusUpdate(
+                              'cancelled',
+                              rideController.tripDetail!.id!,
+                              'trip_cancelled_successfully',
+                              cancelReason,
+                            );
+
+                            if (value.statusCode == 200) {
+                              Get.find<OtpTimeCountController>().initialCounter();
+
+                              Get.find<RiderMapController>()
+                                  .setRideCurrentState(RideState.initial);
+
+                              Get.offAll(() => const DashboardScreen());
+                            }
+                          },
                           )),
                         ])
                       ]),

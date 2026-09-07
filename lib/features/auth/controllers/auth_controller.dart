@@ -95,9 +95,26 @@ class AuthController extends GetxController implements GetxService {
 
     if (source == null) return;
 
-    final XFile? pickedFile = await ImagePicker().pickImage(source: source);
+    // Camera photos can be much larger than PHP's effective multipart upload
+    // limit even when Laravel allows a 10 MB image. Resize/compress at the
+    // point of selection so registration and profile updates use the same
+    // safe upload payload without changing the API field names.
+    final XFile? pickedFile = await ImagePicker().pickImage(
+      source: source,
+      maxWidth: 1280,
+      maxHeight: 1280,
+      imageQuality: 55,
+    );
 
     if (pickedFile == null) return;
+
+    const int maximumUploadBytes = 10 * 1024 * 1024;
+    if (await pickedFile.length() > maximumUploadBytes) {
+      showCustomSnackBar(
+        'Image must be 10 MB or smaller. Please select another image.',
+      );
+      return;
+    }
 
     if (isProfile) {
       _pickedProfileFile = pickedFile;
@@ -106,7 +123,7 @@ class AuthController extends GetxController implements GetxService {
       identityImages.add(identityImage);
       multipartList.add(
         MultipartBody(
-          'identity_images[${identityImages.length}]',
+          'identity_images[]',
           identityImage,
         ),
       );
@@ -398,16 +415,19 @@ class AuthController extends GetxController implements GetxService {
   bool updateFcm = false;
 
   Future<void> updateToken() async {
-    updateFcm = true;
-    update();
-    Response? response = await authServiceInterface.updateToken();
-    if (response?.statusCode == 200) {
-      updateFcm = false;
-    } else {
-      updateFcm = false;
-      ApiChecker.checkApi(response!);
+    try {
+      final Response? response =
+      await authServiceInterface.updateToken();
+
+      if (response == null || response.statusCode != 200) {
+        debugPrint(
+          'FCM token update failed: ${response?.statusCode} '
+              '${response?.body}',
+        );
+      }
+    } catch (e) {
+      debugPrint('FCM token update exception: $e');
     }
-    update();
   }
 
   String _verificationCode = '';

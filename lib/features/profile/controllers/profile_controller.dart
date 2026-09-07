@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:audioplayers/audioplayers.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -27,6 +26,7 @@ import 'package:ride_sharing_user_app/features/profile/domain/models/vehicle_bra
 import 'package:ride_sharing_user_app/features/profile/domain/services/profile_service_interface.dart';
 import 'package:ride_sharing_user_app/features/ride/controllers/ride_controller.dart';
 import 'package:ride_sharing_user_app/helper/display_helper.dart';
+import 'package:ride_sharing_user_app/helper/notification_helper.dart';
 import 'package:ride_sharing_user_app/util/images.dart';
 
 class ProfileController extends GetxController implements GetxService {
@@ -159,80 +159,7 @@ class ProfileController extends GetxController implements GetxService {
       if (isOnline == "0") {
         isOnline = "1";
         debugPrint("[ONLINE_RESYNC] Driver switched ONLINE");
-        try {
-          final RideController rideController = Get.find<RideController>();
-
-          /// Wait until zone initializes properly
-          await Future.delayed(
-            const Duration(seconds: 2),
-          );
-
-          await rideController.getPendingRideRequestList(
-            1,
-            limit: 100,
-          );
-          final pendingList = rideController.pendingRideRequestModel?.data;
-          debugPrint("[ONLINE_RESYNC] Pending request count => "
-              "${pendingList?.length ?? 0}");
-
-          /// If request already exists
-          if (pendingList != null && pendingList.isNotEmpty) {
-            final pendingTrip = pendingList.first;
-            debugPrint("[ONLINE_RESYNC] Existing request found => "
-                "${pendingTrip.id}");
-
-            /// Set current ride id
-            rideController.setRideId(
-              pendingTrip.id!,
-            );
-
-            /// Fetch ride detail
-            final detailResponse =
-                await rideController.getRideDetailBeforeAccept(
-              pendingTrip.id!,
-            );
-            debugPrint("[ONLINE_RESYNC] Ride detail response => "
-                "${detailResponse.statusCode}");
-
-            if (detailResponse.statusCode == 200) {
-              /// Play local notification sound
-              final AudioPlayer audioPlayer = AudioPlayer();
-              await audioPlayer.play(
-                AssetSource(
-                  'notification.wav',
-                ),
-              );
-              debugPrint("[ONLINE_RESYNC] Preparing ride state");
-
-              /// Initialize ride state
-              Get.find<RiderMapController>().setRideCurrentState(
-                RideState.pending,
-              );
-
-              /// Load polyline + route
-              Get.find<RiderMapController>().getPickupToDestinationPolyline();
-
-              /// Update route
-              rideController.updateRoute(
-                false,
-                notify: true,
-              );
-              debugPrint("[ONLINE_RESYNC] Opening map screen");
-              if (!Get.currentRoute.contains('MapScreen')) {
-                Future.delayed(
-                  const Duration(milliseconds: 500),
-                  () {
-                    Get.offAll(
-                      () => const MapScreen(),
-                    );
-                  },
-                );
-              }
-            }
-          }
-        } catch (e) {
-          debugPrint("[ONLINE_RESYNC_ERROR] $e");
-        }
+        _resyncPendingRidesOnOnline();
       }
 
       /// ===============================
@@ -249,6 +176,78 @@ class ProfileController extends GetxController implements GetxService {
     isLoading = false;
     update();
     return response;
+  }
+
+  Future<void> _resyncPendingRidesOnOnline() async {
+    try {
+      final RideController rideController = Get.find<RideController>();
+
+      /// Wait until zone initializes properly
+      await Future.delayed(
+        const Duration(seconds: 2),
+      );
+
+      await rideController.getPendingRideRequestList(
+        1,
+        limit: 100,
+      );
+      final pendingList = rideController.pendingRideRequestModel?.data;
+      debugPrint("[ONLINE_RESYNC] Pending request count => "
+          "${pendingList?.length ?? 0}");
+
+      /// If request already exists
+      if (pendingList != null && pendingList.isNotEmpty) {
+        final pendingTrip = pendingList.first;
+        debugPrint("[ONLINE_RESYNC] Existing request found => "
+            "${pendingTrip.id}");
+
+        /// Set current ride id
+        rideController.setRideId(
+          pendingTrip.id!,
+        );
+
+        /// Fetch ride detail
+        final detailResponse =
+            await rideController.getRideDetailBeforeAccept(
+          pendingTrip.id!,
+        );
+        debugPrint("[ONLINE_RESYNC] Ride detail response => "
+            "${detailResponse.statusCode}");
+
+        if (detailResponse.statusCode == 200) {
+          /// Play local notification sound
+          await NotificationHelper.startAlertSound();
+          debugPrint("[ONLINE_RESYNC] Preparing ride state");
+
+          /// Initialize ride state
+          Get.find<RiderMapController>().setRideCurrentState(
+            RideState.pending,
+          );
+
+          /// Load polyline + route
+          Get.find<RiderMapController>().getPickupToDestinationPolyline();
+
+          /// Update route
+          rideController.updateRoute(
+            false,
+            notify: true,
+          );
+          debugPrint("[ONLINE_RESYNC] Opening map screen");
+          if (!Get.currentRoute.contains('MapScreen')) {
+            Future.delayed(
+              const Duration(milliseconds: 500),
+              () {
+                Get.offAll(
+                  () => const MapScreen(),
+                );
+              },
+            );
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("[ONLINE_RESYNC_ERROR] $e");
+    }
   }
 
   List<Brand> brandList = [];
@@ -476,10 +475,9 @@ class ProfileController extends GetxController implements GetxService {
     } else {
       _otherFile = (await FilePicker.platform.pickFiles(withReadStream: true))!;
       if (_otherFile != null) {
+        objFile = _otherFile!.files.first;
         listOfDocuments.add(_otherFile!);
-        objFile = _otherFile!.files.single;
-        // documents.add(MultipartDocument('upload_documents[]', objFile));
-        documents.add(MultipartDocument('other_documents', objFile));
+        documents.add(MultipartDocument('other_documents[]', objFile));
       }
     }
     update();
@@ -515,11 +513,18 @@ class ProfileController extends GetxController implements GetxService {
       debugPrint('Background location permission check failed: $e');
     }
 
+    final locationController = Get.find<LocationController>();
+    if (locationController.locationSubscription == null) {
+      locationController.getCurrentLocation(
+        callZone: false,
+      );
+    }
+
     _timer?.cancel();
 
     _timer = Timer.periodic(
-      const Duration(seconds: 10),
-      (timer) {
+    const Duration(seconds: 30),
+    (timer) async {
         try {
           final RideController rideController = Get.find<RideController>();
           final RiderMapController mapController =
@@ -543,7 +548,7 @@ class ProfileController extends GetxController implements GetxService {
             rideController.remainingDistance(tripId);
           }
 
-          Get.find<LocationController>().getCurrentLocation(
+          await locationController.getCurrentLocation(
             callZone: false,
           );
         } catch (e) {

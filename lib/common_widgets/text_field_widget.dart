@@ -66,11 +66,14 @@ class IndianPhoneNumberFormatter extends TextInputFormatter {
     // Keep only digits
     String digits = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
 
-    // Android autofill may return:
-    // +91 7358823558
-    // 917358823558
-    // Keep only the last 10 digits.
+    // Android autofill/paste may return +91 7358823558. In that case keep
+    // the 10-digit local number. Once 10 digits are already entered, block
+    // additional typing instead of silently replacing the first digit.
     if (digits.length > 10) {
+      if (oldValue.text.length == 10 &&
+          newValue.text.length <= oldValue.text.length + 1) {
+        return oldValue;
+      }
       digits = digits.substring(digits.length - 10);
     }
 

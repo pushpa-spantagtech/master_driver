@@ -336,8 +336,8 @@ class _RideAcceptedWidgetState extends State<RideAcceptedWidget> {
                                       // to the bottom and prevents the top-to-bottom jump.
                                       final double cancelSheetHeight =
                                           (MediaQuery.of(context).size.height *
-                                                  0.43)
-                                              .clamp(330.0, 390.0)
+                                                  0.35)
+                                              .clamp(260.0, 280.0)
                                               .toDouble();
                                       Get.find<RiderMapController>()
                                           .setSheetHeight(
@@ -345,6 +345,9 @@ class _RideAcceptedWidgetState extends State<RideAcceptedWidget> {
 
                                       setState(() {
                                         currentState = 1;
+                                      });
+                                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                                        widget.expandableKey.currentState?.expand();
                                       });
                                     },
                                     style: FilledButton.styleFrom(
@@ -415,6 +418,9 @@ class _RideAcceptedWidgetState extends State<RideAcceptedWidget> {
                               setState(() {
                                 currentState = 0;
                               });
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                widget.expandableKey.currentState?.expand();
+                              });
                             },
                           )),
                           const SizedBox(width: Dimensions.paddingSizeSmall),
@@ -474,7 +480,8 @@ class _RideAcceptedWidgetState extends State<RideAcceptedWidget> {
                             }
                           },
                           )),
-                        ])
+                        ]),
+                        const SizedBox(height: Dimensions.paddingSizeDefault),
                       ]),
                 ),
         );

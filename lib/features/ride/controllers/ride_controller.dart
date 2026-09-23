@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ride_sharing_user_app/data/api_checker.dart';
 import 'package:ride_sharing_user_app/features/auth/controllers/auth_controller.dart';
 import 'package:ride_sharing_user_app/features/location/screens/access_location_screen.dart';
@@ -232,8 +233,7 @@ class RideController extends GetxController implements GetxService {
           if (paymentStatus == 'paid') {
             Get.offAllNamed(RouteHelper.getHomeRoute());
           } else {
-            final Response fareResponse =
-                await getFinalFare(tripDetail!.id!);
+            final Response fareResponse = await getFinalFare(tripDetail!.id!);
 
             if (fareResponse.statusCode == 200) {
               Get.offAll(
@@ -244,7 +244,23 @@ class RideController extends GetxController implements GetxService {
         } else if (currentRideStatus == 'cancelled') {
           stopLiveTracking();
 
-          Get.offAllNamed(RouteHelper.getHomeRoute());
+          tripDetail = null;
+          _rideid = null;
+          polyline = '';
+          localDestinationReached = false;
+          destinationApiCalled = false;
+          arrivalApiCalled = false;
+          ongoingTrip = [];
+
+          Get.find<RiderMapController>().setRideCurrentState(
+            RideState.initial,
+          );
+
+          update();
+
+          if (allowNavigation) {
+            Get.offAllNamed(RouteHelper.getHomeRoute());
+          }
         }
       }
     } else if (response.statusCode == 403) {
@@ -605,7 +621,7 @@ class RideController extends GetxController implements GetxService {
 
       final bool isOngoingTrip =
           Get.find<RiderMapController>().currentRideState ==
-              RideState.ongoing &&
+                  RideState.ongoing &&
               tripDetail != null &&
               !(tripDetail!.isPaused ?? false) &&
               tripDetail!.isReachedDestination != true;
@@ -626,11 +642,11 @@ class RideController extends GetxController implements GetxService {
 
         actualDestinationDistanceMeters =
             Get.find<RiderMapController>().distanceBetween(
-              currentDriverPosition.latitude,
-              currentDriverPosition.longitude,
-              destinationLatitude,
-              destinationLongitude,
-            );
+          currentDriverPosition.latitude,
+          currentDriverPosition.longitude,
+          destinationLatitude,
+          destinationLongitude,
+        );
       }
 
       final double completionRadius =
@@ -642,9 +658,9 @@ class RideController extends GetxController implements GetxService {
 
       debugPrint(
         'DESTINATION RADIUS CHECK: '
-            'distance=$actualDestinationDistanceMeters, '
-            'radius=$completionRadius, '
-            'inside=$isInsideActualDestinationRadius',
+        'distance=$actualDestinationDistanceMeters, '
+        'radius=$completionRadius, '
+        'inside=$isInsideActualDestinationRadius',
       );
 
       if (isOngoingTrip &&
@@ -653,7 +669,7 @@ class RideController extends GetxController implements GetxService {
         destinationApiCalled = true;
 
         final Response destinationResponse =
-        await arrivalDestination(tripId, 'destination');
+            await arrivalDestination(tripId, 'destination');
 
         if (destinationResponse.statusCode == 200) {
           localDestinationReached = true;
@@ -671,46 +687,78 @@ class RideController extends GetxController implements GetxService {
     return response;
   }
 
-  Future<Response> tripStatusUpdate(String id, String status, String message,
+  bool _isInactiveTripResponse(Response response) {
+    final dynamic body = response.body;
+    final String responseMessage = body is Map
+        ? (body['message'] ?? body['error'] ?? '').toString().toLowerCase()
+        : body.toString().toLowerCase();
+
+    return responseMessage.contains('no more active') ||
+        responseMessage.contains('no longer active') ||
+        responseMessage.contains('already cancelled') ||
+        responseMessage.contains('already canceled') ||
+        responseMessage.contains('already completed');
+  }
+
+  void _clearTerminalTripState(String tripId) {
+    stopLiveTracking();
+    currentRideStatus = 'cancelled';
+    tripDetail = null;
+    _rideid = null;
+    polyline = '';
+    localDestinationReached = false;
+    arrivalApiCalled = false;
+    destinationApiCalled = false;
+
+    if (Get.isRegistered<OtpTimeCountController>()) {
+      Get.find<OtpTimeCountController>().initialCounter();
+    }
+
+    if (Get.isRegistered<RiderMapController>()) {
+      Get.find<RiderMapController>().setRideCurrentState(RideState.initial);
+    }
+
+    ongoingTrip?.removeWhere((trip) => trip.id == tripId);
+    if (Get.isRegistered<SharedPreferences>()) {
+      Get.find<SharedPreferences>().remove('active_trip_id');
+    }
+  }
+
+  Future<Response> tripStatusUpdate(String arg1, String arg2, String message,
       String cancellationCause) async {
+    // Determine which argument is status and which is tripId regardless of caller parameter order
+    final bool isArg1Status = arg1.toLowerCase() == 'completed' ||
+        arg1.toLowerCase() == 'cancelled' ||
+        arg1.toLowerCase() == 'rejected' ||
+        arg1.toLowerCase() == 'accepted' ||
+        arg1.toLowerCase() == 'ongoing';
+
+    final String status = isArg1Status ? arg1 : arg2;
+    final String tripId = isArg1Status ? arg2 : arg1;
+
     isLoading = true;
     update();
     Response response = await rideServiceInterface.tripStatusUpdate(
-        status, id, cancellationCause);
+        tripId, status, cancellationCause);
 
     if (response.statusCode == 200) {
       showCustomSnackBar(message.tr, isError: false);
 
       if (status.toLowerCase() == 'cancelled') {
-        // Clear the accepted ride immediately after cancellation so the
-        // Dashboard cannot render the stale "Customer pickup / ACCEPTED" card.
-        stopLiveTracking();
-
-        currentRideStatus = 'cancelled';
-
-        if (tripDetail != null) {
-          tripDetail!.currentStatus = 'cancelled';
-        }
-
-        tripDetail = null;
-        _rideid = null;
-        polyline = '';
-        localDestinationReached = false;
-        arrivalApiCalled = false;
-        destinationApiCalled = false;
-
-        if (Get.isRegistered<OtpTimeCountController>()) {
-          Get.find<OtpTimeCountController>().initialCounter();
-        }
-
-        if (Get.isRegistered<RiderMapController>()) {
-          Get.find<RiderMapController>().setRideCurrentState(
-            RideState.initial,
-          );
-        }
+        _clearTerminalTripState(tripId);
+        update();
+        unawaited(getCurrentRideStatus(froDetails: true, isUpdate: true));
+        unawaited(getLastTrip());
       }
 
       isLoading = false;
+    } else if (_isInactiveTripResponse(response)) {
+      _clearTerminalTripState(tripId);
+      isLoading = false;
+      update();
+      showCustomSnackBar('Ride request is no longer active');
+      unawaited(getLastTrip());
+      Get.offAllNamed(RouteHelper.getHomeRoute());
     } else {
       isLoading = false;
       ApiChecker.checkApi(response);
@@ -940,11 +988,11 @@ class RideController extends GetxController implements GetxService {
   }
 
   Future<Response> arrivalDestination(
-      String tripId,
-      String type,
-      ) async {
+    String tripId,
+    String type,
+  ) async {
     final Response response =
-    await rideServiceInterface.arrivalDestination(tripId, type);
+        await rideServiceInterface.arrivalDestination(tripId, type);
 
     if (response.statusCode == 200) {
       // The destination API is called only after the destination-radius
@@ -1009,8 +1057,6 @@ class RideController extends GetxController implements GetxService {
     }
     key.currentState?.expand();
   }
-
-
 
   ParcelListModel? parcelListModel;
 

@@ -441,10 +441,10 @@ class _MapScreenState extends State<MapScreen> {
               // Keep ride-state content changes immediate. Without this,
               // changing the persistent height for the cancellation view is
               // animated by the package and the sheet appears to slide down.
-              animationDurationExtend: Duration.zero,
-              animationDurationContract: Duration.zero,
-              animationCurveExpand: Curves.linear,
-              animationCurveContract: Curves.linear,
+              animationDurationExtend: const Duration(milliseconds: 150),
+              animationDurationContract: const Duration(milliseconds: 150),
+              animationCurveExpand: Curves.easeOut,
+              animationCurveContract: Curves.easeIn,
               onIsExtendedCallback: () {
                 if (mounted && !_isBottomSheetExpanded) {
                   setState(() => _isBottomSheetExpanded = true);
@@ -685,7 +685,7 @@ class _MapScreenState extends State<MapScreen> {
               persistentHeader: Transform.translate(
                 offset: Offset(0, -otpKeyboardOffset),
                 child: SizedBox(
-                  height: 50,
+                  height: riderMapController.currentRideState == RideState.initial ? 50 : 0,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,

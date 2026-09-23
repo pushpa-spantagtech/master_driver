@@ -146,17 +146,21 @@ class _VehicleAddScreenState extends State<VehicleAddScreen> {
   Widget _fieldGap() => const SizedBox(height: 14);
 
   Widget _brandDropdown(BuildContext context, ProfileController controller) {
-    Brand? selectedBrand;
-    for (final item in controller.brandList) {
-      if (item.id == controller.selectedBrand?.id &&
-          controller.selectedBrand?.id != 'abc') {
-        selectedBrand = item;
-        break;
-      }
-    }
+    final seenIds = <String>{};
+    final brands = controller.brandList.where((item) {
+      final id = item.id?.trim() ?? '';
+      return id.isNotEmpty && seenIds.add(id);
+    }).toList();
+    final selectedId = controller.selectedBrand?.id;
+    final value = selectedId != null &&
+            selectedId != 'abc' &&
+            brands.any((item) => item.id == selectedId)
+        ? selectedId
+        : null;
 
-    return DropdownButtonFormField<Brand>(
-      value: selectedBrand,
+    return DropdownButtonFormField<String>(
+      key: ValueKey('vehicle-brand-${value ?? 'none'}-${brands.length}'),
+      value: value,
       isExpanded: true,
       style: textRegular.copyWith(
         fontSize: Dimensions.fontSizeDefault,
@@ -174,9 +178,9 @@ class _VehicleAddScreenState extends State<VehicleAddScreen> {
           color: Colors.grey.shade500,
         ),
       ),
-      items: controller.brandList.map((item) {
-        return DropdownMenuItem<Brand>(
-          value: item,
+      items: brands.map((item) {
+        return DropdownMenuItem<String>(
+          value: item.id,
           child: Text(
             item.name!.tr,
             style: textRegular.copyWith(
@@ -188,24 +192,29 @@ class _VehicleAddScreenState extends State<VehicleAddScreen> {
       }).toList(),
       onChanged: (newVal) {
         if (newVal != null) {
-          controller.setBrandIndex(newVal, true);
+          final brand = brands.firstWhere((item) => item.id == newVal);
+          controller.setBrandIndex(brand, true);
         }
       },
     );
   }
 
   Widget _modelDropdown(BuildContext context, ProfileController controller) {
-    VehicleModels? selectedModel;
-    for (final item in controller.modelList) {
-      if (item.id == controller.selectedModel.id &&
-          controller.selectedModel.id != 'abc') {
-        selectedModel = item;
-        break;
-      }
-    }
+    final seenIds = <String>{};
+    final models = controller.modelList.where((item) {
+      final id = item.id?.trim() ?? '';
+      return id.isNotEmpty && seenIds.add(id);
+    }).toList();
+    final selectedId = controller.selectedModel.id;
+    final value = selectedId != null &&
+            selectedId != 'abc' &&
+            models.any((item) => item.id == selectedId)
+        ? selectedId
+        : null;
 
-    return DropdownButtonFormField<VehicleModels>(
-      value: selectedModel,
+    return DropdownButtonFormField<String>(
+      key: ValueKey('vehicle-model-${value ?? 'none'}-${models.length}'),
+      value: value,
       isExpanded: true,
       style: textRegular.copyWith(
         fontSize: Dimensions.fontSizeDefault,
@@ -223,9 +232,9 @@ class _VehicleAddScreenState extends State<VehicleAddScreen> {
           color: Colors.grey.shade500,
         ),
       ),
-      items: controller.modelList.map((item) {
-        return DropdownMenuItem<VehicleModels>(
-          value: item,
+      items: models.map((item) {
+        return DropdownMenuItem<String>(
+          value: item.id,
           child: Text(
             item.name!.tr,
             style: textRegular.copyWith(
@@ -237,24 +246,29 @@ class _VehicleAddScreenState extends State<VehicleAddScreen> {
       }).toList(),
       onChanged: (newVal) {
         if (newVal != null) {
-          controller.setModelIndex(newVal, true);
+          final model = models.firstWhere((item) => item.id == newVal);
+          controller.setModelIndex(model, true);
         }
       },
     );
   }
 
   Widget _categoryDropdown(BuildContext context, ProfileController controller) {
-    Category? selectedCategory;
-    for (final item in controller.categoryList) {
-      if (item.id == controller.selectedCategory.id &&
-          controller.selectedCategory.id != 'abc') {
-        selectedCategory = item;
-        break;
-      }
-    }
+    final seenIds = <String>{};
+    final categories = controller.categoryList.where((item) {
+      final id = item.id?.trim() ?? '';
+      return id.isNotEmpty && seenIds.add(id);
+    }).toList();
+    final selectedId = controller.selectedCategory.id;
+    final value = selectedId != null &&
+            selectedId != 'abc' &&
+            categories.any((item) => item.id == selectedId)
+        ? selectedId
+        : null;
 
-    return DropdownButtonFormField<Category>(
-      value: selectedCategory,
+    return DropdownButtonFormField<String>(
+      key: ValueKey('vehicle-category-${value ?? 'none'}-${categories.length}'),
+      value: value,
       isExpanded: true,
       style: textRegular.copyWith(
         fontSize: Dimensions.fontSizeDefault,
@@ -272,9 +286,9 @@ class _VehicleAddScreenState extends State<VehicleAddScreen> {
           color: Colors.grey.shade500,
         ),
       ),
-      items: controller.categoryList.map((item) {
-        return DropdownMenuItem<Category>(
-          value: item,
+      items: categories.map((item) {
+        return DropdownMenuItem<String>(
+          value: item.id,
           child: Text(
             item.name!.tr,
             style: textRegular.copyWith(
@@ -286,7 +300,9 @@ class _VehicleAddScreenState extends State<VehicleAddScreen> {
       }).toList(),
       onChanged: (newVal) {
         if (newVal != null) {
-          controller.setCategoryIndex(newVal, true);
+          final category =
+              categories.firstWhere((item) => item.id == newVal);
+          controller.setCategoryIndex(category, true);
         }
       },
     );

@@ -84,14 +84,23 @@ class OngoingRideCardWidget extends StatelessWidget {
       List<dynamic> extraRoute = [];
       int totalMinutes = 0, count = 1;
       bool isCompleted = false;
+      bool isCancelled = false;
+      bool isActive = false;
 
       if (rideController.ongoingTrip != null &&
           rideController.ongoingTrip!.isNotEmpty) {
         final currentTrip = rideController.ongoingTrip![0];
-        isCompleted = currentTrip.currentStatus == 'completed';
+        final String currentStatus =
+            (currentTrip.currentStatus ?? '').toLowerCase().trim();
 
-        tripDate = DateConverter.dateTimeStringToDateOnly(
-            currentTrip.createdAt!);
+        isCompleted = currentStatus == 'completed';
+        isCancelled = currentStatus == 'cancelled' ||
+            currentStatus == 'canceled' ||
+            currentStatus.contains('cancel');
+        isActive = currentStatus == 'accepted' || currentStatus == 'ongoing';
+
+        tripDate =
+            DateConverter.dateTimeStringToDateOnly(currentTrip.createdAt!);
         if (tripDate == "1") {
           suffix = "st";
         } else if (tripDate == "2") {
@@ -102,32 +111,42 @@ class OngoingRideCardWidget extends StatelessWidget {
           suffix = "th";
         }
 
-        if (isCompleted && currentTrip.actualTime != null && currentTrip.actualTime! > 0) {
+        if ((isCompleted || isCancelled) &&
+            currentTrip.actualTime != null &&
+            currentTrip.actualTime! > 0) {
           totalMinutes = currentTrip.actualTime!.toInt();
         } else if (isCompleted &&
             currentTrip.tripStatus?.ongoing != null &&
             currentTrip.tripStatus?.completed != null) {
           try {
-            totalMinutes = DateTime.parse(currentTrip.tripStatus!.completed!)
-                .difference(DateTime.parse(currentTrip.tripStatus!.ongoing!))
+            totalMinutes = DateTime.parse(
+              currentTrip.tripStatus!.completed!,
+            )
+                .difference(
+                  DateTime.parse(currentTrip.tripStatus!.ongoing!),
+                )
                 .inMinutes;
           } catch (_) {
-            totalMinutes = DateTime.now()
-                .difference(DateTime.parse(currentTrip.createdAt!))
-                .inMinutes;
+            totalMinutes = 0;
           }
-        } else {
+        } else if (isActive) {
           try {
-            final startTime = currentTrip.tripStatus?.ongoing != null
+            final DateTime startTime = currentTrip.tripStatus?.ongoing != null
                 ? DateTime.parse(currentTrip.tripStatus!.ongoing!)
                 : DateTime.parse(currentTrip.createdAt!);
+
             totalMinutes = DateTime.now().difference(startTime).inMinutes;
           } catch (_) {
             totalMinutes = 0;
           }
+        } else {
+          // Cancelled, rejected or another inactive status must not run a timer.
+          totalMinutes = 0;
         }
 
-        if (totalMinutes < 0) totalMinutes = 0;
+        if (totalMinutes < 0) {
+          totalMinutes = 0;
+        }
 
         for (int i = 0; i < extraRoute.length; i++) {
           if (extraRoute[i] != '') {
@@ -260,7 +279,11 @@ class OngoingRideCardWidget extends StatelessWidget {
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
                                               Text(
-                                                  isCompleted && rideController.orderStatusSelectedIndex == 0
+                                                  (isCompleted ||
+                                                              isCancelled) &&
+                                                          rideController
+                                                                  .orderStatusSelectedIndex ==
+                                                              0
                                                       ? "trip_duration".tr
                                                       : "estimated".tr,
                                                   style: textRegular.copyWith(
@@ -276,22 +299,24 @@ class OngoingRideCardWidget extends StatelessWidget {
                                                   rideController
                                                               .orderStatusSelectedIndex ==
                                                           0
-                                                      ? (isCompleted && totalMinutes > 0
+                                                      ? ((isCompleted ||
+                                                              isCancelled)
                                                           ? "$totalMinutes min"
                                                           : "${rideController.ongoingTrip![0].estimatedTime} min")
                                                       : rideController
                                                                   .orderStatusSelectedIndex ==
                                                               1
-                                                          ? (isCompleted && (rideController.ongoingTrip![0].actualDistance ?? 0) > 0
-                                                              ? '${rideController.ongoingTrip![0].actualDistance!.toStringAsFixed(2)} km'
-                                                              : '${rideController.ongoingTrip![0].estimatedDistance!.toStringAsFixed(2)} km')
+                                                          ? ((isCompleted ||
+                                                                  isCancelled)
+                                                              ? '${(rideController.ongoingTrip![0].actualDistance ?? 0).toStringAsFixed(2)} km'
+                                                              : '${(rideController.ongoingTrip![0].estimatedDistance ?? 0).toStringAsFixed(2)} km')
                                                           : PriceConverter.convertPrice(
                                                               context,
                                                               double.parse((isCompleted
-                                                                      ? (rideController.ongoingTrip![0].paidFare ??
-                                                                          rideController.ongoingTrip![0].actualFare ??
-                                                                          rideController.ongoingTrip![0].estimatedFare)
-                                                                      : rideController.ongoingTrip![0].estimatedFare)
+                                                                      ? (rideController.ongoingTrip![0].paidFare ?? rideController.ongoingTrip![0].actualFare ?? rideController.ongoingTrip![0].estimatedFare ?? 0)
+                                                                      : isCancelled
+                                                                          ? (rideController.ongoingTrip![0].paidFare ?? rideController.ongoingTrip![0].actualFare ?? 0)
+                                                                          : (rideController.ongoingTrip![0].estimatedFare ?? 0))
                                                                   .toString())),
                                                   style: textBold.copyWith(
                                                       color: Theme.of(context)
@@ -305,7 +330,11 @@ class OngoingRideCardWidget extends StatelessWidget {
                                                 rideController
                                                             .orderStatusSelectedIndex ==
                                                         0
-                                                    ? (isCompleted ? "completed".tr : "driving".tr)
+                                                    ? (isCompleted
+                                                        ? "completed".tr
+                                                        : isCancelled
+                                                            ? "cancelled".tr
+                                                            : "driving".tr)
                                                     : rideController
                                                                 .orderStatusSelectedIndex ==
                                                             1
@@ -361,7 +390,7 @@ class OngoingRideCardWidget extends StatelessWidget {
                             children: [
                               Text(
                                   rideController.orderStatusSelectedIndex == 0
-                                      ? (isCompleted
+                                      ? ((isCompleted || isCancelled)
                                           ? '${'trip_duration'.tr}:'
                                           : '${'ongoing_trip_time'.tr}:')
                                       : '${'ongoing_trip_distance'.tr}:',
@@ -378,9 +407,15 @@ class OngoingRideCardWidget extends StatelessWidget {
                                 child: Text(
                                     rideController.orderStatusSelectedIndex == 0
                                         ? durationFormatted
-                                        : rideController
-                                            .ongoingTrip![0].estimatedDistance!
-                                            .toStringAsFixed(2),
+                                        : (isCompleted || isCancelled)
+                                            ? (rideController.ongoingTrip![0]
+                                                        .actualDistance ??
+                                                    0)
+                                                .toStringAsFixed(2)
+                                            : (rideController.ongoingTrip![0]
+                                                        .estimatedDistance ??
+                                                    0)
+                                                .toStringAsFixed(2),
                                     style: textBold.copyWith(
                                         color: Theme.of(context)
                                             .colorScheme
@@ -388,8 +423,7 @@ class OngoingRideCardWidget extends StatelessWidget {
                                         fontSize: Dimensions.fontSizeLarge)),
                               ),
                               if (rideController.orderStatusSelectedIndex != 0)
-                                Text(
-                                    'km'.tr,
+                                Text('km'.tr,
                                     style: textRegular.copyWith(
                                         color: Get.isDarkMode
                                             ? Theme.of(context).hintColor

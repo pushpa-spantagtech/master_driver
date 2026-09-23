@@ -167,20 +167,6 @@ class RiderBottomSheetWidget extends StatelessWidget {
                   ),
                 );
 
-                // End-trip content is short and must size itself naturally.
-                // Wrapping it in a scrolling viewport makes the expandable
-                // sheet consume the full available height on some phones,
-                // leaving a large empty white area below the buttons.
-                if (riderController.currentRideState == RideState.end) {
-                  return SizedBox(
-                    height: maxSheetHeight,
-                    child: Align(
-                      alignment: Alignment.bottomCenter,
-                      child: sheetContent,
-                    ),
-                  );
-                }
-
                 return ConstrainedBox(
                   constraints: BoxConstraints(maxHeight: maxSheetHeight),
                   child: SingleChildScrollView(

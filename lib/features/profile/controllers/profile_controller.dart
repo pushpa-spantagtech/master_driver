@@ -271,14 +271,24 @@ class ProfileController extends GetxController implements GetxService {
       brandList = [];
       brandList.add(
           Brand(id: 'abc', name: 'select_brand_model'.tr, vehicleModels: []));
-      brandList.addAll(VehicleBrandModel.fromJson(response.body).data!);
+      final parsedBrands =
+          VehicleBrandModel.fromJson(response.body).data ?? <Brand>[];
+      final seenBrandIds = <String>{};
+      brandList.addAll(parsedBrands.where((brand) {
+        final id = brand.id?.trim() ?? '';
+        return id.isNotEmpty && seenBrandIds.add(id);
+      }));
 
       int index = brandList.indexWhere(
           (value) => value.name == profileInfo?.vehicle?.brand?.name);
       if (index == -1) {
         setBrandIndex(brandList[0], true);
       } else {
-        setBrandIndex(brandList[index], true);
+        setBrandIndex(
+          brandList[index],
+          true,
+          preserveExistingSelection: true,
+        );
       }
     } else {
       ApiChecker.checkApi(response);
@@ -288,21 +298,34 @@ class ProfileController extends GetxController implements GetxService {
     return response;
   }
 
-  void setBrandIndex(Brand brand, bool notify) {
+  void setBrandIndex(
+    Brand brand,
+    bool notify, {
+    bool preserveExistingSelection = false,
+  }) {
     selectedBrand = brand;
     modelList = [];
     if (selectedBrand != null) {
       modelList.add(VehicleModels(id: 'abc', name: 'select_vehicle_model'));
-      modelList.addAll(selectedBrand!.vehicleModels!);
-
-      int index = modelList.indexWhere(
-          (value) => value.name == profileInfo?.vehicle?.model?.name);
-      if (index == -1) {
-        selectedModel = modelList[0];
-      } else {
-        selectedModel = modelList[index];
-      }
+      final seenModelIds = <String>{};
+      modelList.addAll((selectedBrand!.vehicleModels ?? <VehicleModels>[])
+          .where((model) {
+        final id = model.id?.trim() ?? '';
+        return id.isNotEmpty && seenModelIds.add(id);
+      }));
+      final existingModelIndex = preserveExistingSelection
+          ? modelList.indexWhere(
+              (model) => model.id == profileInfo?.vehicle?.model?.id,
+            )
+          : -1;
+      selectedModel =
+          existingModelIndex > 0 ? modelList[existingModelIndex] : modelList[0];
     }
+    _filterCategoriesForSelectedModel(
+      preferredCategoryId: preserveExistingSelection
+          ? profileInfo?.vehicle?.category?.id
+          : null,
+    );
     if (notify) {
       update();
     }
@@ -312,6 +335,7 @@ class ProfileController extends GetxController implements GetxService {
 
   void setModelIndex(VehicleModels model, bool notify) {
     selectedModel = model;
+    _filterCategoriesForSelectedModel();
     if (notify) {
       update();
     }
@@ -334,20 +358,21 @@ class ProfileController extends GetxController implements GetxService {
   }
 
   List<Category> categoryList = [];
+  List<Category> _allCategoryList = [];
 
   Future<void> getCategoryList(int offset) async {
     Response? response = await profileServiceInterface.getCategoryList(offset);
     if (response!.statusCode == 200 && response.body['data'] != null) {
-      categoryList = [];
-      categoryList.add(Category(id: 'abc', name: 'select_vehicle_category'));
-      categoryList.addAll(CategoryModel.fromJson(response.body).data!);
-      int index = categoryList.indexWhere(
-          (value) => value.name == profileInfo?.vehicle?.category?.name);
-      if (index == -1) {
-        selectedCategory = categoryList[0];
-      } else {
-        selectedCategory = categoryList[index];
-      }
+      final parsedCategories =
+          CategoryModel.fromJson(response.body).data ?? <Category>[];
+      final seenCategoryIds = <String>{};
+      _allCategoryList = parsedCategories.where((category) {
+        final id = category.id?.trim() ?? '';
+        return id.isNotEmpty && seenCategoryIds.add(id);
+      }).toList();
+      _filterCategoriesForSelectedModel(
+        preferredCategoryId: profileInfo?.vehicle?.category?.id,
+      );
     } else {
       isLoading = false;
       ApiChecker.checkApi(response);
@@ -356,6 +381,33 @@ class ProfileController extends GetxController implements GetxService {
   }
 
   Category selectedCategory = Category();
+
+  void _filterCategoriesForSelectedModel({String? preferredCategoryId}) {
+    final placeholder =
+        Category(id: 'abc', name: 'select_vehicle_category');
+    final allowedIds = selectedModel.categoryIds ?? <String>[];
+
+    categoryList = [placeholder];
+    if (selectedModel.id != null && selectedModel.id != 'abc') {
+      categoryList.addAll(
+        _allCategoryList.where((category) => allowedIds.contains(category.id)),
+      );
+    }
+
+    final preferredIndex = preferredCategoryId == null
+        ? -1
+        : categoryList.indexWhere(
+            (category) => category.id == preferredCategoryId,
+          );
+
+    if (preferredIndex > 0) {
+      selectedCategory = categoryList[preferredIndex];
+    } else if (categoryList.length == 2) {
+      selectedCategory = categoryList[1];
+    } else {
+      selectedCategory = placeholder;
+    }
+  }
 
   void setCategoryIndex(Category category, bool notify) {
     selectedCategory = category;

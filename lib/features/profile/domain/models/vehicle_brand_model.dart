@@ -95,6 +95,7 @@ class Brand {
 class VehicleModels {
   String? id;
   String? name;
+  List<String>? categoryIds;
   int? seatCapacity;
   int? maximumWeight;
   int? hatchBagCapacity;
@@ -107,6 +108,7 @@ class VehicleModels {
   VehicleModels(
       {this.id,
       this.name,
+      this.categoryIds,
       this.seatCapacity,
       this.maximumWeight,
       this.hatchBagCapacity,
@@ -119,6 +121,10 @@ class VehicleModels {
   VehicleModels.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     name = json['name'];
+    categoryIds = (json['category_ids'] as List<dynamic>?)
+            ?.map((item) => item.toString())
+            .toList() ??
+        <String>[];
     seatCapacity = json['seat_capacity'];
     maximumWeight = json['maximum_weight'];
     hatchBagCapacity = json['hatch_bag_capacity'];
@@ -133,6 +139,7 @@ class VehicleModels {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['id'] = id;
     data['name'] = name;
+    data['category_ids'] = categoryIds;
     data['seat_capacity'] = seatCapacity;
     data['maximum_weight'] = maximumWeight;
     data['hatch_bag_capacity'] = hatchBagCapacity;

@@ -566,8 +566,12 @@ class _RideOngoingWidgetState extends State<RideOngoingWidget> {
                         showBorder: true,
                         radius: Dimensions.paddingSizeSmall,
                         onPressed: () {
-                          currentState = 0;
-                          setState(() {});
+                          setState(() {
+                            currentState = 0;
+                          });
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            widget.expandableKey.currentState?.expand();
+                          });
                         },
                       )),
                       const SizedBox(width: Dimensions.paddingSizeSmall),

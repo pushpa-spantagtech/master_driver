@@ -24,59 +24,41 @@ class RouteWidget extends StatelessWidget {
     this.fromCard = false,
   });
 
+
   List<String> get _stops {
     final List<String> stops = [];
 
     void addStop(String? value) {
       final String stop = (value ?? '').trim();
-      if (stop.isEmpty || stop == '[, ]' || stop == '[]') return;
 
-      // Customer app can send multiple stops as one comma separated value
-      // like: "a, bc, cd". Show them line by line as Stop 1, Stop 2,
-      // Stop 3... instead of showing all text under Stop 1.
-      if (stop.contains(',')) {
-        final List<String> separatedStops = stop
-            .split(',')
-            .map((item) => item.trim())
-            .where((item) => item.isNotEmpty)
-            .toList();
-
-        if (separatedStops.length > 1) {
-          for (final String separatedStop in separatedStops) {
-            addStop(separatedStop);
-          }
-          return;
-        }
+      if (stop.isEmpty || stop == '[, ]' || stop == '[]') {
+        return;
       }
 
-      if (!stops.any((item) => item.toLowerCase() == stop.toLowerCase())) {
+      // A comma is part of an address, not a stop separator.
+      if (!stops.any(
+            (item) => item.toLowerCase() == stop.toLowerCase(),
+      )) {
         stops.add(stop);
       }
     }
 
-    if (extraOne != null && extraOne!.trim().isNotEmpty) {
-      addStop(extraOne);
-    }
+if (extraOne != null) {
+addStop(extraOne);
+}
 
-    if (extraRoutes != null && extraRoutes!.isNotEmpty) {
-      for (final String route in extraRoutes!) {
-        addStop(route);
-      }
-    }
-
-    if (extraTwo != null && extraTwo!.trim().isNotEmpty) {
-      addStop(extraTwo);
-    }
-
-    // In some ride requests the customer added stop comes in `entrance`.
-    // Show it before destination as Stop 1 / Stop 2, not after destination.
-    if (entrance != null && entrance!.trim().isNotEmpty) {
-      addStop(entrance);
-    }
-
-    return stops;
+if (extraRoutes != null) {
+  for (final String route in extraRoutes!) {
+  addStop(route);
   }
+}
 
+if (extraTwo != null) {
+addStop(extraTwo);
+}
+
+return stops;
+}
   @override
   Widget build(BuildContext context) {
     final List<String> stops = _stops;

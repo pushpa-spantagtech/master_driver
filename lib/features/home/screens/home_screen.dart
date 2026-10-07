@@ -76,13 +76,13 @@ class _HomeScreenState extends State<HomeScreen> {
       debugPrint('getLastTrip error: $error');
     });
 
-    rideController.getPendingRideRequestList(1, limit: 100).then((_) {
-      if (rideController.getPendingRideRequestModel != null) {
-        HomeScreenHelper().pendingParcelListPusherImplementation();
-      }
-    }).catchError((error) {
-      debugPrint('getPendingRideRequestList error: $error');
-    });
+    // rideController.getPendingRideRequestList(1, limit: 100).then((_) {
+    //   if (rideController.getPendingRideRequestModel != null) {
+    //     HomeScreenHelper().pendingParcelListPusherImplementation();
+    //   }
+    // }).catchError((error) {
+    //   debugPrint('getPendingRideRequestList error: $error');
+    // });
 
     if (profileController.profileInfo?.vehicle == null &&
         profileController.profileInfo?.vehicleStatus == 0 &&

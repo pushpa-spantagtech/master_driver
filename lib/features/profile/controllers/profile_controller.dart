@@ -85,31 +85,45 @@ class ProfileController extends GetxController implements GetxService {
   String isOnline = '0';
 
   Future<Response> getProfileInfo() async {
+    final Stopwatch stopwatch = Stopwatch()..start();
+    debugPrint('===== PROFILE INFO START =====');
+
     isLoading = true;
+
     Response? response = await profileServiceInterface.getProfileInfo();
+
     if (response!.statusCode == 200) {
       profileInfo = ProfileModel.fromJson(response.body).data!;
       Get.find<AuthController>().addImageAndRemoveMultiParseData();
+
       driverId = profileInfo!.id!;
       driverImage = profileInfo!.profileImage ?? '';
       isOnline = profileInfo?.details?.isOnline ?? '0';
+
       if (isOnline == "1") {
         final LocationPermission permission =
-            await Geolocator.checkPermission();
+        await Geolocator.checkPermission();
+
         if (permission != LocationPermission.denied &&
             permission != LocationPermission.deniedForever) {
-          startLocationRecord();
+          // Location startup is handled by SplashScreen.
         }
-        // When permission is denied, DashboardScreen shows the information
-        // dialog after the driver has remained on Home for five seconds.
       } else {
         stopLocationRecord();
       }
     } else {
       ApiChecker.checkApi(response);
     }
+
     isLoading = false;
     update();
+
+    stopwatch.stop();
+
+    debugPrint(
+      '===== PROFILE INFO END: ${stopwatch.elapsedMilliseconds} ms =====',
+    );
+
     return response;
   }
 
@@ -544,7 +558,6 @@ class ProfileController extends GetxController implements GetxService {
 
   Timer? _timer;
   final Location _location = Location();
-
   Future<void> startLocationRecord() async {
     try {
       final backgroundPermission = await Permission.locationAlways.status;
@@ -558,7 +571,7 @@ class ProfileController extends GetxController implements GetxService {
       } else {
         debugPrint(
           'Background location permission is not granted. '
-          'Continuing with foreground location updates.',
+              'Continuing with foreground location updates.',
         );
       }
     } catch (e) {
@@ -566,6 +579,8 @@ class ProfileController extends GetxController implements GetxService {
     }
 
     final locationController = Get.find<LocationController>();
+
+    // Start location only when no position stream is already running.
     if (locationController.locationSubscription == null) {
       locationController.getCurrentLocation(
         callZone: false,
@@ -575,12 +590,12 @@ class ProfileController extends GetxController implements GetxService {
     _timer?.cancel();
 
     _timer = Timer.periodic(
-    const Duration(seconds: 30),
-    (timer) async {
+      const Duration(seconds: 30),
+          (timer) async {
         try {
           final RideController rideController = Get.find<RideController>();
           final RiderMapController mapController =
-              Get.find<RiderMapController>();
+          Get.find<RiderMapController>();
 
           const List<String> activeStatuses = <String>[
             'accepted',
@@ -597,12 +612,12 @@ class ProfileController extends GetxController implements GetxService {
 
           if (hasActiveTrip &&
               Get.find<AuthController>().getUserToken().isNotEmpty) {
-            rideController.remainingDistance(tripId);
+            // Route refresh is handled by RideController.startLiveTracking().
+            // Do not call remainingDistance() from the location timer.
           }
 
-          await locationController.getCurrentLocation(
-            callZone: false,
-          );
+          // Do NOT call getCurrentLocation() here.
+          // Geolocator position stream handles live location updates.
         } catch (e) {
           debugPrint('Location timer update failed: $e');
         }

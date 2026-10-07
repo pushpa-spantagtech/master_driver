@@ -39,13 +39,28 @@ class _DashboardScreenState extends State<DashboardScreen>
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Get.find<RideController>().updateRoute(true, notify: true);
-      Get.find<ProfileController>().getProfileInfo();
-      _checkCurrentRide();
-      Get.find<RideController>().getPendingRideRequestList(1);
+      //Get.find<ProfileController>().getProfileInfo();
+      //_checkCurrentRide();
+      //Get.find<RideController>().getPendingRideRequestList(1);
+      _loadPendingRidesAfterZoneReady();
       _scheduleHomeLocationPermissionCheck();
     });
   }
+  Future<void> _loadPendingRidesAfterZoneReady() async {
+    final locationController = Get.find<LocationController>();
 
+    // Wait until startup location resolves the real zone.
+    for (int i = 0; i < 20; i++) {
+      if (locationController.zoneID.isNotEmpty) {
+        await Get.find<RideController>().getPendingRideRequestList(1);
+        return;
+      }
+
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
+
+    debugPrint('PENDING RIDES SKIPPED: zone not ready');
+  }
   void _scheduleHomeLocationPermissionCheck() {
     _homeLocationInitialDelayTimer?.cancel();
     _locationPermissionReminderTimer?.cancel();

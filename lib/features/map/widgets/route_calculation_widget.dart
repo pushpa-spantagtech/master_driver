@@ -17,6 +17,7 @@ class RouteCalculationWidget extends StatelessWidget {
   int hour = 0, min = 0, sec = 0;
   double remainingPercent = 0;
   String distanceText = '--';
+  double runningKm = rideController.tripDetail?.actualDistance ?? 0;
 
   final bool isPaused =
       rideController.tripDetail?.isPaused ?? false;
@@ -93,7 +94,7 @@ class RouteCalculationWidget extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    distanceText.replaceAll(' km', '').replaceAll('KM', ''),
+                    runningKm.toStringAsFixed(2),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: textSemiBold.copyWith(

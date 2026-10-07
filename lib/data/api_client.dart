@@ -18,15 +18,15 @@ class ApiClient extends GetxService {
   final SharedPreferences sharedPreferences;
   static final String noInternetMessage = 'connection_to_api_server_failed'.tr;
   final int timeoutInSeconds = 30;
-
+  final http.Client _httpClient = http.Client();
   late String token;
   late Map<String, String> _mainHeaders;
 
   ApiClient({required this.appBaseUrl, required this.sharedPreferences}) {
     token = sharedPreferences.getString(AppConstants.token) ?? '';
-    if (kDebugMode) {
-      print('Token: $token');
-    }
+    // if (kDebugMode) {
+    //   print('Token: $token');
+    // }
     updateHeader(
       token,
       sharedPreferences.getString(AppConstants.languageCode) ?? '',
@@ -49,29 +49,80 @@ class ApiClient extends GetxService {
     _mainHeaders = header;
   }
 
-  Future<Response> getData(String uri,
-      {Map<String, dynamic>? query, Map<String, String>? headers}) async {
+  Future<Response> getData(
+      String uri, {
+        Map<String, dynamic>? query,
+        Map<String, String>? headers,
+      }) async {
     const int maxAttempts = 3;
+
     for (int attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
+        final totalWatch = Stopwatch()..start();
+
         if (kDebugMode) {
-          log('====> API Call: $uri (Attempt $attempt)\nHeader: $_mainHeaders');
+          log('====> API Call: $uri (Attempt $attempt)');
         }
-        http.Response response = await http
+
+        final httpWatch = Stopwatch()..start();
+
+        http.Response response = await _httpClient
             .get(
-              Uri.parse(appBaseUrl + uri),
-              headers: headers ?? _mainHeaders,
-            )
+          Uri.parse(appBaseUrl + uri),
+          headers: headers ?? _mainHeaders,
+        )
             .timeout(Duration(seconds: timeoutInSeconds));
-        return handleResponse(response, uri);
-      } catch (e) {
-        if (attempt == maxAttempts) {
-          return Response(statusCode: 1, statusText: noInternetMessage);
+
+        httpWatch.stop();
+
+        if (kDebugMode) {
+          print(
+            'HTTP GET TIME [$uri]: ${httpWatch.elapsedMilliseconds} ms',
+          );
         }
-        await Future.delayed(Duration(milliseconds: 500 * attempt));
+
+        final handleWatch = Stopwatch()..start();
+
+        final result = handleResponse(response, uri);
+
+        handleWatch.stop();
+        totalWatch.stop();
+
+        if (kDebugMode) {
+          print(
+            'HANDLE RESPONSE TIME [$uri]: '
+                '${handleWatch.elapsedMilliseconds} ms',
+          );
+
+          print(
+            'API CLIENT TOTAL [$uri]: '
+                '${totalWatch.elapsedMilliseconds} ms',
+          );
+        }
+
+        return result;
+      } catch (e) {
+        if (kDebugMode) {
+          print('GET ERROR [$uri] attempt $attempt: $e');
+        }
+
+        if (attempt == maxAttempts) {
+          return Response(
+            statusCode: 1,
+            statusText: noInternetMessage,
+          );
+        }
+
+        await Future.delayed(
+          Duration(milliseconds: 500 * attempt),
+        );
       }
     }
-    return Response(statusCode: 1, statusText: noInternetMessage);
+
+    return Response(
+      statusCode: 1,
+      statusText: noInternetMessage,
+    );
   }
 
   Future<Response> postData(
@@ -85,7 +136,7 @@ class ApiClient extends GetxService {
         if (kDebugMode) {
           log('====> API Call: $uri (Attempt $attempt)\nHeader: $_mainHeaders');
           log('====> API Body: $body');
-          print('AUTH HEADER = ${_mainHeaders['Authorization']}');
+         // print('AUTH HEADER = ${_mainHeaders['Authorization']}');
         }
 
         http.Response response = await http

@@ -27,6 +27,7 @@ class _SplashScreenState extends State<SplashScreen> {
   Timer? _splashSnackBarGuardTimer;
 
   bool _showOfflineScreen = false;
+  String? _startupError;
   bool _isChecking = false;
   bool _routeStarted = false;
 
@@ -105,24 +106,15 @@ class _SplashScreenState extends State<SplashScreen> {
     setState(() {
       _isChecking = true;
     });
-
-    final bool connected = await _hasInternetConnection();
+    final Stopwatch internetWatch = Stopwatch()..start();
+    // Config API itself will verify server connectivity.
+// Avoid a separate DNS lookup during startup.
 
     if (!mounted) return;
 
-    if (!connected) {
-      _clearSplashSnackBars();
-
-      setState(() {
-        _showOfflineScreen = true;
-        _isChecking = false;
-      });
-
-      return;
-    }
-
     setState(() {
       _showOfflineScreen = false;
+      _startupError = null;
       _isChecking = true;
     });
 
@@ -134,15 +126,24 @@ class _SplashScreenState extends State<SplashScreen> {
 
     _routeStarted = true;
 
+    final Stopwatch routeWatch = Stopwatch()..start();
+    debugPrint('===== SPLASH ROUTE START =====');
+
     try {
-      // ApiChecker and SplashController can remain in their original form.
-      // Any popup produced during this call is hidden only by this screen.
+      // 1. CONFIG
+      final Stopwatch configWatch = Stopwatch()..start();
+
       final bool isSuccess = await Get.find<SplashController>()
           .getConfigData(reload: false)
           .timeout(
-            const Duration(seconds: 20),
-            onTimeout: () => false,
-          );
+        const Duration(seconds: 20),
+        onTimeout: () => false,
+      );
+
+      configWatch.stop();
+      debugPrint(
+        '===== SPLASH CONFIG: ${configWatch.elapsedMilliseconds} ms =====',
+      );
 
       if (!mounted) return;
 
@@ -158,8 +159,6 @@ class _SplashScreenState extends State<SplashScreen> {
         return;
       }
 
-      // Load cancellation reasons only after internet/config is available.
-      // Ride cancellation functionality remains unchanged.
       unawaited(_loadCancellationReasonsSafely());
 
       final AuthController authController = Get.find<AuthController>();
@@ -169,59 +168,116 @@ class _SplashScreenState extends State<SplashScreen> {
       }
 
       if (authController.getZoneId() == '') {
+        routeWatch.stop();
+        debugPrint(
+          '===== SPLASH TOTAL BEFORE LOCATION SCREEN: '
+              '${routeWatch.elapsedMilliseconds} ms =====',
+        );
+
         _openScreen(const AccessLocationScreen());
         return;
       }
 
       authController.updateToken();
 
-      await Future.delayed(const Duration(milliseconds: 1000));
-
       if (!mounted) return;
 
       if (authController.isLoggedIn()) {
+
+        // Start current ride request in parallel with profile.
+        final Stopwatch rideWatch = Stopwatch()..start();
+
+        final currentRideFuture =
+        Get.find<RideController>().getCurrentRideStatus(
+          fromRefresh: true,
+          fromSplash: true,
+        );
+        // 2. PROFILE
+        final Stopwatch profileWatch = Stopwatch()..start();
         final profileResponse =
-            await Get.find<ProfileController>().getProfileInfo();
+        await Get.find<ProfileController>().getProfileInfo();
+
+        profileWatch.stop();
+        debugPrint(
+          '===== SPLASH PROFILE: ${profileWatch.elapsedMilliseconds} ms =====',
+        );
 
         if (!mounted) return;
 
         if (profileResponse.statusCode == 200) {
-          try {
-            await Get.find<LocationController>().getCurrentLocation();
-          } catch (error) {
-            debugPrint('Location error: $error');
-          }
+
+          // 3. LOCATION
+          final Stopwatch locationWatch = Stopwatch()..start();
+
+          unawaited(
+            Get.find<LocationController>()
+                .getCurrentLocation(
+              callZone: false,
+            )
+                .catchError((error) {
+              debugPrint('Location error: $error');
+
+              return Get.find<LocationController>().position;
+            }),
+          );
+
+          locationWatch.stop();
+          debugPrint(
+            '===== SPLASH LOCATION STARTED ASYNC: '
+                '${locationWatch.elapsedMilliseconds} ms =====',
+          );
+
+          locationWatch.stop();
+          debugPrint(
+            '===== SPLASH LOCATION: ${locationWatch.elapsedMilliseconds} ms =====',
+          );
 
           final dynamic data = profileResponse.body?['data'];
-          final String? driverId = data is Map ? data['id']?.toString() : null;
+          final String? driverId =
+          data is Map ? data['id']?.toString() : null;
 
           if (driverId != null && driverId.isNotEmpty) {
             PusherHelper().driverTripRequestSubscribe(driverId);
           }
 
-          final rideResponse =
-              await Get.find<RideController>().getCurrentRideStatus(
-            fromRefresh: true,
-            fromSplash: true,
+          // 4. CURRENT RIDE
+          final rideResponse = await currentRideFuture;
+
+          rideWatch.stop();
+          debugPrint(
+            '===== SPLASH CURRENT RIDE: ${rideWatch.elapsedMilliseconds} ms =====',
           );
 
           if (!mounted) return;
 
-          // getCurrentRideStatus handles navigation when an active ride exists.
-          // Open dashboard only when there is no active ride.
+          // 5. TOTAL
+          routeWatch.stop();
+          debugPrint(
+            '===== SPLASH ROUTE TOTAL: ${routeWatch.elapsedMilliseconds} ms =====',
+          );
+
           if (rideResponse.statusCode != 200) {
+            debugPrint('===== OPENING DASHBOARD =====');
             _openScreen(const DashboardScreen());
           } else {
-            // The ride controller may already have navigated.
-            // Stop splash-only popup suppression after startup finishes.
             _stopSplashSnackBarGuard();
           }
         } else {
+          routeWatch.stop();
+          debugPrint(
+            '===== SPLASH ROUTE TOTAL: ${routeWatch.elapsedMilliseconds} ms =====',
+          );
+
           _openScreen(const SignInScreen());
         }
       } else {
         final config = Get.find<SplashController>().config;
         final maintenanceMode = config?.maintenanceMode;
+
+        routeWatch.stop();
+        debugPrint(
+          '===== SPLASH ROUTE TOTAL: ${routeWatch.elapsedMilliseconds} ms =====',
+        );
 
         if (maintenanceMode?.maintenanceStatus == 1 &&
             maintenanceMode?.selectedMaintenanceSystem?.driverApp == 1) {
@@ -240,6 +296,8 @@ class _SplashScreenState extends State<SplashScreen> {
       _clearSplashSnackBars();
 
       setState(() {
+        _startupError =
+        'Unable to complete startup. Please try again.';
         _showOfflineScreen = true;
         _isChecking = false;
       });
@@ -321,10 +379,12 @@ class _SplashScreenState extends State<SplashScreen> {
                           ),
                         ),
                         const SizedBox(height: 24),
-                        const Text(
-                          'No internet connection',
+                        Text(
+                          _startupError == null
+                              ? 'No internet connection'
+                              : 'Unable to load app',
                           textAlign: TextAlign.center,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: ink,
                             fontSize: 22,
                             height: 1.2,
@@ -333,10 +393,11 @@ class _SplashScreenState extends State<SplashScreen> {
                           ),
                         ),
                         const SizedBox(height: 10),
-                        const Text(
-                          'Please turn on Wi-Fi or mobile data, then tap the button below.',
+                        Text(
+                          _startupError ??
+                              'Please turn on Wi-Fi or mobile data, then tap the button below.',
                           textAlign: TextAlign.center,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: muted,
                             fontSize: 14,
                             height: 1.5,

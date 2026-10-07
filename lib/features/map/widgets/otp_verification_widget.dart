@@ -119,6 +119,7 @@ class _OtpVerificationWidgetState extends State<OtpVerificationWidget> {
                       fontSize: Dimensions.fontSizeDefault,
                     ),
                   ),
+            const SizedBox(height: 12),
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: Dimensions.paddingSizeExtraSmall,

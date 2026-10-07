@@ -43,6 +43,7 @@ class CustomerRideRequestCardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     List<String> extraRoutes = [];
 
+
     void addRoute(dynamic value) {
       if (value == null) return;
 
@@ -54,10 +55,11 @@ class CustomerRideRequestCardWidget extends StatelessWidget {
       }
 
       if (value is Map) {
-        final dynamic mappedValue = value['address'] ??
-            value['location'] ??
-            value['name'] ??
-            value['title'];
+        final dynamic mappedValue =
+            value['address'] ??
+                value['location'] ??
+                value['name'] ??
+                value['title'];
 
         if (mappedValue != null) {
           addRoute(mappedValue);
@@ -73,28 +75,15 @@ class CustomerRideRequestCardWidget extends StatelessWidget {
       }
 
       final String route = value.toString().trim();
-      if (route.isEmpty || route == '[, ]' || route == '[]') return;
 
-      // Some API responses send all intermediate stops as one comma separated
-      // text (example: "a, bc, cd"). In that case show them as Stop 1,
-      // Stop 2, Stop 3... instead of showing one combined stop.
-      if (route.contains(',')) {
-        final List<String> separatedRoutes = route
-            .split(',')
-            .map((item) => item.trim())
-            .where((item) => item.isNotEmpty)
-            .toList();
-
-        if (separatedRoutes.length > 1) {
-          for (final String item in separatedRoutes) {
-            addRoute(item);
-          }
-          return;
-        }
+      if (route.isEmpty || route == '[, ]' || route == '[]') {
+        return;
       }
 
-      if (!extraRoutes
-          .any((item) => item.toLowerCase() == route.toLowerCase())) {
+      // Keep the complete address together, including its commas.
+      if (!extraRoutes.any(
+            (item) => item.toLowerCase() == route.toLowerCase(),
+      )) {
         extraRoutes.add(route);
       }
     }

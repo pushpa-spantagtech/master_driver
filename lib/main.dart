@@ -44,7 +44,14 @@ Future<void> main() async {
     HttpOverrides.global = MyHttpOverrides();
   }
 
+  final firebaseWatch = Stopwatch()..start();
+
   await Firebase.initializeApp();
+
+  firebaseWatch.stop();
+  debugPrint(
+    '===== FIREBASE INIT TIME: ${firebaseWatch.elapsedMilliseconds} ms =====',
+  );
 
   //firebase crashlytics
   // FlutterError.onError = (errorDetails) {
@@ -56,26 +63,40 @@ Future<void> main() async {
   //   return true;
   // };
 
+  final Stopwatch diWatch = Stopwatch()..start();
+
   Map<String, Map<String, String>> languages = await di.init();
+
+  diWatch.stop();
+  debugPrint(
+    '===== DI INIT TIME: ${diWatch.elapsedMilliseconds} ms =====',
+  );
 
   FirebaseMessaging.onBackgroundMessage(myBackgroundMessageHandler);
 
   // Register local/FCM notification callbacks before the first frame.
-  await NotificationHelper.initialize(flutterLocalNotificationsPlugin);
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]);
 
-  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   runApp(MyApp(languages: languages));
+  //
+    unawaited(
+      NotificationHelper.initialize(
+      flutterLocalNotificationsPlugin,
+      ),
+    );
 
   // Process a notification that launched the terminated driver app only
   // after GetMaterialApp and dependency bindings are ready.
-  unawaited(
-    NotificationHelper.handleInitialNotification(
-      flutterLocalNotificationsPlugin,
-    ),
+   unawaited(
+   NotificationHelper.handleInitialNotification(
+  flutterLocalNotificationsPlugin,
+  ),
   );
 
   // Permission and topic subscriptions must not delay opening the app.
-  unawaited(_configureFirebaseMessaging());
+   unawaited(_configureFirebaseMessaging());
 }
 
 Future<void> _configureFirebaseMessaging() async {

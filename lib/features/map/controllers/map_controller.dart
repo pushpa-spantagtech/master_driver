@@ -3,8 +3,9 @@ import 'dart:collection';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
-import 'package:custom_map_markers/custom_map_markers.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:custom_map_markers/custom_map_markers.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
@@ -14,6 +15,7 @@ import 'package:ride_sharing_user_app/features/ride/controllers/ride_controller.
 import 'package:ride_sharing_user_app/features/splash/controllers/splash_controller.dart';
 import 'package:ride_sharing_user_app/util/images.dart';
 import 'package:ride_sharing_user_app/features/profile/controllers/profile_controller.dart';
+import 'package:flutter/foundation.dart';
 
 enum RideState {
   initial,
@@ -91,7 +93,86 @@ class RiderMapController extends GetxController implements GetxService {
       update();
     }
   }
+  Future<BitmapDescriptor> createNumberedStopIcon(int number) async {
+    const double width = 120;
+    const double height = 150;
 
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+
+    final pinPaint = Paint()
+      ..color = const Color(0xFFF59E0B)
+      ..style = PaintingStyle.fill;
+
+    final whitePaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+
+    // Pin body
+    final path = Path()
+      ..moveTo(60, 145)
+      ..cubicTo(45, 115, 10, 80, 10, 55)
+      ..arcToPoint(
+        const Offset(110, 55),
+        radius: const Radius.circular(50),
+        clockwise: true,
+      )
+      ..cubicTo(110, 80, 75, 115, 60, 145)
+      ..close();
+
+    canvas.drawPath(path, pinPaint);
+
+    // White center
+    canvas.drawCircle(
+      const Offset(60, 55),
+      32,
+      whitePaint,
+    );
+
+    // Stop number
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: number.toString(),
+        style: const TextStyle(
+          color: Color(0xFFB45309),
+          fontSize: 43,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+
+    textPainter.layout();
+
+    textPainter.paint(
+      canvas,
+      Offset(
+        60 - textPainter.width / 2,
+        55 - textPainter.height / 2,
+      ),
+    );
+
+    final picture = recorder.endRecording();
+    final image = await picture.toImage(
+      width.toInt(),
+      height.toInt(),
+    );
+
+    final byteData = await image.toByteData(
+      format: ui.ImageByteFormat.png,
+    );
+
+    if (byteData == null) {
+      return BitmapDescriptor.defaultMarkerWithHue(
+        BitmapDescriptor.hueOrange,
+      );
+    }
+
+    return BitmapDescriptor.bytes(
+      byteData.buffer.asUint8List(),
+      imagePixelRatio: 3,
+    );
+  }
   Future<Uint8List> getBytesFromAsset(String path, int width) async {
     ByteData data = await rootBundle.load(path);
     ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(),
@@ -186,6 +267,8 @@ class RiderMapController extends GetxController implements GetxService {
     String lines, {
     bool mapBound = false,
   }) async {
+    debugPrint('ROUTE DATA LENGTH: ${lines.length}');
+    debugPrint('ROUTE STATE: $currentRideState');
     if (lines.trim().isEmpty) {
       return;
     }
@@ -193,7 +276,7 @@ class RiderMapController extends GetxController implements GetxService {
     final List<LatLng> polylineCoordinates = [];
 
     final List<PointLatLng> result = polylinePoints.decodePolyline(lines);
-
+    debugPrint('DECODED ROUTE POINTS: ${result.length}');
     if (result.isEmpty) {
       return;
     }
@@ -249,6 +332,57 @@ class RiderMapController extends GetxController implements GetxService {
     }
 
     update();
+  }
+
+  BitmapDescriptor? _stop1Icon;
+  BitmapDescriptor? _stop2Icon;
+  int _stopMarkerRequest = 0;
+
+  Future<void> setIntermediateStopMarkers(List<LatLng> stops) async {
+    final request = ++_stopMarkerRequest;
+
+    // Remove only the old stop markers.
+    markers.removeWhere(
+          (marker) => marker.markerId.value.startsWith('stop_'),
+    );
+
+    if (stops.isEmpty) {
+      update();
+      return;
+    }
+
+    _stop1Icon ??= await createNumberedStopIcon(1);
+
+    if (stops.length > 1) {
+      _stop2Icon ??= await createNumberedStopIcon(2);
+    }
+
+    // Ignore an outdated request if a newer ride update has arrived.
+    if (request != _stopMarkerRequest) return;
+
+    for (int i = 0; i < stops.length; i++) {
+      final icon = i == 0
+          ? _stop1Icon!
+          : i == 1
+          ? _stop2Icon!
+          : await createNumberedStopIcon(i + 1);
+
+      markers.add(
+        Marker(
+          markerId: MarkerId('stop_${i + 1}'),
+          position: stops[i],
+          icon: icon,
+          anchor: const Offset(0.5, 1.0),
+          zIndexInt: 102,
+
+          // No infoWindow, so no large Stop 1 / Stop 2 popup.
+        ),
+      );
+    }
+
+    update();
+
+    debugPrint('NUMBERED STOP MARKERS: ${stops.length}');
   }
 
   void _addPolyLine(List<LatLng> coordinates) {
@@ -377,7 +511,7 @@ class RiderMapController extends GetxController implements GetxService {
         );
       }
     } catch (e) {
-      print('Route camera bounds error: $e');
+      debugPrint('Route camera bounds error: $e');
     }
   }
 

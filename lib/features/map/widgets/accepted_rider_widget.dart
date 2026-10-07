@@ -63,6 +63,7 @@ class _RideAcceptedWidgetState extends State<RideAcceptedWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isKeyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
     return GetBuilder<RiderMapController>(builder: (riderController) {
       return GetBuilder<RideController>(builder: (rideController) {
         if (rideController.tripDetail!.estimatedDistance
@@ -106,7 +107,7 @@ class _RideAcceptedWidgetState extends State<RideAcceptedWidget> {
                             : Column(children: [
                                 const SizedBox(
                                     height: Dimensions.paddingSizeDefault),
-                               Text(
+                                Text(
                                   riderController.currentRideState ==
                                           RideState.ongoing
                                       ? 'trip_is_ongoing'.tr
@@ -147,235 +148,268 @@ class _RideAcceptedWidgetState extends State<RideAcceptedWidget> {
                                       fromOtp: false),
                                 )
                               ]),
-                        riderController.currentRideState == RideState.accepted
-                            ? const SizedBox()
-                            : const SizedBox(
-                                height: Dimensions.paddingSizeSmall),
-                        Container(
-                          width: Get.width,
-                          margin: const EdgeInsets.only(
-                            bottom: 10,
-                          ),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(
-                                Dimensions.paddingSizeSmall),
-                            border: Border.all(
-                                color: Theme.of(context)
-                                    .hintColor
-                                    .withValues(alpha: 0.45)),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(
-                                Dimensions.paddingSizeSmall),
-                            child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(children: [
-                                    Stack(children: [
-                                      Container(
-                                        transform: Matrix4.translationValues(
-                                          Get.find<LocalizationController>()
-                                                  .isLtr
-                                              ? -3
-                                              : 3,
-                                          -3,
-                                          0,
+                        if (!isKeyboardOpen) ...[
+                          riderController.currentRideState == RideState.accepted
+                              ? const SizedBox()
+                              : const SizedBox(
+                                  height: Dimensions.paddingSizeSmall),
+                          Container(
+                            width: Get.width,
+                            margin: const EdgeInsets.only(
+                              bottom: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(
+                                  Dimensions.paddingSizeSmall),
+                              border: Border.all(
+                                  color: Theme.of(context)
+                                      .hintColor
+                                      .withValues(alpha: 0.45)),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(
+                                  Dimensions.paddingSizeSmall),
+                              child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(children: [
+                                      Stack(children: [
+                                        Container(
+                                          transform: Matrix4.translationValues(
+                                            Get.find<LocalizationController>()
+                                                    .isLtr
+                                                ? -3
+                                                : 3,
+                                            -3,
+                                            0,
+                                          ),
+                                          child: CircularPercentIndicator(
+                                            radius: 28,
+                                            percent: .75,
+                                            lineWidth: 1,
+                                            backgroundColor: Colors.transparent,
+                                            progressColor:
+                                                Theme.of(Get.context!)
+                                                    .colorScheme
+                                                    .outline,
+                                          ),
                                         ),
-                                        child: CircularPercentIndicator(
-                                          radius: 28,
-                                          percent: .75,
-                                          lineWidth: 1,
-                                          backgroundColor: Colors.transparent,
-                                          progressColor: Theme.of(Get.context!)
-                                              .colorScheme
-                                              .outline,
+                                        ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(100),
+                                          child: ImageWidget(
+                                            width: 50,
+                                            height: 50,
+                                            image: rideController
+                                                        .tripDetail!
+                                                        .customer
+                                                        ?.profileImage !=
+                                                    null
+                                                ? '${Get.find<SplashController>().config!.imageBaseUrl!.profileImageCustomer}'
+                                                    '/${rideController.tripDetail!.customer?.profileImage ?? ''}'
+                                                : '',
+                                          ),
                                         ),
+                                      ]),
+                                      const SizedBox(
+                                        width: 8,
                                       ),
-                                      ClipRRect(
-                                        borderRadius:
-                                            BorderRadius.circular(100),
-                                        child: ImageWidget(
-                                          width: 50,
-                                          height: 50,
-                                          image: rideController.tripDetail!
-                                                      .customer?.profileImage !=
-                                                  null
-                                              ? '${Get.find<SplashController>().config!.imageBaseUrl!.profileImageCustomer}'
-                                                  '/${rideController.tripDetail!.customer?.profileImage ?? ''}'
-                                              : '',
-                                        ),
-                                      ),
-                                    ]),
-                                    const SizedBox(
-                                      width: 8,
-                                    ),
-                                    Builder(builder: (context) {
-                                      final customer = rideController.tripDetail?.customer;
-                                      final String fullName = '${customer?.firstName ?? ''} ${customer?.lastName ?? ''}'.trim();
-                                      final String displayName = fullName.isNotEmpty
-                                          ? fullName
-                                          : (customer?.phone ?? 'Customer');
-                                      return Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            SizedBox(
-                                              width: 120,
-                                              child: Text(
-                                                  displayName,
-                                                  maxLines: 1,
-                                                  overflow: TextOverflow.ellipsis,
-                                                  style: textBold.copyWith(
-                                                      color: Theme.of(context)
-                                                          .colorScheme
-                                                          .secondary)),
-                                            ),
-                                            if (rideController.tripDetail?.customerAvgRating != null &&
-                                                rideController.tripDetail!.customerAvgRating!.isNotEmpty)
-                                              Row(children: [
-                                                Icon(
-                                                  Icons.star_rate_rounded,
-                                                  color: Theme.of(Get.context!)
-                                                      .colorScheme
-                                                      .primary,
-                                                  size: Dimensions.iconSizeMedium,
-                                                ),
-                                                Text(
-                                                    double.parse(rideController
-                                                            .tripDetail!
-                                                            .customerAvgRating!)
-                                                        .toStringAsFixed(1),
-                                                    style: textMedium.copyWith(
+                                      Builder(builder: (context) {
+                                        final customer =
+                                            rideController.tripDetail?.customer;
+                                        debugPrint(
+                                          'TRIP CUSTOMER: '
+                                          'trip=${rideController.tripDetail?.id}, '
+                                          'customerId=${customer?.id}, '
+                                          'firstName=${customer?.firstName}, '
+                                          'lastName=${customer?.lastName}',
+                                        );
+                                        final String fullName =
+                                            '${customer?.firstName ?? ''} ${customer?.lastName ?? ''}'
+                                                .trim();
+                                        final String displayName = fullName
+                                                .isNotEmpty
+                                            ? fullName
+                                            : (customer?.phone ?? 'Customer');
+                                        return Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              SizedBox(
+                                                width: 120,
+                                                child: Text(displayName,
+                                                    maxLines: 1,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: textBold.copyWith(
                                                         color: Theme.of(context)
                                                             .colorScheme
-                                                            .onSecondary)),
-                                              ]),
-                                          ]);
-                                    }),]),
-                                  Container(
-                                      width: 1,
-                                      height: 25,
-                                      color: Theme.of(context)
-                                          .primaryColor
-                                          .withValues(alpha: 0.15)),
-                                  InkWell(
-                                    overlayColor: WidgetStateProperty.all(
-                                        Colors.transparent),
-                                    onTap: () => Get.find<ChatController>()
-                                        .createChannel(
-                                      rideController.tripDetail!.customer!.id!,
-                                      tripId: rideController.tripDetail!.id,
-                                    ),
-                                    child: SizedBox(
-                                      width: Dimensions.iconSizeLarge,
-                                      child: Image.asset(
-                                        Images.customerMessage,
+                                                            .secondary)),
+                                              ),
+                                              if (rideController.tripDetail
+                                                          ?.customerAvgRating !=
+                                                      null &&
+                                                  rideController
+                                                      .tripDetail!
+                                                      .customerAvgRating!
+                                                      .isNotEmpty)
+                                                Row(children: [
+                                                  Icon(
+                                                    Icons.star_rate_rounded,
+                                                    color:
+                                                        Theme.of(Get.context!)
+                                                            .colorScheme
+                                                            .primary,
+                                                    size: Dimensions
+                                                        .iconSizeMedium,
+                                                  ),
+                                                  Text(
+                                                      double.parse(rideController
+                                                              .tripDetail!
+                                                              .customerAvgRating!)
+                                                          .toStringAsFixed(1),
+                                                      style: textMedium.copyWith(
+                                                          color: Theme.of(
+                                                                  context)
+                                                              .colorScheme
+                                                              .onSecondary)),
+                                                ]),
+                                            ]);
+                                      }),
+                                    ]),
+                                    Container(
+                                        width: 1,
+                                        height: 25,
                                         color: Theme.of(context)
-                                            .colorScheme
-                                            .primary,
+                                            .primaryColor
+                                            .withValues(alpha: 0.15)),
+                                    InkWell(
+                                      overlayColor: WidgetStateProperty.all(
+                                          Colors.transparent),
+                                      onTap: () => Get.find<ChatController>()
+                                          .createChannel(
+                                        rideController
+                                            .tripDetail!.customer!.id!,
+                                        tripId: rideController.tripDetail!.id,
+                                      ),
+                                      child: SizedBox(
+                                        width: Dimensions.iconSizeLarge,
+                                        child: Image.asset(
+                                          Images.customerMessage,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  Container(
-                                      width: 1,
-                                      height: 25,
-                                      color: Theme.of(context)
-                                          .primaryColor
-                                          .withValues(alpha: 0.15)),
-                                  InkWell(
-                                    overlayColor: WidgetStateProperty.all(
-                                        Colors.transparent),
-                                    onTap: () => Get.find<SplashController>()
-                                        .sendMailOrCall(
-                                      "tel:${rideController.tripDetail!.customer!.phone}",
-                                      false,
-                                    ),
-                                    child: SizedBox(
-                                      width: Dimensions.iconSizeLarge,
-                                      child: Image.asset(
-                                        Images.customerCall,
+                                    Container(
+                                        width: 1,
+                                        height: 25,
                                         color: Theme.of(context)
-                                            .colorScheme
-                                            .primary,
+                                            .primaryColor
+                                            .withValues(alpha: 0.15)),
+                                    InkWell(
+                                      overlayColor: WidgetStateProperty.all(
+                                          Colors.transparent),
+                                      onTap: () => Get.find<SplashController>()
+                                          .sendMailOrCall(
+                                        "tel:${rideController.tripDetail!.customer!.phone}",
+                                        false,
+                                      ),
+                                      child: SizedBox(
+                                        width: Dimensions.iconSizeLarge,
+                                        child: Image.asset(
+                                          Images.customerCall,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  const SizedBox()
-                                ]),
+                                    const SizedBox()
+                                  ]),
+                            ),
                           ),
-                        ),
-                        RouteWidget(
-                          pickupAddress:
-                              rideController.tripDetail?.pickupAddress ?? '',
-                          destinationAddress:
-                              rideController.tripDetail?.destinationAddress ??
-                                  '',
-                        ),
-                        const SizedBox(height: Dimensions.paddingSizeDefault),
-                        _buildTripInfoCard(
-                          context: context,
-                          rideController: rideController,
-                          totalDistance: totalDistance,
-                        ),
-                        const SizedBox(height: Dimensions.paddingSizeDefault),
-                        (rideController.tripDetail!.type == "ride_request")
-                            ? SafeArea(
-                                top: false,
-                                child: SizedBox(
-                                  width: double.infinity,
-                                  height: buttonHeight,
-                                  child: FilledButton(
-                                    onPressed: () async {
-                                      if (currentState == 1) return;
-                                      await Get.find<TripController>()
-                                          .getOngoingAndAcceptedCancellationCauseList();
+                          RouteWidget(
+                            pickupAddress:
+                                rideController.tripDetail?.pickupAddress ?? '',
+                            destinationAddress:
+                                rideController.tripDetail?.destinationAddress ??
+                                    '',
+                          ),
+                          const SizedBox(height: Dimensions.paddingSizeDefault),
+                          _buildTripInfoCard(
+                            context: context,
+                            rideController: rideController,
+                            totalDistance: totalDistance,
+                          ),
+                          const SizedBox(height: Dimensions.paddingSizeDefault),
+                          (rideController.tripDetail!.type == "ride_request")
+                              ? SafeArea(
+                                  top: false,
+                                  child: SizedBox(
+                                    width: double.infinity,
+                                    height: buttonHeight,
+                                    child: FilledButton(
+                                      onPressed: () async {
+                                        if (currentState == 1) return;
+                                        await Get.find<TripController>()
+                                            .getOngoingAndAcceptedCancellationCauseList();
+                                        if (!mounted) return;
 
-                                      // Give the cancellation view its correct persistent height
-                                      // before switching the content. This keeps the sheet fixed
-                                      // to the bottom and prevents the top-to-bottom jump.
-                                      final double cancelSheetHeight =
-                                          (MediaQuery.of(context).size.height *
-                                                  0.35)
-                                              .clamp(260.0, 280.0)
-                                              .toDouble();
-                                      Get.find<RiderMapController>()
-                                          .setSheetHeight(
-                                              cancelSheetHeight, true);
+                                        // Give the cancellation view its correct persistent height
+                                        // before switching the content. This keeps the sheet fixed
+                                        // to the bottom and prevents the top-to-bottom jump.
+                                        final double cancelSheetHeight =
+                                            (MediaQuery.of(context)
+                                                        .size
+                                                        .height *
+                                                    0.35)
+                                                .clamp(260.0, 280.0)
+                                                .toDouble();
+                                        Get.find<RiderMapController>()
+                                            .setSheetHeight(
+                                                cancelSheetHeight, true);
 
-                                      setState(() {
-                                        currentState = 1;
-                                      });
-                                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                                        widget.expandableKey.currentState?.expand();
-                                      });
-                                    },
-                                    style: FilledButton.styleFrom(
-                                      backgroundColor: const Color(0xFFE71921),
-                                      foregroundColor: Colors.white,
-                                      elevation: 0,
-                                      padding: EdgeInsets.zero,
-                                      minimumSize: Size.zero,
-                                      tapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
+                                        setState(() {
+                                          currentState = 1;
+                                        });
+                                        WidgetsBinding.instance
+                                            .addPostFrameCallback((_) {
+                                          widget.expandableKey.currentState
+                                              ?.expand();
+                                        });
+                                      },
+                                      style: FilledButton.styleFrom(
+                                        backgroundColor:
+                                            const Color(0xFFE71921),
+                                        foregroundColor: Colors.white,
+                                        elevation: 0,
+                                        padding: EdgeInsets.zero,
+                                        minimumSize: Size.zero,
+                                        tapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                        ),
                                       ),
-                                    ),
-                                    child: Text(
-                                      'cancel_ride'.tr,
-                                      style: textSemiBold.copyWith(
-                                        color: Colors.white,
-                                        fontSize: 13.5,
-                                        fontWeight: FontWeight.w600,
+                                      child: Text(
+                                        'cancel_ride'.tr,
+                                        style: textSemiBold.copyWith(
+                                          color: Colors.white,
+                                          fontSize: 13.5,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              )
-                            : const SizedBox(),
-                      ]),
-                    )
+                                )
+                              : const SizedBox(),
+                        ], // Closes if (!isKeyboardOpen)
+                      ]), // Closes the main Column
+                    ) // Closes Padding
                   : const SizedBox()
               : Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -395,8 +429,7 @@ class _RideAcceptedWidgetState extends State<RideAcceptedWidget> {
                         ),
                         const SizedBox(height: Dimensions.paddingSizeSmall),
                         CancellationRadioButton(
-                          isOngoing:
-                              riderController.currentRideState ==
+                          isOngoing: riderController.currentRideState ==
                               RideState.ongoing,
                         ),
                         const SizedBox(height: Dimensions.paddingSizeSix),
@@ -435,50 +468,56 @@ class _RideAcceptedWidgetState extends State<RideAcceptedWidget> {
                             borderColor: Theme.of(context).hintColor,
                             radius: Dimensions.paddingSizeSmall,
                             onPressed: () async {
-                            String cancelReason = 'Driver cancelled';
+                              String cancelReason = 'Driver cancelled';
 
-                            final TripController tripController =
-                                Get.find<TripController>();
+                              final TripController tripController =
+                                  Get.find<TripController>();
 
-                            final bool isOngoing =
-                                riderController.currentRideState == RideState.ongoing;
+                              final bool isOngoing =
+                                  riderController.currentRideState ==
+                                      RideState.ongoing;
 
-                            final cancellationData =
-                                tripController.tripCancellationCauseList?.data;
+                              final cancellationData = tripController
+                                  .tripCancellationCauseList?.data;
 
-                            List<String> cancellationCauses = <String>[];
+                              List<String> cancellationCauses = <String>[];
 
-                            if (cancellationData != null &&
-                                cancellationData.isNotEmpty) {
-                              cancellationCauses = isOngoing
-                                  ? cancellationData.first.ongoingRide ?? <String>[]
-                                  : cancellationData.first.acceptedRide ?? <String>[];
-                            }
+                              if (cancellationData != null &&
+                                  cancellationData.isNotEmpty) {
+                                cancellationCauses = isOngoing
+                                    ? cancellationData.first.ongoingRide ??
+                                        <String>[]
+                                    : cancellationData.first.acceptedRide ??
+                                        <String>[];
+                              }
 
-                            final int selectedIndex =
-                                tripController.tripCancellationCauseCurrentIndex;
+                              final int selectedIndex = tripController
+                                  .tripCancellationCauseCurrentIndex;
 
-                            if (selectedIndex >= 0 &&
-                                selectedIndex < cancellationCauses.length) {
-                              cancelReason = cancellationCauses[selectedIndex];
-                            }
+                              if (selectedIndex >= 0 &&
+                                  selectedIndex < cancellationCauses.length) {
+                                cancelReason =
+                                    cancellationCauses[selectedIndex];
+                              }
 
-                            final value = await rideController.tripStatusUpdate(
-                              'cancelled',
-                              rideController.tripDetail!.id!,
-                              'trip_cancelled_successfully',
-                              cancelReason,
-                            );
+                              final value =
+                                  await rideController.tripStatusUpdate(
+                                'cancelled',
+                                rideController.tripDetail!.id!,
+                                'trip_cancelled_successfully',
+                                cancelReason,
+                              );
 
-                            if (value.statusCode == 200) {
-                              Get.find<OtpTimeCountController>().initialCounter();
+                              if (value.statusCode == 200) {
+                                Get.find<OtpTimeCountController>()
+                                    .initialCounter();
 
-                              Get.find<RiderMapController>()
-                                  .setRideCurrentState(RideState.initial);
+                                Get.find<RiderMapController>()
+                                    .setRideCurrentState(RideState.initial);
 
-                              Get.offAll(() => const DashboardScreen());
-                            }
-                          },
+                                Get.offAll(() => const DashboardScreen());
+                              }
+                            },
                           )),
                         ]),
                         const SizedBox(height: Dimensions.paddingSizeDefault),

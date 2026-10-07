@@ -91,9 +91,16 @@ class LocationController extends GetxController implements GetxService {
       await _locationSubscription?.cancel();
       _locationSubscription = null;
 
+      final gpsWatch = Stopwatch()..start();
+
       final Position currentPosition = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
         timeLimit: const Duration(seconds: 10),
+      );
+
+      gpsWatch.stop();
+      debugPrint(
+        '===== GPS GET CURRENT POSITION: ${gpsWatch.elapsedMilliseconds} ms =====',
       );
 
       _position = currentPosition;
@@ -126,6 +133,8 @@ class LocationController extends GetxController implements GetxService {
           ),
         );
       }
+      double lastSentLatitude = currentPosition.latitude;
+      double lastSentLongitude = currentPosition.longitude;
 
       _locationSubscription = Geolocator.getPositionStream(
         locationSettings: const LocationSettings(
@@ -133,8 +142,9 @@ class LocationController extends GetxController implements GetxService {
           distanceFilter: 5,
         ),
       ).listen(
-        (Position livePosition) async {
+            (Position livePosition) async {
           _position = livePosition;
+
           _initialPosition = LatLng(
             livePosition.latitude,
             livePosition.longitude,
@@ -155,10 +165,22 @@ class LocationController extends GetxController implements GetxService {
           }
 
           if (Get.find<AuthController>().isLoggedIn()) {
-            await updateLastLocation(
-              livePosition.latitude.toString(),
-              livePosition.longitude.toString(),
+            final double movedDistance = Geolocator.distanceBetween(
+              lastSentLatitude,
+              lastSentLongitude,
+              livePosition.latitude,
+              livePosition.longitude,
             );
+
+            if (movedDistance >= 5) {
+              await updateLastLocation(
+                livePosition.latitude.toString(),
+                livePosition.longitude.toString(),
+              );
+
+              lastSentLatitude = livePosition.latitude;
+              lastSentLongitude = livePosition.longitude;
+            }
           }
 
           update();
@@ -175,8 +197,32 @@ class LocationController extends GetxController implements GetxService {
       if (kDebugMode) {
         print('GET CURRENT LOCATION ERROR: $e');
       }
-      _position = (await Geolocator.getLastKnownPosition()) ?? _position;
-      _initialPosition = LatLng(_position.latitude, _position.longitude);
+
+      final Position? lastKnownPosition =
+      await Geolocator.getLastKnownPosition();
+
+      if (lastKnownPosition != null) {
+        _position = lastKnownPosition;
+
+        _initialPosition = LatLng(
+          lastKnownPosition.latitude,
+          lastKnownPosition.longitude,
+        );
+
+        debugPrint(
+          'GPS FALLBACK: using last known position '
+              '${lastKnownPosition.latitude}, '
+              '${lastKnownPosition.longitude}',
+        );
+
+        if (Get.find<AuthController>().isLoggedIn()) {
+          await updateLastLocation(
+            lastKnownPosition.latitude.toString(),
+            lastKnownPosition.longitude.toString(),
+          );
+        }
+      }
+
       update();
     }
 
@@ -264,8 +310,11 @@ class LocationController extends GetxController implements GetxService {
       // getZone already stores this same location after resolving the zone.
       return;
     }
-
+    zoneID = resolvedZoneId;
+    await setUserZoneId(resolvedZoneId);
+    Get.find<AuthController>().updateZoneId(resolvedZoneId);
     lastLocationLoading = true;
+
     update();
 
     try {

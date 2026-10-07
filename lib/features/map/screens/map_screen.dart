@@ -245,8 +245,9 @@ class _MapScreenState extends State<MapScreen> {
     // app. A fresh GPS value will replace it when getCurrentLocation finishes.
     try {
       final Uint8List imageData = await (_driverMarkerFuture ?? getMarker());
-      if (!mounted || mapController.currentRideState == RideState.initial)
+      if (!mounted || mapController.currentRideState == RideState.initial) {
         return;
+      }
 
       final LatLng cachedLocation =
           Get.find<LocationController>().initialPosition;
@@ -267,6 +268,25 @@ class _MapScreenState extends State<MapScreen> {
       mapController.update();
     } catch (e) {
       debugPrint('Unable to render cached driver marker: $e');
+    }
+    if (mapController.currentRideState == RideState.ongoing &&
+        trip != null) {
+      final List<LatLng> stops = [];
+
+      for (final point in trip.intermediateStopCoordinates) {
+        if (point.length >= 2) {
+          stops.add(
+            LatLng(
+              point[0], // Latitude
+              point[1], // Longitude
+            ),
+          );
+        }
+      }
+
+      mapController.setIntermediateStopMarkers(stops);
+
+      debugPrint('INTERMEDIATE STOP MARKERS: ${stops.length}');
     }
   }
 
@@ -428,13 +448,26 @@ class _MapScreenState extends State<MapScreen> {
               riderMapController,
               MediaQuery.of(context).size.height,
             );
-            final double mapActionBottom =
-                resolvedSheetHeight + 56 + safeBottom;
+            final bool isOngoingRide =
+                riderMapController.currentRideState == RideState.ongoing;
+
+            final double visibleSheetHeight = isOngoingRide
+                ? MediaQuery.sizeOf(context).height * 0.55
+                : resolvedSheetHeight;
+
+            final double mapActionBottom = visibleSheetHeight + 56 + safeBottom;
 
             final double otpKeyboardOffset =
                 riderMapController.currentRideState == RideState.accepted
                     ? MediaQuery.of(context).viewInsets.bottom
                     : 0.0;
+
+            debugPrint(
+              'MAP MARKERS: ${riderMapController.markers.map((m) => m.markerId.value).toList()}',
+            );
+            debugPrint(
+              'MAP POLYLINES: ${riderMapController.polylines.length}',
+            );
 
             return ExpandableBottomSheet(
               key: key,
@@ -479,9 +512,8 @@ class _MapScreenState extends State<MapScreen> {
                               .toDouble(),
                     ),
                     child: GoogleMap(
-                      myLocationEnabled:
-                        riderMapController.currentRideState ==
-                              RideState.initial,
+                      myLocationEnabled: riderMapController.currentRideState ==
+                          RideState.initial,
                       myLocationButtonEnabled: false,
                       compassEnabled: false,
                       // style: Get.isDarkMode`
@@ -540,7 +572,7 @@ class _MapScreenState extends State<MapScreen> {
                         top: 88,
                         left: 12,
                         right: 12,
-                        bottom: resolvedSheetHeight + 34,
+                        bottom: visibleSheetHeight + 34,
                       ),
                       trafficEnabled: riderMapController.isTrafficEnable,
                       indoorViewEnabled: true,
@@ -553,7 +585,7 @@ class _MapScreenState extends State<MapScreen> {
                         child: Container(
                           color: Theme.of(context)
                               .scaffoldBackgroundColor
-                              .withOpacity(0.35),
+                              .withValues(alpha:0.35),
                           child: Center(
                             child: Container(
                               padding: const EdgeInsets.symmetric(
@@ -563,11 +595,11 @@ class _MapScreenState extends State<MapScreen> {
                               decoration: BoxDecoration(
                                 color: Theme.of(context)
                                     .cardColor
-                                    .withOpacity(0.92),
+                                    .withValues(alpha:0.92),
                                 borderRadius: BorderRadius.circular(18),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.08),
+                                    color: Colors.black.withValues(alpha: 0.08),
                                     blurRadius: 18,
                                     offset: const Offset(0, 6),
                                   ),
@@ -685,19 +717,24 @@ class _MapScreenState extends State<MapScreen> {
               persistentHeader: Transform.translate(
                 offset: Offset(0, -otpKeyboardOffset),
                 child: SizedBox(
-                  height: riderMapController.currentRideState == RideState.initial ? 50 : 0,
+                  height:
+                      riderMapController.currentRideState == RideState.initial
+                          ? 50
+                          : 0,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Center(child:
                           GetBuilder<RideController>(builder: (rideController) {
-                        final int pendingCount =
-                            rideController.pendingRideRequestModel?.data?.length ?? 0;
-                        if (riderMapController.currentRideState != RideState.initial ||
-                              pendingCount <= 0) {
-                            return const SizedBox();
-                          }
+                        final int pendingCount = rideController
+                                .pendingRideRequestModel?.data?.length ??
+                            0;
+                        if (riderMapController.currentRideState !=
+                                RideState.initial ||
+                            pendingCount <= 0) {
+                          return const SizedBox();
+                        }
                         final String countText = pendingCount == 1
                             ? '1 ${'more_request'.tr}'
                             : '$pendingCount ${'more_request'.tr}s';
@@ -713,14 +750,14 @@ class _MapScreenState extends State<MapScreen> {
                           child: Container(
                             decoration: BoxDecoration(
                               color:
-                                  Theme.of(context).cardColor.withOpacity(0.94),
+                                  Theme.of(context).cardColor.withValues(alpha:0.94),
                               borderRadius: BorderRadius.circular(
                                   Dimensions.paddingSizeExtraLarge),
                               border: Border.all(
                                 color: Theme.of(context)
                                     .colorScheme
                                     .primary
-                                    .withOpacity(0.16),
+                                    .withValues(alpha:0.16),
                               ),
                               boxShadow: [
                                 BoxShadow(

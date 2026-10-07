@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class TripDetailsModel {
   TripDetail? data;
 
@@ -37,6 +39,8 @@ class TripDetail {
   PickupCoordinates? pickupCoordinates;
   String? pickupAddress;
   PickupCoordinates? destinationCoordinates;
+  //List<PickupCoordinates> intermediateStopCoordinates = [];
+  List<List<double>> intermediateStopCoordinates = [];
   String? destinationAddress;
   PickupCoordinates? customerRequestCoordinates;
   String? paymentMethod;
@@ -193,6 +197,26 @@ class TripDetail {
         ? PickupCoordinates.fromJson(json['destination_coordinates'])
         : null;
     destinationAddress = json['destination_address'];
+    // The backend's GeoJSON points use [longitude, latitude].
+    for (final key in ['int_coordinate_1', 'int_coordinate_2']) {
+      final value = json[key];
+
+      if (value is Map<String, dynamic> &&
+          value['coordinates'] is List &&
+          (value['coordinates'] as List).length >= 2) {
+        final coordinates = value['coordinates'] as List;
+
+        // intermediateStopCoordinates.add(
+        //   PickupCoordinates(
+        //     type: value['type']?.toString(),
+        //     coordinates: [
+        //       (coordinates[0] as num).toDouble(),
+        //       (coordinates[1] as num).toDouble(),
+        //     ],
+        //   ),
+        // );
+      }
+    }
     customerRequestCoordinates = json['customer_request_coordinates'] != null
         ? PickupCoordinates.fromJson(json['customer_request_coordinates'])
         : null;

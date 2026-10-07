@@ -167,10 +167,25 @@ class RiderBottomSheetWidget extends StatelessWidget {
                   ),
                 );
 
+                final bool isOngoing =
+                    riderController.currentRideState == RideState.ongoing;
+
+                final double availableHeight = mediaQuery.size.height -
+                    mediaQuery.padding.top -
+                    mediaQuery.padding.bottom;
+
+                final double sheetMaxHeight =
+                    isOngoing ? availableHeight * 0.55 : maxSheetHeight;
+
                 return ConstrainedBox(
-                  constraints: BoxConstraints(maxHeight: maxSheetHeight),
+                  constraints: BoxConstraints(
+                    maxHeight: sheetMaxHeight,
+                  ),
                   child: SingleChildScrollView(
-                    physics: const ClampingScrollPhysics(),
+                    primary: false,
+                    physics: const AlwaysScrollableScrollPhysics(
+                      parent: ClampingScrollPhysics(),
+                    ),
                     padding: EdgeInsets.zero,
                     child: sheetContent,
                   ),

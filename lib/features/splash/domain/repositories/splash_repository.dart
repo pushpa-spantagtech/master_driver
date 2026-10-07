@@ -12,8 +12,19 @@ class SplashRepository implements SplashRepositoryInterface {
       {required this.apiClient, required this.sharedPreferences});
 
   @override
-  Future<Response> getConfigData() {
-    return apiClient.getData(AppConstants.configUri);
+  Future<Response> getConfigData() async {
+    final stopwatch = Stopwatch()..start();
+
+    final Response response =
+    await apiClient.getData(AppConstants.configUri);
+
+    stopwatch.stop();
+
+    print(
+      'CONFIG HTTP REQUEST ONLY: ${stopwatch.elapsedMilliseconds} ms',
+    );
+
+    return response;
   }
 
   @override

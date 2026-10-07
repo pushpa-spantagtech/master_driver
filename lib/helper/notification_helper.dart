@@ -318,8 +318,13 @@ class NotificationHelper {
           }
         } else {
           if (message.data['action'] == "new_ride_request_notification") {
-            await startAlertSound();
-            await _openRideRequestFromData(message.data);
+            final String rideId =
+                message.data['ride_request_id']?.toString() ?? '';
+
+            if (claimRideEvent(rideId)) {
+              await startAlertSound();
+              await _openRideRequestFromData(message.data);
+            }
           } else if (message.data['action'] == "ride_accepted") {
             ///Bid Ride Accepted in this case....
             Get.find<RideController>()
